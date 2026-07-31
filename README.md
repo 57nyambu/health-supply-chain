@@ -14,6 +14,38 @@
 
 > A comprehensive Django REST Framework (DRF) backend inventory management system built specifically for the Kenyan market, featuring M-Pesa payments, SMS notifications, real-time analytics, and multi-warehouse operations.
 
+## Smart Health Extension (AfyaSync)
+
+This repository now includes the AfyaSync extension for Track 3, with:
+
+- Tiered dashboards in `frontend/` (`/admin/`, `/facility/`, `/reports/`) sharing one design system.
+- Backend APIs for `facility-ops`, `analytics/inventory-alerts`, and `ai` endpoints.
+- Public read-only API under `/api/v1/public/` using `X-API-Key`.
+- Email-first notification mode (`NOTIFICATION_CHANNEL=email`), with SMS path retained for later enablement.
+
+Primary spec document: `FRONTEND_AND_API_SPEC.md`.
+
+### Quick run for AfyaSync
+
+```bash
+# Backend
+cp .env.example .env
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py seed_facility_demo_data
+python manage.py runserver
+
+# Frontend (separate terminal)
+cd frontend
+cp .env.example .env
+./deploy/generate-frontend-config.sh
+python -m http.server 5500
+```
+
+Frontend local URL: `http://localhost:5500/login.html`
+
 ## 🇰🇪 Built for Kenya
 
 This system is designed with Kenyan businesses in mind, integrating local payment methods, SMS services, and business practices to provide a seamless inventory management experience.

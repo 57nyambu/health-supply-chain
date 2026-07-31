@@ -1,13 +1,17 @@
 from celery import shared_task
 from django.utils import timezone
 from .models import SalesReport
-from sales.models import Order
 from datetime import timedelta
 from apps.integrations.sms import SMSService
 
 @shared_task
 def generate_daily_sales_report():
     """Auto-generate daily sales reports at midnight EAT."""
+    try:
+        from apps.sales.models import Order
+    except Exception:
+        return 'Skipped: apps.sales.models.Order is unavailable in this build.'
+
     today = timezone.now().date()
     orders = Order.objects.filter(
         created_at__date=today,

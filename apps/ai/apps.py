@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class FacilityOpsConfig(AppConfig):
+class AIConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.facility_ops'
+    name = 'apps.ai'

@@ -1,0 +1,29 @@
+:root {
+  --font-sans: 'Source Sans 3', 'Segoe UI', Tahoma, sans-serif;
+  --font-display: 'IBM Plex Serif', Georgia, serif;
+
+  --bg-0: #f3f6f8;
+  --bg-1: #ffffff;
+  --surface: #fbfdff;
+  --line: #dce5ea;
+
+  --ink-900: #0b1f2f;
+  --ink-700: #24435c;
+  --ink-500: #5d778e;
+
+  --brand-700: #0f5e8a;
+  --brand-500: #1a7bb6;
+  --brand-300: #84bfd8;
+  --teal-500: #0f9084;
+
+  --alert-high: #b4232f;
+  --alert-medium: #cf7b15;
+  --alert-low: #147e4a;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  --shadow-soft: 0 10px 24px rgba(10, 45, 76, 0.08);
+  --shadow-card: 0 4px 12px rgba(9, 33, 55, 0.08);
+}

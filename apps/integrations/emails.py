@@ -6,7 +6,11 @@ from django.conf import settings
 class EmailService:
     @staticmethod
     def send_email(subject, recipient, template_name, context):
-        html_content = render_to_string(f"integrations/emails/{template_name}", context)
+        full_template_name = template_name
+        if '/' not in template_name:
+            full_template_name = f"integrations/emails/{template_name}"
+
+        html_content = render_to_string(full_template_name, context)
         text_content = strip_tags(html_content)
         
         email = EmailMultiAlternatives(

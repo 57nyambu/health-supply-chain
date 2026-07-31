@@ -93,6 +93,14 @@ class WorkerProfile(BaseModel):
     """Extended worker information with branch association"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     branch = models.ForeignKey('warehouses.Branch', on_delete=models.PROTECT)
+    warehouse = models.ForeignKey(
+        'warehouses.Warehouse',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_staff',
+        help_text='Facility assignment for Tier-2 scoped dashboards and AI endpoints.',
+    )
     id_number = models.CharField(max_length=20, blank=True)
     signature = models.ImageField(
         upload_to='signatures/%Y/%m/',

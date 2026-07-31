@@ -32,9 +32,23 @@ def user_tier(user):
 
 
 def user_warehouse_id(user):
-    """Tier-2 users are scoped to the single facility on their WorkerProfile."""
+    """Tier-2 users are scoped to one facility from WorkerProfile."""
     profile = getattr(user, 'profile', None)
-    return getattr(profile, 'warehouse_id', None) if profile else None
+    if not profile:
+        return None
+
+    warehouse_id = getattr(profile, 'warehouse_id', None)
+    if warehouse_id:
+        return warehouse_id
+
+    # Backward-compatible fallback for profiles linked only to a branch.
+    branch_id = getattr(profile, 'branch_id', None)
+    if not branch_id:
+        return None
+
+    from apps.warehouses.models import Warehouse
+
+    return Warehouse.objects.filter(branch_id=branch_id).values_list('id', flat=True).first()
 
 
 class IsTier1(BasePermission):

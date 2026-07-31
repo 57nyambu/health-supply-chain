@@ -4,19 +4,15 @@ from .base import *
 # Set DEBUG to False for production
 DEBUG = False
 
-# Allowed hosts: Set this to your production domain
-ALLOWED_HOSTS = ['*']
+# Allowed hosts come from DJANGO_ALLOWED_HOSTS in .env.
 
-# Database settings (Make sure the credentials are correct)
+# Database settings
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT', default='5432'),
-    }
+    'default': dj_database_url.config(
+        default='postgres://postgres:postgres@localhost:5432/afyasync',
+        conn_max_age=600,
+        ssl_require=False,
+    )
 }
 
 # Static and media files
@@ -49,17 +45,6 @@ LOGGING = {
 # Security settings: SSL/TLS headers for reverse proxies
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# CORS settings: Allow your frontend domain to access the backend
-
-# CORS settings: Allow frontend domain.
-#CORS_ALLOWED_ORIGINS = [
-#    "https://finarchitect.netlify.app",  # Allowing frontend domain hosted on Netlify]
-# ALLOWED_HOSTS = ['finarchitect.onrender.com', 'https://finarchitect.netlify.app', '127.0.0.1', 'localhost']
-
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -99,40 +84,3 @@ SECURE_HTTP_ONLY = True
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
-
-# AfricasTalking (Production)  
-AT_USERNAME = 'your_africastalking_username'  # e.g., 'companyke'  
-AT_API_KEY = 'your_production_api_key'  # From AfricasTalking dashboard  
-AT_SENDER_ID = 'your_shortcode_or_alphanumeric'  # e.g., 'INVENT' (approved by AfricasTalking)  
-
-"""
-Deployment Checklist
-AfricasTalking:
-~ Upgrade from sandbox to production credentials.
-~ Whitelist your server IP.
-
-M-Pesa:
-~ Replace sandbox credentials with production keys.
-~ Use HTTPS for callbacks (no ngrok in production).
-
-POS:
-~ Add CSRF protection for AJAX calls.
-~ Optimize QuaggaJS for low-light environments.
-"""
-"""
-Deployment Checklist
-Infrastructure:
-~ Redis server for Channels (WebSocket backend).
-~ Celery workers + beat scheduler.
-
-Scaling:
-
-~ Use uvicorn for ASGI in production.
-Monitor WebSocket connections with:
-
-bash
-redis-cli monitor
-Security:
-~ Add JWT auth for WebSockets.
-~ Restrict dashboard access by user role.
-"""
