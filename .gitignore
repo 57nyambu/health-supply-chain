@@ -1,0 +1,8 @@
+venv
+__pycache__
+.env
+*.log
+tests*
+backup*
+db.sqlite3
+flow.png

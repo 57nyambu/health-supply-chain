@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>POS System</title>
+    <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
+    <style>
+        #barcode-scanner { width: 100%; height: 300px; border: 2px dashed #ccc; }
+        #product-list { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Point of Sale</h1>
+    
+    <!-- Barcode Scanner -->
+    <div id="barcode-scanner"></div>
+    <button id="start-scanner">Start Scanner</button>
+    
+    <!-- Product Display -->
+    <div id="product-list">
+        <h3>Cart</h3>
+        <ul id="cart-items"></ul>
+        <p>Total: <span id="cart-total">0.00</span> KES</p>
+    </div>
+    
+    <!-- Payment -->
+    <input type="text" id="customer-phone" placeholder="Customer Phone (254...)" required>
+    <button id="pay-mpesa">Pay via M-Pesa</button>
+
+    <script>
+        // Barcode Scanner
+        document.getElementById('start-scanner').addEventListener('click', () => {
+            Quagga.init({
+                inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#barcode-scanner') },
+                decoder: { readers: ["ean_reader", "code_128_reader"] }
+            }, () => {
+                Quagga.start();
+                Quagga.onDetected((result) => {
+                    const barcode = result.codeResult.code;
+                    fetch('/sales/pos/', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `product_id=${barcode}&quantity=1`
+                    }).then(response => response.json())
+                      .then(data => updateCart(data));
+                });
+            });
+        });
+
+        // M-Pesa Payment
+        document.getElementById('pay-mpesa').addEventListener('click', () => {
+            const phone = document.getElementById('customer-phone').value;
+            fetch('/sales/process-payment/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                body: `phone=${phone}&order_id=1`
+            }).then(response => alert("Payment initiated! Check your phone."));
+        });
+
+        function updateCart(order) {
+            document.getElementById('cart-total').textContent = order.total;
+        }
+    </script>
+</body>
+</html>

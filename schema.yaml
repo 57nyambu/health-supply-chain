@@ -1,0 +1,2032 @@
+openapi: 3.0.3
+info:
+  title: Inventory System Api Documentation
+  version: 1.0.0
+  description: Realtime Inventory Management System
+paths:
+  /api/schema/:
+    get:
+      operationId: api_schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/auth/login/:
+    post:
+      operationId: api_v1_auth_auth_login_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Auth'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Auth'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auth'
+          description: ''
+  /api/v1/auth/auth/logout/:
+    post:
+      operationId: api_v1_auth_auth_logout_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Auth'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Auth'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auth'
+          description: ''
+  /api/v1/auth/profiles/:
+    get:
+      operationId: api_v1_auth_profiles_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkerProfile'
+          description: ''
+    post:
+      operationId: api_v1_auth_profiles_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkerProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkerProfile'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerProfile'
+          description: ''
+  /api/v1/auth/profiles/{id}/:
+    get:
+      operationId: api_v1_auth_profiles_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this worker profile.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerProfile'
+          description: ''
+    put:
+      operationId: api_v1_auth_profiles_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this worker profile.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkerProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkerProfile'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerProfile'
+          description: ''
+    patch:
+      operationId: api_v1_auth_profiles_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this worker profile.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkerProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkerProfile'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerProfile'
+          description: ''
+    delete:
+      operationId: api_v1_auth_profiles_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this worker profile.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/users/:
+    get:
+      operationId: api_v1_auth_users_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: api_v1_auth_users_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreate'
+          description: ''
+  /api/v1/auth/users/{id}/:
+    get:
+      operationId: api_v1_auth_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: api_v1_auth_users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: api_v1_auth_users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: api_v1_auth_users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/users/{id}/approve/:
+    post:
+      operationId: api_v1_auth_users_approve_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/users/me/:
+    get:
+      operationId: api_v1_auth_users_me_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/users/reset_password/:
+    post:
+      operationId: api_v1_auth_users_reset_password_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/warehouses/bins/:
+    get:
+      operationId: api_v1_warehouses_bins_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BinLocation'
+          description: ''
+    post:
+      operationId: api_v1_warehouses_bins_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BinLocation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BinLocation'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BinLocation'
+          description: ''
+  /api/v1/warehouses/bins/{id}/:
+    get:
+      operationId: api_v1_warehouses_bins_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Bin Location.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BinLocation'
+          description: ''
+    put:
+      operationId: api_v1_warehouses_bins_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Bin Location.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BinLocation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BinLocation'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BinLocation'
+          description: ''
+    patch:
+      operationId: api_v1_warehouses_bins_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Bin Location.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBinLocation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBinLocation'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BinLocation'
+          description: ''
+    delete:
+      operationId: api_v1_warehouses_bins_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Bin Location.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/warehouses/branches/:
+    get:
+      operationId: api_v1_warehouses_branches_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Branch'
+          description: ''
+    post:
+      operationId: api_v1_warehouses_branches_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Branch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Branch'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+  /api/v1/warehouses/branches/{id}/:
+    get:
+      operationId: api_v1_warehouses_branches_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this branch.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    put:
+      operationId: api_v1_warehouses_branches_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this branch.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Branch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Branch'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    patch:
+      operationId: api_v1_warehouses_branches_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this branch.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBranch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBranch'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    delete:
+      operationId: api_v1_warehouses_branches_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this branch.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/warehouses/transfers/:
+    get:
+      operationId: api_v1_warehouses_transfers_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockTransfer'
+          description: ''
+    post:
+      operationId: api_v1_warehouses_transfers_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockTransferCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StockTransferCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransferCreate'
+          description: ''
+  /api/v1/warehouses/transfers/{id}/:
+    get:
+      operationId: api_v1_warehouses_transfers_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Stock Transfer.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransfer'
+          description: ''
+    put:
+      operationId: api_v1_warehouses_transfers_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Stock Transfer.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockTransfer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StockTransfer'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransfer'
+          description: ''
+    patch:
+      operationId: api_v1_warehouses_transfers_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Stock Transfer.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStockTransfer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStockTransfer'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransfer'
+          description: ''
+    delete:
+      operationId: api_v1_warehouses_transfers_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Stock Transfer.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/warehouses/transfers/{id}/approve/:
+    post:
+      operationId: api_v1_warehouses_transfers_approve_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Stock Transfer.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockTransfer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StockTransfer'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransfer'
+          description: ''
+  /api/v1/warehouses/transfers/{id}/complete/:
+    post:
+      operationId: api_v1_warehouses_transfers_complete_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Stock Transfer.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockTransfer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StockTransfer'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockTransfer'
+          description: ''
+  /api/v1/warehouses/warehouses/:
+    get:
+      operationId: api_v1_warehouses_warehouses_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Warehouse'
+          description: ''
+    post:
+      operationId: api_v1_warehouses_warehouses_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Warehouse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Warehouse'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warehouse'
+          description: ''
+  /api/v1/warehouses/warehouses/{id}/:
+    get:
+      operationId: api_v1_warehouses_warehouses_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this warehouse.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warehouse'
+          description: ''
+    put:
+      operationId: api_v1_warehouses_warehouses_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this warehouse.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Warehouse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Warehouse'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warehouse'
+          description: ''
+    patch:
+      operationId: api_v1_warehouses_warehouses_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this warehouse.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWarehouse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWarehouse'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warehouse'
+          description: ''
+    delete:
+      operationId: api_v1_warehouses_warehouses_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this warehouse.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Auth:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    BinLocation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        warehouse_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+        name:
+          type: string
+          maxLength: 50
+        bin_type:
+          $ref: '#/components/schemas/BinTypeEnum'
+        barcode:
+          type: string
+          maxLength: 50
+        qr_code:
+          type: string
+          format: uri
+        capacity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Max items that can be stored
+        notes:
+          type: string
+        warehouse:
+          type: integer
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+      - warehouse
+      - warehouse_name
+    BinTypeEnum:
+      enum:
+      - SHELF
+      - PALLET
+      - BIN
+      - ROOM
+      type: string
+      description: |-
+        * `SHELF` - Shelf
+        * `PALLET` - Pallet
+        * `BIN` - Storage Bin
+        * `ROOM` - Storage Room
+    Branch:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 10
+        kra_pin:
+          type: string
+          pattern: ^[A-Z]{1}\d{9}[A-Z]{1}$
+          maxLength: 11
+        business_reg_no:
+          type: string
+          title: Business Registration Number
+          maxLength: 20
+        vat_no:
+          type: string
+          title: VAT Number
+          maxLength: 20
+        county:
+          $ref: '#/components/schemas/CountyEnum'
+        physical_address:
+          type: string
+        postal_address:
+          type: string
+          maxLength: 100
+        contact_phone:
+          type: string
+          pattern: ^\+254\d{9}$
+          maxLength: 15
+        contact_email:
+          type: string
+          format: email
+          maxLength: 254
+        is_active:
+          type: boolean
+        manager:
+          type: integer
+          nullable: true
+      required:
+      - business_reg_no
+      - code
+      - contact_phone
+      - county
+      - created_at
+      - id
+      - kra_pin
+      - name
+      - physical_address
+      - updated_at
+    CountyEnum:
+      enum:
+      - MOMBASA
+      - KWALE
+      - KILIFI
+      - TANA_RIVER
+      - LAMU
+      - TAITA_TAVETA
+      - GARISSA
+      - WAJIR
+      - MANDERA
+      - MARSABIT
+      - ISIOLO
+      - MERU
+      - THARAKA_NITHI
+      - EMBU
+      - KITUI
+      - MACHAKOS
+      - MAKUENI
+      - NYANDARUA
+      - NYERI
+      - KIRINYAGA
+      - MURANGA
+      - KIAMBU
+      - TURKANA
+      - WEST_POKOT
+      - SAMBURU
+      - TRANS_NZOIA
+      - UASIN_GISHU
+      - ELGEYO_MARAKWET
+      - NANDI
+      - BARINGO
+      - LAIKIPIA
+      - NAKURU
+      - NAROK
+      - KAJIADO
+      - KERICHO
+      - BOMET
+      - KAKAMEGA
+      - VIHIGA
+      - BUNGOMA
+      - BUSIA
+      - SIAYA
+      - KISUMU
+      - HOMA_BAY
+      - MIGORI
+      - KISII
+      - NYAMIRA
+      - NAIROBI
+      type: string
+      description: |-
+        * `MOMBASA` - Mombasa
+        * `KWALE` - Kwale
+        * `KILIFI` - Kilifi
+        * `TANA_RIVER` - Tana River
+        * `LAMU` - Lamu
+        * `TAITA_TAVETA` - Taita Taveta
+        * `GARISSA` - Garissa
+        * `WAJIR` - Wajir
+        * `MANDERA` - Mandera
+        * `MARSABIT` - Marsabit
+        * `ISIOLO` - Isiolo
+        * `MERU` - Meru
+        * `THARAKA_NITHI` - Tharaka Nithi
+        * `EMBU` - Embu
+        * `KITUI` - Kitui
+        * `MACHAKOS` - Machakos
+        * `MAKUENI` - Makueni
+        * `NYANDARUA` - Nyandarua
+        * `NYERI` - Nyeri
+        * `KIRINYAGA` - Kirinyaga
+        * `MURANGA` - Murang'a
+        * `KIAMBU` - Kiambu
+        * `TURKANA` - Turkana
+        * `WEST_POKOT` - West Pokot
+        * `SAMBURU` - Samburu
+        * `TRANS_NZOIA` - Trans Nzoia
+        * `UASIN_GISHU` - Uasin Gishu
+        * `ELGEYO_MARAKWET` - Elgeyo Marakwet
+        * `NANDI` - Nandi
+        * `BARINGO` - Baringo
+        * `LAIKIPIA` - Laikipia
+        * `NAKURU` - Nakuru
+        * `NAROK` - Narok
+        * `KAJIADO` - Kajiado
+        * `KERICHO` - Kericho
+        * `BOMET` - Bomet
+        * `KAKAMEGA` - Kakamega
+        * `VIHIGA` - Vihiga
+        * `BUNGOMA` - Bungoma
+        * `BUSIA` - Busia
+        * `SIAYA` - Siaya
+        * `KISUMU` - Kisumu
+        * `HOMA_BAY` - Homa Bay
+        * `MIGORI` - Migori
+        * `KISII` - Kisii
+        * `NYAMIRA` - Nyamira
+        * `NAIROBI` - Nairobi
+    PatchedBinLocation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        warehouse_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+        name:
+          type: string
+          maxLength: 50
+        bin_type:
+          $ref: '#/components/schemas/BinTypeEnum'
+        barcode:
+          type: string
+          maxLength: 50
+        qr_code:
+          type: string
+          format: uri
+        capacity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Max items that can be stored
+        notes:
+          type: string
+        warehouse:
+          type: integer
+    PatchedBranch:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 10
+        kra_pin:
+          type: string
+          pattern: ^[A-Z]{1}\d{9}[A-Z]{1}$
+          maxLength: 11
+        business_reg_no:
+          type: string
+          title: Business Registration Number
+          maxLength: 20
+        vat_no:
+          type: string
+          title: VAT Number
+          maxLength: 20
+        county:
+          $ref: '#/components/schemas/CountyEnum'
+        physical_address:
+          type: string
+        postal_address:
+          type: string
+          maxLength: 100
+        contact_phone:
+          type: string
+          pattern: ^\+254\d{9}$
+          maxLength: 15
+        contact_email:
+          type: string
+          format: email
+          maxLength: 254
+        is_active:
+          type: boolean
+        manager:
+          type: integer
+          nullable: true
+    PatchedStockTransfer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product_name:
+          type: string
+          readOnly: true
+        from_warehouse_name:
+          type: string
+          readOnly: true
+        to_warehouse_name:
+          type: string
+          readOnly: true
+        initiated_by_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+        reference_no:
+          type: string
+          readOnly: true
+        transfer_type:
+          $ref: '#/components/schemas/TransferTypeEnum'
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        delivery_note:
+          type: string
+          maxLength: 50
+        transporter:
+          type: string
+          maxLength: 100
+        transporter_license:
+          type: string
+          maxLength: 50
+        notes:
+          type: string
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        product:
+          type: integer
+        from_warehouse:
+          type: integer
+        to_warehouse:
+          type: integer
+        from_bin:
+          type: integer
+          nullable: true
+        to_bin:
+          type: integer
+          nullable: true
+        initiated_by:
+          type: integer
+          readOnly: true
+        approved_by:
+          type: integer
+          nullable: true
+    PatchedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          pattern: ^\+?1?\d{9,15}$
+          maxLength: 15
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        is_approved:
+          type: boolean
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedWarehouse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        branch_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+        name:
+          type: string
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 10
+        warehouse_type:
+          $ref: '#/components/schemas/WarehouseTypeEnum'
+        physical_address:
+          type: string
+        contact_phone:
+          type: string
+          maxLength: 15
+        capacity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Total capacity in cubic meters
+        temperature_controlled:
+          type: boolean
+        temperature_range:
+          type: string
+          maxLength: 20
+        branch:
+          type: integer
+        manager:
+          type: integer
+          nullable: true
+    PatchedWorkerProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        id_number:
+          type: string
+          maxLength: 20
+        signature:
+          type: string
+          format: uri
+          pattern: (?:png|jpg|jpeg)$
+        is_active:
+          type: boolean
+        pin_code:
+          type: string
+          nullable: true
+          maxLength: 6
+        branch:
+          type: integer
+    RoleEnum:
+      enum:
+      - ADMIN
+      - BRANCH_MANAGER
+      - PROCUREMENT
+      - WAREHOUSE
+      - CASHIER
+      - REPORTER
+      type: string
+      description: |-
+        * `ADMIN` - System Administrator
+        * `BRANCH_MANAGER` - Branch Manager
+        * `PROCUREMENT` - Procurement Officer
+        * `WAREHOUSE` - Warehouse Staff
+        * `CASHIER` - Cashier
+        * `REPORTER` - Reports Viewer
+    StatusEnum:
+      enum:
+      - PENDING
+      - APPROVED
+      - IN_TRANSIT
+      - RECEIVED
+      - VERIFIED
+      - CANCELLED
+      type: string
+      description: |-
+        * `PENDING` - Pending Approval
+        * `APPROVED` - Approved
+        * `IN_TRANSIT` - In Transit
+        * `RECEIVED` - Received
+        * `VERIFIED` - Verified
+        * `CANCELLED` - Cancelled
+    StockTransfer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product_name:
+          type: string
+          readOnly: true
+        from_warehouse_name:
+          type: string
+          readOnly: true
+        to_warehouse_name:
+          type: string
+          readOnly: true
+        initiated_by_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+        reference_no:
+          type: string
+          readOnly: true
+        transfer_type:
+          $ref: '#/components/schemas/TransferTypeEnum'
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        delivery_note:
+          type: string
+          maxLength: 50
+        transporter:
+          type: string
+          maxLength: 100
+        transporter_license:
+          type: string
+          maxLength: 50
+        notes:
+          type: string
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        product:
+          type: integer
+        from_warehouse:
+          type: integer
+        to_warehouse:
+          type: integer
+        from_bin:
+          type: integer
+          nullable: true
+        to_bin:
+          type: integer
+          nullable: true
+        initiated_by:
+          type: integer
+          readOnly: true
+        approved_by:
+          type: integer
+          nullable: true
+      required:
+      - created_at
+      - from_warehouse
+      - from_warehouse_name
+      - id
+      - initiated_by
+      - initiated_by_name
+      - product
+      - product_name
+      - quantity
+      - reference_no
+      - to_warehouse
+      - to_warehouse_name
+      - updated_at
+      - verified_at
+    StockTransferCreate:
+      type: object
+      properties:
+        product:
+          type: integer
+        transfer_type:
+          $ref: '#/components/schemas/TransferTypeEnum'
+        from_warehouse:
+          type: integer
+        to_warehouse:
+          type: integer
+        from_bin:
+          type: integer
+          nullable: true
+        to_bin:
+          type: integer
+          nullable: true
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        notes:
+          type: string
+      required:
+      - from_warehouse
+      - product
+      - quantity
+      - to_warehouse
+    TransferTypeEnum:
+      enum:
+      - INTERNAL
+      - SUPPLIER
+      - CUSTOMER
+      - DAMAGED
+      type: string
+      description: |-
+        * `INTERNAL` - Internal Transfer
+        * `SUPPLIER` - Supplier Delivery
+        * `CUSTOMER` - Customer Return
+        * `DAMAGED` - Damaged Goods
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          pattern: ^\+?1?\d{9,15}$
+          maxLength: 15
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        is_approved:
+          type: boolean
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_joined
+      - email
+      - id
+      - last_login
+    UserCreate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          pattern: ^\+?1?\d{9,15}$
+          maxLength: 15
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        is_approved:
+          type: boolean
+      required:
+      - email
+      - password
+    Warehouse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        branch_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+        name:
+          type: string
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 10
+        warehouse_type:
+          $ref: '#/components/schemas/WarehouseTypeEnum'
+        physical_address:
+          type: string
+        contact_phone:
+          type: string
+          maxLength: 15
+        capacity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Total capacity in cubic meters
+        temperature_controlled:
+          type: boolean
+        temperature_range:
+          type: string
+          maxLength: 20
+        branch:
+          type: integer
+        manager:
+          type: integer
+          nullable: true
+      required:
+      - branch
+      - branch_name
+      - code
+      - contact_phone
+      - created_at
+      - id
+      - name
+      - physical_address
+      - updated_at
+    WarehouseTypeEnum:
+      enum:
+      - DRY
+      - COLD
+      - FROZEN
+      - HAZARD
+      type: string
+      description: |-
+        * `DRY` - Dry Goods
+        * `COLD` - Cold Storage
+        * `FROZEN` - Frozen Goods
+        * `HAZARD` - Hazardous Materials
+    WorkerProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        id_number:
+          type: string
+          maxLength: 20
+        signature:
+          type: string
+          format: uri
+          pattern: (?:png|jpg|jpeg)$
+        is_active:
+          type: boolean
+        pin_code:
+          type: string
+          nullable: true
+          maxLength: 6
+        branch:
+          type: integer
+      required:
+      - branch
+      - created_at
+      - id
+      - updated_at
+      - user
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
