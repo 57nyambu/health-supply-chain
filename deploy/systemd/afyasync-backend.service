@@ -1,0 +1,22 @@
+[Unit]
+Description=AfyaSync Django Backend (Gunicorn)
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=tom
+Group=tom
+WorkingDirectory=/home/afya-home/health-supply-chain
+EnvironmentFile=/home/afya-home/health-supply-chain/.env
+Environment=DJANGO_SETTINGS_MODULE=root.settings.production
+ExecStart=/home/afya-home/health-supply-chain/.venv/bin/gunicorn root.wsgi:application --bind 127.0.0.1:8000 --workers 3 --timeout 120
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGQUIT
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
