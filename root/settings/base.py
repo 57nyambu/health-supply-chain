@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'apps.procurement',
     'apps.integrations',  # (M-Pesa, SMS, ERP)
     'apps.analytics',
+    'apps.facility_ops',  # (Facility Operations)
 
 ]
 

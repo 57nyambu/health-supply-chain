@@ -1,71 +1,125 @@
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
-from apps.core.models import BaseModel
+from django.utils.translation import gettext_lazy as _
+from django.core.validators import FileExtensionValidator, RegexValidator
+from apps.core.models import BaseModel, AuditLog
+from django.contrib.auth.models import BaseUserManager
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from apps.integrations.tasks import send_welcome_credentials_task
 
-class Customer(BaseModel):
-    """Buyer details (retail/wholesale)."""
-    name = models.CharField(max_length=255)
-    phone = models.CharField(max_length=15, unique=True)  # For M-Pesa/SMS receipts
-    email = models.EmailField(blank=True)
-    tax_id = models.CharField(max_length=50, blank=True)  # KRA PIN for businesses
-    address = models.TextField(blank=True)
+class UserManager(BaseUserManager):
+    """Enhanced user manager with better validation"""
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        if password:
+            user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_approved', True)
+        extra_fields.setdefault('role', User.Role.ADMIN)
+        return self.create_user(email, password, **extra_fields)
+
+class User(AbstractUser, BaseModel):
+    """Extended User model with security enhancements"""
+    
+    class Role(models.TextChoices):
+        ADMIN = 'ADMIN', _('District Health Officer')
+        BRANCH_MANAGER = 'BRANCH_MANAGER', _('Facility Manager')
+        PROCUREMENT = 'PROCUREMENT', _('Restock Coordinator')
+        WAREHOUSE = 'WAREHOUSE', _('Facility Stock Officer')
+        CASHIER = 'CASHIER', _('Dispensing Officer')
+        REPORTER = 'REPORTER', _('District Data Viewer')
+    
+    username = None
+    email = models.EmailField(_('email address'), unique=True)
+    phone = models.CharField(
+        max_length=15,
+        unique=True,
+        blank=True,
+        null=True,
+        validators=[RegexValidator(r'^\+?1?\d{9,15}$')]
+    )
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.CASHIER)
+    is_approved = models.BooleanField(default=False)
+    last_login_ip = models.GenericIPAddressField(blank=True, null=True)
+    failed_login_attempts = models.PositiveIntegerField(default=0)
+    account_locked = models.BooleanField(default=False)
+    
+    objects = UserManager()
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    class Meta:
+        verbose_name = _('user')
+        verbose_name_plural = _('users')
+        ordering = ['-date_joined']
+        permissions = [
+            ('manage_workers', 'Can create/edit workers'),
+            ('approve_workers', 'Can approve worker accounts'),
+            ('view_dashboard', 'Can view admin dashboard'),
+            ('reset_password', 'Can reset user passwords'),
+        ]
 
     def __str__(self):
-        return f"{self.name} ({self.phone})"
+        return f"{self.get_full_name() or self.email} ({self.get_role_display()})"
 
-class Order(BaseModel):
-    """Sales order (POS or wholesale)."""
-    STATUS_CHOICES = [
-        ('DRAFT', 'Draft'),
-        ('PAID', 'Paid'),
-        ('DELIVERED', 'Delivered'),
-        ('CANCELLED', 'Cancelled'),
-    ]
-    PAYMENT_METHODS = [
-        ('MPESA', 'M-Pesa'),
-        ('CASH', 'Cash'),
-        ('CARD', 'Credit Card'),
-    ]
-    order_number = models.CharField(max_length=50, unique=True)  # e.g., "ORD-2023-001"
-    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, null=True, blank=True)  # Walk-ins allowed
-    warehouse = models.ForeignKey('warehouses.Warehouse', on_delete=models.PROTECT)  # Where stock is deducted
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='DRAFT')
-    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHODS, default='CASH')
-    mpesa_code = models.CharField(max_length=50, blank=True)  # M-Pesa transaction ID
-    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Auto-calculated
-    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Kenyan VAT 16%
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        if is_new:
+            AuditLog.objects.create(
+                user=self.created_by if hasattr(self, 'created_by') else None,
+                action='CREATE',
+                model='User',
+                object_id=self.pk,
+                details={
+                    'email': self.email,
+                    'role': self.role,
+                    'approved': self.is_approved
+                }
+            )
 
-    def calculate_totals(self):
-        """Update total + tax from order items."""
-        items = self.items.all()
-        subtotal = sum(item.total_price() for item in items)
-        self.tax_amount = subtotal * 0.16  # Kenyan VAT
-        self.total = subtotal + self.tax_amount
-        self.save()
-
-    def __str__(self):
-        return f"Order #{self.order_number} ({self.get_status_display()})"
-
-class OrderItem(models.Model):
-    """Products sold in an order."""
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey('products.Product', on_delete=models.PROTECT)
-    quantity = models.PositiveIntegerField()
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)  # Snapshot of price at sale time
-    vat_rate = models.DecimalField(max_digits=4, decimal_places=2, default=16.0)
-
-    def total_price(self):
-        return self.quantity * self.unit_price * (1 + self.vat_rate / 100)
+class WorkerProfile(BaseModel):
+    """Extended worker information with branch association"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    branch = models.ForeignKey('warehouses.Branch', on_delete=models.PROTECT)
+    warehouse = models.ForeignKey(
+        'warehouses.Warehouse', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='assigned_staff',
+        help_text="Facility this worker is assigned to. Drives Tier-2 access scoping "
+                   "for the Smart Health extension (apps.facility_ops / apps.ai). "
+                   "Nullable so existing rows are unaffected — assign per worker as needed."
+    )
+    id_number = models.CharField(max_length=20, blank=True)
+    signature = models.ImageField(
+        upload_to='signatures/%Y/%m/',
+        blank=True,
+        validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])]
+    )
+    is_active = models.BooleanField(default=True)
+    pin_code = models.CharField(max_length=6, blank=True, null=True)  # For POS quick login
 
     def __str__(self):
-        return f"{self.product.name} x {self.quantity}"
+        return f"{self.user.email} profile"
 
-class Receipt(BaseModel):
-    """Generated invoice/SMS receipt for customers."""
-    order = models.OneToOneField(Order, on_delete=models.CASCADE)
-    receipt_number = models.CharField(max_length=50, unique=True)  # e.g., "RCPT-2023-001"
-    issued_at = models.DateTimeField(auto_now_add=True)
-    sms_sent = models.BooleanField(default=False)  # Track if SMS receipt was delivered (AfricasTalking)
-    sms_status = models.CharField(max_length=50, blank=True)  # e.g., "Delivered", "Failed"
+    class Meta:
+        verbose_name = _('worker profile')
+        verbose_name_plural = _('worker profiles')
 
-    def __str__(self):
-        return f"Receipt #{self.receipt_number} for Order #{self.order.order_number}"
+# Signals
+@receiver(post_save, sender=User)
+def handle_new_user(sender, instance, created, **kwargs):
+    if created and not instance.is_superuser:
+        # Send credentials to new workers
+        send_welcome_credentials_task.delay(instance.id)
+        

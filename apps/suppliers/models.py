@@ -1,65 +1,132 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 from apps.core.models import BaseModel
+from django.utils.translation import gettext_lazy as _
 
-class Supplier(BaseModel):
-    """Vendor/Supplier details (local Kenyan businesses)."""
-    name = models.CharField(max_length=255)
-    contact_person = models.CharField(max_length=100)
-    phone = models.CharField(max_length=15)  # M-Pesa contact (e.g., "+254712345678")
-    email = models.EmailField(blank=True)
-    address = models.TextField()
-    tax_id = models.CharField(max_length=50, blank=True)  # Kenyan KRA PIN
-    payment_terms = models.CharField(max_length=100, default="30 days")  # e.g., "Cash on Delivery"
+class Category(BaseModel):
+    """Simplified product categorization with Kenyan retail focus"""
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    vat_category = models.CharField(
+        max_length=20,
+        choices=[
+            ('STANDARD', 'Standard Rate (16%)'),
+            ('ZERO', 'Zero Rated (0%)'),
+            ('EXEMPT', 'Exempt'),
+        ],
+        default='STANDARD'
+    )
+
+    class Meta:
+        verbose_name = "Commodity Category"
+        verbose_name_plural = "Commodity Categories"
+        ordering = ['name']
 
     def __str__(self):
         return self.name
 
-class PurchaseOrder(BaseModel):
-    """Order placed with a supplier."""
-    STATUS_CHOICES = [
-        ('DRAFT', 'Draft'),
-        ('SENT', 'Sent to Supplier'),
-        ('PARTIAL', 'Partially Fulfilled'),
-        ('COMPLETED', 'Completed'),
-        ('CANCELLED', 'Cancelled'),
+class Product(BaseModel):
+    """Optimized product model for Kenyan retail operations"""
+    
+    PRODUCT_TYPES = [
+        ('PHYSICAL', 'Physical Product'),
+        ('DIGITAL', 'Digital Product'),
+        ('SERVICE', 'Service'),
     ]
-    po_number = models.CharField(max_length=50, unique=True)  # e.g., "PO-2023-001"
-    supplier = models.ForeignKey(Supplier, on_delete=models.PROTECT)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='DRAFT')
-    order_date = models.DateField()
-    delivery_date = models.DateField(null=True, blank=True)
-    notes = models.TextField(blank=True)
+
+    name = models.CharField(max_length=255)
+    short_name = models.CharField(max_length=50, blank=True)  # For receipts/display
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+    sku = models.CharField(max_length=50, unique=True)  # Auto-generated if blank
+    barcode = models.CharField(
+        max_length=50, 
+        blank=True, 
+        unique=True,
+        help_text="EAN-13, UPC, or custom barcode"
+    )
+    product_type = models.CharField(max_length=10, choices=PRODUCT_TYPES, default='PHYSICAL')
+    buying_price = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+    selling_price = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+    wholesale_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Bulk purchase price"
+    )
+    reorder_level = models.PositiveIntegerField(default=5, verbose_name="Minimum Safe Stock")
+    is_active = models.BooleanField(default=True)
+    last_restocked = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Medical Commodity"
+        verbose_name_plural = "Medical Commodities"
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['sku']),
+            models.Index(fields=['barcode']),
+            models.Index(fields=['category']),
+        ]
 
     def __str__(self):
-        return f"{self.po_number} - {self.supplier.name}"
+        return f"{self.name} ({self.sku})"
 
-class PurchaseOrderItem(models.Model):
-    """Line items in a purchase order."""
-    order = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey('products.Product', on_delete=models.PROTECT)
-    quantity = models.PositiveIntegerField()
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)  # In KES
-    vat_rate = models.DecimalField(max_digits=4, decimal_places=2, default=16.0)  # Kenyan VAT
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            last_product = Product.objects.order_by('-id').first()
+            last_id = last_product.id if last_product else 0
+            self.sku = f"SKU-{self.created_at.year}-{last_id + 1:04d}"
+        super().save(*args, **kwargs)
 
-    def total_price(self):
-        return self.quantity * self.unit_price * (1 + self.vat_rate / 100)
+    @property
+    def vat_amount(self):
+        """Calculate VAT based on category"""
+        if self.category.vat_category == 'STANDARD':
+            return self.selling_price * 0.16
+        return 0
+
+class ProductImage(models.Model):
+    """Essential product images with optimization"""
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(
+        upload_to='products/%Y/%m/',
+        help_text="Optimal size: 800x800px"
+    )
+    is_primary = models.BooleanField(default=False)
+    caption = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        ordering = ['-is_primary']
 
     def __str__(self):
-        return f"{self.product.name} x {self.quantity}"
+        return f"Image for {self.product.name}"
 
-class SupplierPayment(BaseModel):
-    """Record M-Pesa/bank payments to suppliers."""
-    PAYMENT_METHODS = [
-        ('MPESA', 'M-Pesa'),
-        ('BANK', 'Bank Transfer'),
-        ('CASH', 'Cash'),
-    ]
-    order = models.ForeignKey(PurchaseOrder, on_delete=models.PROTECT)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    method = models.CharField(max_length=10, choices=PAYMENT_METHODS, default='MPESA')
-    transaction_id = models.CharField(max_length=100, blank=True)  # M-Pesa transaction ID
-    payment_date = models.DateTimeField(auto_now_add=True)
-    confirmed = models.BooleanField(default=False)  # Verified by accounting
+class Inventory(BaseModel):
+    """Streamlined inventory tracking"""
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    warehouse = models.ForeignKey('warehouses.Warehouse', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=0)
+    last_checked = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Facility Stock Level"
+        verbose_name_plural = "Facility Stock Levels"
+        unique_together = ('product', 'warehouse')
+        indexes = [
+            models.Index(fields=['product', 'warehouse']),
+        ]
 
     def __str__(self):
-        return f"Payment of KES {self.amount} to {self.order.supplier.name}"
+        return f"{self.product.name} @ {self.warehouse}: {self.quantity}"
+
+    @property
+    def needs_restock(self):
+        return self.quantity <= self.product.reorder_level

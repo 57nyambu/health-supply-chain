@@ -18,7 +18,8 @@ class Category(BaseModel):
     )
 
     class Meta:
-        verbose_name_plural = "Categories"
+        verbose_name = "Commodity Category"
+        verbose_name_plural = "Commodity Categories"
         ordering = ['name']
 
     def __str__(self):
@@ -61,11 +62,13 @@ class Product(BaseModel):
         blank=True,
         help_text="Bulk purchase price"
     )
-    reorder_level = models.PositiveIntegerField(default=5)
+    reorder_level = models.PositiveIntegerField(default=5, verbose_name="Minimum Safe Stock")
     is_active = models.BooleanField(default=True)
     last_restocked = models.DateTimeField(null=True, blank=True)
 
     class Meta:
+        verbose_name = "Medical Commodity"
+        verbose_name_plural = "Medical Commodities"
         ordering = ['name']
         indexes = [
             models.Index(fields=['sku']),
@@ -114,7 +117,8 @@ class Inventory(BaseModel):
     last_checked = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name_plural = "Inventory"
+        verbose_name = "Facility Stock Level"
+        verbose_name_plural = "Facility Stock Levels"
         unique_together = ('product', 'warehouse')
         indexes = [
             models.Index(fields=['product', 'warehouse']),

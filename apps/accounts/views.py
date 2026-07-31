@@ -13,6 +13,7 @@ from .serializers import (
 )
 from .permissions import IsAdminOrManager, IsProfileOwner
 from apps.integrations.tasks import send_welcome_credentials_task
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -74,12 +75,22 @@ class AuthViewSet(viewsets.ViewSet):
                 else request.META.get('REMOTE_ADDR')
             )
             # Optionally, save IP to user profile or log it
+
+            # JWT pair — the SPA frontend (separate origin) authenticates with
+            # Authorization: Bearer <access>, not the session cookie above.
+            from apps.core.permissions import user_tier, user_warehouse_id
+            refresh = RefreshToken.for_user(user)
             return Response({
                 'status': 'logged in',
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
                 'user': {
                     'id': user.id,
                     'email': user.email,
                     'role': user.role,
+                    'role_display': user.get_role_display(),
+                    'tier': user_tier(user),
+                    'warehouse_id': user_warehouse_id(user),
                     'first_name': user.first_name,
                     'last_name': user.last_name,
                 },
