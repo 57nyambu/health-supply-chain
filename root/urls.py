@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.generic.base import RedirectView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -12,6 +13,7 @@ urlpatterns = [
     path("api/schema/", staff_member_required(SpectacularAPIView.as_view()), name="schema"),
     path("api/docs/swagger/", staff_member_required(SpectacularSwaggerView.as_view(url_name="schema")), name="swagger-ui"),
     path("api/docs/redoc/", staff_member_required(SpectacularRedocView.as_view(url_name="schema")), name="redoc"),
+    path('api/admin/', RedirectView.as_view(url='/admin/', permanent=False)),
     path('admin/', admin.site.urls),
     #path('', include('apps.core.urls')),
     path('api/v1/accounts/', include('apps.accounts.urls')),
