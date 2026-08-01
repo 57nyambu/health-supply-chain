@@ -6,7 +6,10 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 import secrets
 from django.contrib.auth.hashers import make_password
-User = get_user_model()
+
+
+def _get_user_model():
+    return get_user_model()
 
 class NotificationService:
     def __init__(self):
@@ -80,7 +83,7 @@ class NotificationService:
         return True
     
     def send_inventory_alert(self, product, alert_type, message):
-        staff_users = User.objects.filter(is_staff=True)
+        staff_users = _get_user_model().objects.filter(is_staff=True)
         for user in staff_users:
             self.send_notification(
                 user=user,

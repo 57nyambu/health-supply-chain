@@ -15,6 +15,8 @@ DATABASES = {
     )
 }
 
+DATABASES['default'] = clean_database_config(DATABASES['default'])
+
 # Static and media files
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_ROOT = BASE_DIR / 'media'

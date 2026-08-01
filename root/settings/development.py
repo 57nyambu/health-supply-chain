@@ -9,6 +9,8 @@ DATABASES = {
     )
 }
 
+DATABASES['default'] = clean_database_config(DATABASES['default'])
+
 DEBUG = True
 
 if not ALLOWED_HOSTS:

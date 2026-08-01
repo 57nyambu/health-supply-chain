@@ -112,7 +112,7 @@ class ProductImage(models.Model):
 class Inventory(BaseModel):
     """Streamlined inventory tracking"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    warehouse = models.ForeignKey('warehouses.Warehouse', on_delete=models.CASCADE)
+    warehouse = models.ForeignKey('warehouses.Warehouse', on_delete=models.CASCADE, related_name='supplier_inventory_items')
     quantity = models.PositiveIntegerField(default=0)
     last_checked = models.DateTimeField(auto_now=True)
 

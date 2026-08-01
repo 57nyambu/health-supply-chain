@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from xml.parsers.expat import model
 
 import environ
 from celery.schedules import crontab
@@ -15,6 +16,22 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 def _csv_env(name, default=""):
     raw = env(name, default=default)
     return [part.strip() for part in raw.split(',') if part.strip()]
+
+
+def clean_database_config(database_config):
+    if not isinstance(database_config, dict):
+        return database_config
+
+    cleaned_config = dict(database_config)
+    cleaned_config.pop('schema', None)
+
+    options = cleaned_config.get('OPTIONS')
+    if isinstance(options, dict):
+        cleaned_options = dict(options)
+        cleaned_options.pop('schema', None)
+        cleaned_config['OPTIONS'] = cleaned_options
+
+    return cleaned_config
 
 
 # Security / host configuration
@@ -148,6 +165,8 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
+AUTH_USER_MODEL = 'accounts.User'
+
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -155,7 +174,6 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'accounts.User'
 
 # Security hardening
 SECURE_BROWSER_XSS_FILTER = True
