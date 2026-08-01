@@ -20,6 +20,11 @@
 
         <p class="badge"><i class="bi bi-shield-lock"></i> JWT authentication enabled</p>
 
+        <section class="card" style="padding: 14px; margin-bottom: 12px;">
+          <p id="demo-status" class="muted" style="margin-top: 0;">Demo credentials will auto-fill in a few seconds.</p>
+          <div id="demo-buttons" class="form-row" style="flex-wrap: wrap; gap: 8px;"></div>
+        </section>
+
         <form id="login-form" class="grid" style="gap: 10px;">
           <label>
             <span>Email</span>
@@ -38,15 +43,51 @@
     <script type="module">
       import { login, routeByRole } from './assets/js/auth.js';
 
+      const config = window.AFYASYNC_CONFIG || {};
+      const demoLogins = Array.isArray(config.DEMO_LOGINS) ? config.DEMO_LOGINS : [];
+
       const form = document.getElementById('login-form');
       const errorNode = document.getElementById('login-error');
+      const demoStatus = document.getElementById('demo-status');
+      const demoButtons = document.getElementById('demo-buttons');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+
+      function applyDemoLogin(profile, announce = true) {
+        if (!profile) {
+          return;
+        }
+
+        emailInput.value = profile.email || '';
+        passwordInput.value = profile.password || '';
+
+        if (announce && demoStatus) {
+          demoStatus.textContent = `Loaded ${profile.label} demo login.`;
+        }
+      }
+
+      if (demoButtons && demoLogins.length > 0) {
+        demoButtons.innerHTML = '';
+        demoLogins.forEach((profile, index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'btn btn-ghost';
+          button.textContent = profile.label || `Demo ${index + 1}`;
+          button.addEventListener('click', () => applyDemoLogin(profile));
+          demoButtons.appendChild(button);
+        });
+
+        window.setTimeout(() => applyDemoLogin(demoLogins[0]), 2200);
+      } else if (demoStatus) {
+        demoStatus.textContent = 'Demo credentials are not configured yet.';
+      }
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         errorNode.textContent = '';
 
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
 
         try {
           const user = await login(email, password);
