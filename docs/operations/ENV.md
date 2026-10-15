@@ -13,7 +13,8 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `DJANGO_DEBUG` | `True` in dev, `False` elsewhere | must be off | Django debug mode. |
 | `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | yes, no `*` | Host names the API answers to. |
 | `CSRF_TRUSTED_ORIGINS` | empty | — | Origins (scheme + host) allowed to send unsafe requests with the CSRF token. |
-| `LOG_LEVEL` | `INFO` | — | Root log level (stdout only). |
+| `LOG_LEVEL` | `INFO` | — | Root log level. Logs are JSON on stdout with `request_id`, PHI-scrubbed. |
+| `ERROR_TRACKER_DSN` | empty | — | Sentry-compatible DSN. Enabled only when set and its host passes the residency guard (strict mode refuses to start otherwise). Request bodies, cookies, headers and local variables are never sent. |
 
 ## Database and broker
 

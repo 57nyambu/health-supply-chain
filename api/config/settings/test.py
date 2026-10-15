@@ -10,4 +10,4 @@ CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = False
 
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
-LOGGING = {"version": 1, "disable_existing_loggers": False}
+LOGGING = logging_config("WARNING")

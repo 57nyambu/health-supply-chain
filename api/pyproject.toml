@@ -20,6 +20,7 @@ dependencies = [
     # Legacy browser auth, removed in P1-UAC-04 (ADR-005).
     "djangorestframework-simplejwt>=5.5",
     "django-cors-headers>=4.7",
+    "sentry-sdk[celery,django]>=2.20",
 ]
 
 [dependency-groups]

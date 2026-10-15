@@ -9,3 +9,6 @@ class CoreConfig(AppConfig):
         # Bind @shared_task to the project's Celery app in every process
         # (web, worker, beat) so .delay() uses the configured broker.
         import config.celery  # noqa: F401
+        from apps.core.error_tracking import init_error_tracking
+
+        init_error_tracking()

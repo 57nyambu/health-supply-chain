@@ -12,6 +12,8 @@ from pathlib import Path
 import environ
 from celery.schedules import crontab
 
+from apps.core.logs import logging_config
+
 # BASE_DIR is api/; the shared .env and data/ live at the repository root.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 REPO_ROOT = BASE_DIR.parent
@@ -227,10 +229,8 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 
-# --- Logging: stdout only; never log to files in the repository ------------------------------
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
-    "root": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
-}
+# --- Observability (DESIGN §16) ------------------------------------------------------------------
+# JSON to stdout with request IDs; the PHI scrubbing filter runs on every record.
+LOGGING = logging_config(env("LOG_LEVEL", default="INFO"))
+# Sentry-compatible DSN. Enabled only when set and allowed by the residency guard.
+ERROR_TRACKER_DSN = env("ERROR_TRACKER_DSN", default="")
