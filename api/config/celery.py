@@ -1,10 +1,10 @@
 """Celery application. Settings come from Django settings with the CELERY_ prefix."""
 
-import os
-
 from celery import Celery
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
+from config.env import configure_settings_module
+
+configure_settings_module(default="dev")
 
 app = Celery("afyasync")
 app.config_from_object("django.conf:settings", namespace="CELERY")

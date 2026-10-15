@@ -69,6 +69,14 @@ Also: stray packages `apps/migrations/`, `root/migrations/`, `static/migrations/
 
 ## Session log
 
+### Session 2026-10-15 — Phase 1
+Done this session:
+- Doc pack layout fixed (`1789300`); legacy inventory recorded (`8aa220b`)
+- P1-REPO-01 (in progress) — legacy code moved to `api/` with `git mv` (`2cd1c0b`), imports/settings fixed (`14a355b`); waits for `web/` (P1-WEB-01) and compose/Jenkinsfile (P1-OPS-01, P1-QA-01)
+- P1-REPO-02 — ignore rules (legacy `tests*`/`backup*` patterns removed), `.gitleaksignore` for the reviewed placeholder, ENV docs + test (`f1f3c44`, P1-API-02 commit)
+- P1-API-01 — Django 5.2.18 on uv/pyproject, pytest, PostgreSQL only, dead modules removed (`0884976`)
+- P1-API-02 — `config/settings/{base,dev,test,prod}.py` by `DJANGO_ENV`, production guards with a test per guard, `docs/operations/ENV.md`
+
 <!--
 ### Session YYYY-MM-DD — Phase n
 Done this session:

@@ -1,35 +1,6 @@
+"""Development settings: local stack, fake integrations, synthetic data only."""
+
 from .base import *
 
-DEBUG = True
-
-if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            "filename": BASE_DIR / "error.log",
-        },
-        'db_file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / "db_transactions.log",
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'django.db.backends': {
-            'handlers': ['db_file'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-}
+DEBUG = env.bool("DJANGO_DEBUG", default=True)
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
