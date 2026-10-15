@@ -17,6 +17,6 @@ class HasPublicAPIKey(BasePermission):
     """Allows requests authenticated with the shared PUBLIC_API_KEY header."""
 
     def has_permission(self, request, view):
-        key = request.headers.get('X-API-Key')
-        expected = getattr(settings, 'PUBLIC_API_KEY', '')
+        key = request.headers.get("X-API-Key")
+        expected = getattr(settings, "PUBLIC_API_KEY", "")
         return bool(expected and key and key == expected)

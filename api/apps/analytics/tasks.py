@@ -1,8 +1,10 @@
 from celery import shared_task
 from django.utils import timezone
-from .models import SalesReport
-from datetime import timedelta
+
 from apps.integrations.sms import SMSService
+
+from .models import SalesReport
+
 
 @shared_task
 def generate_daily_sales_report():
@@ -10,26 +12,24 @@ def generate_daily_sales_report():
     try:
         from apps.sales.models import Order
     except Exception:
-        return 'Skipped: apps.sales.models.Order is unavailable in this build.'
+        return "Skipped: apps.sales.models.Order is unavailable in this build."
 
     today = timezone.now().date()
-    orders = Order.objects.filter(
-        created_at__date=today,
-        status='PAID'
-    )
-    
+    orders = Order.objects.filter(created_at__date=today, status="PAID")
+
     SalesReport.objects.create(
-        period_type='DAILY',
+        period_type="DAILY",
         start_date=today,
         end_date=today,
         total_sales=sum(order.total for order in orders),
         total_orders=orders.count(),
-        mpesa_payments=orders.filter(payment_method='MPESA').count()
+        mpesa_payments=orders.filter(payment_method="MPESA").count(),
     )
+
 
 @shared_task
 def send_daily_executive_summary():
-    report = SalesReport.objects.latest('created_at')
+    report = SalesReport.objects.latest("created_at")
     message = (
         f"Daily Report: KES {report.total_sales} "
         f"from {report.total_orders} orders. "

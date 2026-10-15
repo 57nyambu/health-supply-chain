@@ -11,16 +11,17 @@ into 3 access levels and provides reusable DRF permission classes.
     Tier 3 — Read-Only        : role == REPORTER (internal, JWT)
                                  OR external integrator via X-API-Key (see authentication.py)
 """
+
 from rest_framework.permissions import BasePermission
 
-TIER_1_ROLES = {'ADMIN'}
-TIER_2_ROLES = {'BRANCH_MANAGER', 'WAREHOUSE', 'PROCUREMENT', 'CASHIER'}
-TIER_3_INTERNAL_ROLES = {'REPORTER'}
+TIER_1_ROLES = {"ADMIN"}
+TIER_2_ROLES = {"BRANCH_MANAGER", "WAREHOUSE", "PROCUREMENT", "CASHIER"}
+TIER_3_INTERNAL_ROLES = {"REPORTER"}
 
 
 def user_tier(user):
     """Returns 1, 2, or 3 for an authenticated internal user, else None."""
-    if not getattr(user, 'is_authenticated', False):
+    if not getattr(user, "is_authenticated", False):
         return None
     if user.role in TIER_1_ROLES:
         return 1
@@ -33,51 +34,52 @@ def user_tier(user):
 
 def user_warehouse_id(user):
     """Tier-2 users are scoped to one facility from WorkerProfile."""
-    profile = getattr(user, 'profile', None)
+    profile = getattr(user, "profile", None)
     if not profile:
         return None
 
-    warehouse_id = getattr(profile, 'warehouse_id', None)
+    warehouse_id = getattr(profile, "warehouse_id", None)
     if warehouse_id:
         return warehouse_id
 
     # Backward-compatible fallback for profiles linked only to a branch.
-    branch_id = getattr(profile, 'branch_id', None)
+    branch_id = getattr(profile, "branch_id", None)
     if not branch_id:
         return None
 
     from apps.warehouses.models import Warehouse
 
-    return Warehouse.objects.filter(branch_id=branch_id).values_list('id', flat=True).first()
+    return Warehouse.objects.filter(branch_id=branch_id).values_list("id", flat=True).first()
 
 
 class IsTier1(BasePermission):
     """Admin only — full, district-wide access."""
+
     def has_permission(self, request, view):
         return user_tier(request.user) == 1
 
 
 class IsTier1OrTier2(BasePermission):
     """Admin (unscoped) or Facility Staff (scoped to their own facility)."""
+
     def has_permission(self, request, view):
         return user_tier(request.user) in (1, 2)
 
     def has_object_permission(self, request, view, obj):
         if user_tier(request.user) == 1:
             return True
-        return getattr(obj, 'warehouse_id', None) == user_warehouse_id(request.user)
+        return getattr(obj, "warehouse_id", None) == user_warehouse_id(request.user)
 
 
 class IsTier3InternalReadOnly(BasePermission):
     """REPORTER role — read-only, district-wide, internal (JWT) users only."""
+
     def has_permission(self, request, view):
-        return (
-            user_tier(request.user) == 3
-            and request.method in ('GET', 'HEAD', 'OPTIONS')
-        )
+        return user_tier(request.user) == 3 and request.method in ("GET", "HEAD", "OPTIONS")
 
 
 class IsAnyInternalTier(BasePermission):
     """Any authenticated internal user (Tier 1, 2, or 3) — read access baseline."""
+
     def has_permission(self, request, view):
         return user_tier(request.user) is not None

@@ -1,11 +1,19 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from .models import Receipt, Order
+
 from apps.integrations.sms import SMSService
+
+from .models import Order, Receipt
+
 
 @receiver(post_save, sender=Receipt)
 def send_sms_receipt(sender, instance, created, **kwargs):
-    if created and not instance.sms_sent and instance.order.customer and instance.order.customer.phone:
+    if (
+        created
+        and not instance.sms_sent
+        and instance.order.customer
+        and instance.order.customer.phone
+    ):
         sms = SMSService()
         message = (
             f"Receipt #{instance.receipt_number}\n"
@@ -19,7 +27,8 @@ def send_sms_receipt(sender, instance, created, **kwargs):
             instance.sms_status = "Sent"
         except Exception as e:
             instance.sms_status = f"Failed: {e}"
-        instance.save(update_fields=['sms_sent', 'sms_status'])
+        instance.save(update_fields=["sms_sent", "sms_status"])
+
 
 @receiver(pre_save, sender=Order)
 def notify_order_status_change(sender, instance, **kwargs):
@@ -38,20 +47,20 @@ def notify_order_status_change(sender, instance, **kwargs):
 
     # Notify on status change
     if previous.status != instance.status:
-        if instance.status == 'PAID':
+        if instance.status == "PAID":
             message = (
                 f"Order #{instance.order_number} payment received.\n"
                 f"Amount: KES {instance.total}\n"
                 f"Thank you for your purchase!"
             )
             sms.send_sms(customer.phone, message, model="OrderStatus")
-        elif instance.status == 'DELIVERED':
+        elif instance.status == "DELIVERED":
             message = (
                 f"Order #{instance.order_number} has been delivered.\n"
                 f"Thank you for shopping with us!"
             )
             sms.send_sms(customer.phone, message, model="OrderStatus")
-        elif instance.status == 'CANCELLED':
+        elif instance.status == "CANCELLED":
             message = (
                 f"Order #{instance.order_number} has been cancelled.\n"
                 f"If you have questions, contact support."

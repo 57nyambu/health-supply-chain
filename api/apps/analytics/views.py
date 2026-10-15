@@ -10,20 +10,20 @@ from .serializers import RTInventoryAlertSerializer
 
 
 class InventoryAlertsView(APIView):
-	permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-	def get(self, request):
-		tier = user_tier(request.user)
-		qs = RTInventoryAlert.objects.select_related('product', 'warehouse').all()
+    def get(self, request):
+        tier = user_tier(request.user)
+        qs = RTInventoryAlert.objects.select_related("product", "warehouse").all()
 
-		if tier == 2:
-			warehouse_id = user_warehouse_id(request.user)
-			if warehouse_id:
-				qs = qs.filter(warehouse_id=warehouse_id)
-			else:
-				qs = RTInventoryAlert.objects.none()
-		elif tier not in (1, 3):
-			raise PermissionDenied('You do not have access to inventory alerts.')
+        if tier == 2:
+            warehouse_id = user_warehouse_id(request.user)
+            if warehouse_id:
+                qs = qs.filter(warehouse_id=warehouse_id)
+            else:
+                qs = RTInventoryAlert.objects.none()
+        elif tier not in (1, 3):
+            raise PermissionDenied("You do not have access to inventory alerts.")
 
-		serializer = RTInventoryAlertSerializer(qs, many=True)
-		return Response(serializer.data)
+        serializer = RTInventoryAlertSerializer(qs, many=True)
+        return Response(serializer.data)

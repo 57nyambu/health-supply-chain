@@ -7,13 +7,13 @@ class PublicAPIKeyAuth(BaseAuthentication):
     """Simple API-key authentication for read-only external public endpoints."""
 
     def authenticate(self, request):
-        key = request.headers.get('X-API-Key')
+        key = request.headers.get("X-API-Key")
         if not key:
             return None
 
-        expected = getattr(settings, 'PUBLIC_API_KEY', '')
+        expected = getattr(settings, "PUBLIC_API_KEY", "")
         if not expected or key != expected:
-            raise AuthenticationFailed('Invalid API key')
+            raise AuthenticationFailed("Invalid API key")
 
         # No internal user object is attached for external consumers.
         return (None, key)

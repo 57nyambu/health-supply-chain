@@ -1,25 +1,28 @@
-from rest_framework import viewsets, permissions
-from .models import Category, Product, ProductImage, Inventory
+from rest_framework import permissions, viewsets
+
+from .models import Category, Inventory, Product, ProductImage
+from .permissions import IsInventoryManager
 from .serializers import (
     CategorySerializer,
-    ProductSerializer,
+    InventorySerializer,
     ProductCreateSerializer,
     ProductImageSerializer,
-    InventorySerializer
+    ProductSerializer,
 )
-from .permissions import IsInventoryManager
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.filter(is_active=True)
     permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == "create":
             return ProductCreateSerializer
         return ProductSerializer
 
@@ -27,18 +30,20 @@ class ProductViewSet(viewsets.ModelViewSet):
         instance.is_active = False
         instance.save()
 
+
 class ProductImageViewSet(viewsets.ModelViewSet):
     queryset = ProductImage.objects.all()
     serializer_class = ProductImageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return ProductImage.objects.filter(product_id=self.kwargs['product_pk'])
+        return ProductImage.objects.filter(product_id=self.kwargs["product_pk"])
 
     def perform_create(self, serializer):
         """Associate image with a specific product."""
-        product = Product.objects.get(pk=self.kwargs['product_pk'])
+        product = Product.objects.get(pk=self.kwargs["product_pk"])
         serializer.save(product=product)
+
 
 class InventoryViewSet(viewsets.ModelViewSet):
     queryset = Inventory.objects.all()
@@ -46,7 +51,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsInventoryManager]
 
     def get_queryset(self):
-        warehouse_id = self.request.query_params.get('warehouse')
+        warehouse_id = self.request.query_params.get("warehouse")
         if warehouse_id:
             return Inventory.objects.filter(warehouse_id=warehouse_id)
         return Inventory.objects.all()

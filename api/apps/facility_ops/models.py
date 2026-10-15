@@ -1,4 +1,5 @@
 from django.db import models
+
 from apps.core.models import BaseModel
 
 
@@ -9,9 +10,11 @@ class FacilityDailyStats(BaseModel):
     Gemma prompt payload simple — see GEMMA4_HACKATHON_PLAN.md for the
     reasoning behind this call.
     """
+
     warehouse = models.ForeignKey(
-        'warehouses.Warehouse', on_delete=models.CASCADE,
-        related_name='daily_stats',
+        "warehouses.Warehouse",
+        on_delete=models.CASCADE,
+        related_name="daily_stats",
         verbose_name="Health Facility",
     )
     date = models.DateField()
@@ -25,9 +28,9 @@ class FacilityDailyStats(BaseModel):
     class Meta:
         verbose_name = "Facility Daily Stats"
         verbose_name_plural = "Facility Daily Stats"
-        unique_together = ('warehouse', 'date')
-        ordering = ['-date']
-        indexes = [models.Index(fields=['warehouse', 'date'])]
+        unique_together = ("warehouse", "date")
+        ordering = ["-date"]
+        indexes = [models.Index(fields=["warehouse", "date"])]
 
     def __str__(self):
         return f"{self.warehouse.name} — {self.date}"
@@ -47,33 +50,34 @@ class FacilityDailyStats(BaseModel):
 
 class FacilityAlert(BaseModel):
     ALERT_TYPES = [
-        ('understaffed', 'Understaffed'),
-        ('low_footfall', 'Low Footfall'),
-        ('overcrowded', 'Overcrowded'),
-        ('stockout_risk', 'Stock-Out Risk'),
-        ('custom', 'Custom'),
+        ("understaffed", "Understaffed"),
+        ("low_footfall", "Low Footfall"),
+        ("overcrowded", "Overcrowded"),
+        ("stockout_risk", "Stock-Out Risk"),
+        ("custom", "Custom"),
     ]
     SEVERITY_LEVELS = [
-        ('low', 'Low'),
-        ('medium', 'Medium'),
-        ('high', 'High'),
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
     ]
 
     warehouse = models.ForeignKey(
-        'warehouses.Warehouse', on_delete=models.CASCADE,
-        related_name='facility_alerts',
+        "warehouses.Warehouse",
+        on_delete=models.CASCADE,
+        related_name="facility_alerts",
         verbose_name="Health Facility",
     )
     alert_type = models.CharField(max_length=30, choices=ALERT_TYPES)
     message = models.TextField(help_text="Gemma-generated or manually entered narrative")
-    severity = models.CharField(max_length=10, choices=SEVERITY_LEVELS, default='medium')
+    severity = models.CharField(max_length=10, choices=SEVERITY_LEVELS, default="medium")
     resolved = models.BooleanField(default=False)
     resolved_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Facility Alert"
-        ordering = ['-created_at']
-        indexes = [models.Index(fields=['warehouse', 'resolved'])]
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["warehouse", "resolved"])]
 
     def __str__(self):
         return f"[{self.severity}] {self.warehouse.name}: {self.get_alert_type_display()}"

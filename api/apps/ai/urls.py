@@ -8,8 +8,14 @@ from .views import (
 )
 
 urlpatterns = [
-    path('assistant/', AssistantView.as_view(), name='ai-assistant'),
-    path('ocr-intake/', OCRIntakeView.as_view(), name='ai-ocr-intake'),
-    path('forecast/<int:warehouse_id>/<int:product_id>/', ForecastView.as_view(), name='ai-forecast'),
-    path('redistribution-suggestions/', RedistributionSuggestionsView.as_view(), name='ai-redistribution-suggestions'),
+    path("assistant/", AssistantView.as_view(), name="ai-assistant"),
+    path("ocr-intake/", OCRIntakeView.as_view(), name="ai-ocr-intake"),
+    path(
+        "forecast/<int:warehouse_id>/<int:product_id>/", ForecastView.as_view(), name="ai-forecast"
+    ),
+    path(
+        "redistribution-suggestions/",
+        RedistributionSuggestionsView.as_view(),
+        name="ai-redistribution-suggestions",
+    ),
 ]
