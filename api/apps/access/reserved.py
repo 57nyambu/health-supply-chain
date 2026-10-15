@@ -10,21 +10,6 @@ from apps.access.catalogue import PermissionDef as P
 from apps.access.catalogue import Sensitivity as S
 
 PERMISSIONS = [
-    # --- facilities (P1-FAC-01) ---------------------------------------------------------------
-    P("facilities.facility.read", "View facility registry details"),
-    P(
-        "facilities.facility.manage",
-        "Edit facility identifiers and settings",
-        S.ADMIN,
-        privileged=True,
-    ),
-    P("facilities.location.read", "View departments, service points, wards and beds"),
-    P(
-        "facilities.location.manage",
-        "Create and edit departments, service points, wards and beds",
-        S.ADMIN,
-    ),
-    P("facilities.bed.update_status", "Change bed status (available, cleaning, out of service)"),
     # --- patients (P1-PAT-01, P1-DATA-02) ----------------------------------------------------------
     P("patients.patient.search", "Search the patient registry", S.PHI),
     P("patients.patient.read", "View patient demographics, identifiers and contacts", S.PHI),
