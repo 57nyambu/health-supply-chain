@@ -47,8 +47,6 @@ PERMISSIONS = [
     P("patients.merge.approve", "Approve a patient merge or unmerge", S.PHI, privileged=True),
     P("patients.dsar.read", "View data subject requests", S.PHI),
     P("patients.dsar.process", "Process data subject requests and produce exports", S.PHI),
-    # --- audit (P1-AUD-01) -------------------------------------------------------------------------
-    P("audit.log.read", "View the audit log", S.SENSITIVE),
     # --- privacy (Phase 3 breach workflow) -----------------------------------------------------------
     P("privacy.breach.read", "View privacy incidents", S.SENSITIVE),
     P(

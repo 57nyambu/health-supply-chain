@@ -113,6 +113,12 @@ Context: `make check` enforces ≥ 85 % line coverage and mypy (IMPLEMENTATION �
 Decision: The gate applies from P1-OPS-01. Modules in that category are listed in `api/pyproject.toml` `[tool.coverage.run] omit` with the reason and the feature that removes them; mypy runs on everything with default settings, and new apps (`access`, `audit`, `facilities`, `patients`, `documents`) get the per-module strict flags. The list only shrinks: a feature that reworks a listed module removes its entry and adds tests in the same commit. P1-UAC-03 removes the legacy view and permission entries.
 Consequences: The 85 % gate is meaningful for all new code from the first commit; legacy code that is about to change is not tested twice. Revisit if any entry is still listed at the end of Phase 2.
 
+## ADR-018 Facility mapping and Phase 1 build order
+Status: accepted · Date: 2026-10-15
+Context: DESIGN §4 makes `facilities.Facility` 1:1 with `warehouses.Branch`, but the legacy dashboards (`facility_ops`, `WorkerProfile.warehouse`) treat `warehouses.Warehouse` as the "health facility". PHASE-1 lists UAC-02 (facility/department/ward-scoped assignments), UAC-10 and UAC-04 (all audited) before FAC-01 and AUD-01, which they depend on.
+Decision: `Facility` follows DESIGN (1:1 with `Branch`); a warehouse belongs to the facility of its branch, so legacy warehouse-keyed data is scoped through `warehouse.branch.facility`. Build order inside Phase 1: UAC-01 → AUD-01 core (record, chain, anchors, verifier) → FAC-01 → UAC-10 → UAC-02 → UAC-03 → UAC-04…07 → DATA-01 → PAT-01 → UAC-08/09 and AUD-01 PHI-read logging → DATA-02, STO-*, PAT-02 → WEB-*. Acceptance criteria are unchanged.
+Consequences: Every API added after UAC-03 is born under default deny; AUD-01 is flipped only when PHI-read logging exists (after PAT-01 and STO-01).
+
 ---
 
 ## Findings

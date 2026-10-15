@@ -150,6 +150,11 @@ warn_return_any = true
 no_implicit_reexport = true
 strict_equality = true
 
+# Celery's @shared_task is untyped.
+[[tool.mypy.overrides]]
+module = ["apps.*.tasks"]
+disallow_untyped_decorators = false
+
 [[tool.mypy.overrides]]
 module = ["apps.*.tests.*"]
 disallow_untyped_defs = false

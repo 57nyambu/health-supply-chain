@@ -35,6 +35,8 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `DATA_RESIDENCY_MODE` | `warn` (`strict` in prod) | `strict`/`warn` | Residency guard (DESIGN §8.3). `off` is refused in production. |
 | `RESIDENCY_ALLOWED_HOSTS` | empty | — | Hosts allowed to receive PHI (S3 endpoint, backup target, error tracker, log shipper). Adding a non-Kenyan host needs an ADR. |
 | `SEED_PASSWORD` | empty | — | Password for the synthetic users created by `make seed` (dev/CI only; seeding refuses to run without it and in production). |
+| `TRUST_PROXY_HEADERS` | `False` (`True` in prod) | — | Use `X-Real-IP` from nginx as the client IP in audit events. Enable only behind the project's nginx. |
+| `DB_APP_ROLE` | empty | recommended | The PostgreSQL role the API connects as in production. Run migrations as the table owner; the audit migration revokes UPDATE, DELETE and TRUNCATE on audit tables from this role. |
 | `AI_FEATURES_ENABLED` | `False` | — | Legacy AI endpoints; off until a DPIA covers them (ADR-014). |
 
 ## Production transport security

@@ -25,12 +25,12 @@ Requirements with automated evidence: **2 of 39**.
 | KE-SHA-07 | Claims are idempotent on claim ID; status states include queued, approved, rejected, in-review, clinical-re… | — |
 | KE-SHA-08 | PHC (capitation) claims carry a zero total; per-diem interventions (ICU/HDU/NICU, burns) are paid per day b… | — |
 | KE-SHA-09 | SHA rejects about one in five county claims for errors and missing documents (June 2026). | — |
-| KE-DPA-01 | Health data is sensitive personal data; processing needs a lawful basis, purpose limitation and minimisation. | `api/apps/core/tests/test_observability.py::test_log_records_are_json_with_request_id_and_no_phi`<br>`api/apps/core/tests/test_observability.py::test_scrub_text_removes_identifiers` |
+| KE-DPA-01 | Health data is sensitive personal data; processing needs a lawful basis, purpose limitation and minimisation. | `api/apps/audit/tests/test_audit_chain.py::test_detail_refuses_personal_data_and_scrubs_strings`<br>`api/apps/core/tests/test_observability.py::test_log_records_are_json_with_request_id_and_no_phi`<br>`api/apps/core/tests/test_observability.py::test_scrub_text_removes_identifiers` |
 | KE-DPA-02 | Data controllers and processors register with the ODPC (health service providers fall in the mandatory class). | — |
 | KE-DPA-03 | A Data Protection Impact Assessment is required for high-risk processing. | — |
 | KE-DPA-04 | Personal data breaches are notified to the Data Commissioner within 72 hours of awareness, and to data subj… | — |
 | KE-DPA-05 | Data subject rights: information, access, correction, deletion (limited by retention law), objection, porta… | — |
-| KE-DPA-06 | Data protection by design and by default; security safeguards (pseudonymisation, encryption, access control). | `api/config/tests/test_settings.py::test_each_production_guard_fires`<br>`api/tests/test_policy_matrix.py::test_every_role_permission_cell` |
+| KE-DPA-06 | Data protection by design and by default; security safeguards (pseudonymisation, encryption, access control). | `api/apps/audit/tests/test_audit_chain.py` (module)<br>`api/config/tests/test_settings.py::test_each_production_guard_fires`<br>`api/tests/test_policy_matrix.py::test_every_role_permission_cell` |
 | KE-DPA-07 | Transfers outside Kenya only under the Act's conditions (appropriate safeguards, adequacy, consent for sens… | — |
 | KE-HLT-01 | No person shall be denied emergency medical treatment; all providers (public and private) owe emergency tre… | — |
 | KE-HLT-02 | Hospitals may not detain patients (or bodies) over unpaid bills; courts have repeatedly ruled it unlawful (… | — |

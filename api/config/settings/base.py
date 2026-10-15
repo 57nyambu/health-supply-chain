@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.accounts",
     "apps.access",
+    "apps.audit",
     "apps.products",
     "apps.suppliers",
     "apps.warehouses",
@@ -69,6 +70,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "apps.core.request_id.RequestIdMiddleware",
+    "apps.audit.context.AuditContextMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -131,6 +133,10 @@ DATA_RESIDENCY_MODE = env("DATA_RESIDENCY_MODE", default="warn")
 RESIDENCY_ALLOWED_HOSTS = env.list("RESIDENCY_ALLOWED_HOSTS", default=[])
 # Password for synthetic seed users (make seed); never a real person's password.
 SEED_PASSWORD = env("SEED_PASSWORD", default="")
+# Behind nginx, take the client IP from X-Real-IP (only when the proxy sets it).
+TRUST_PROXY_HEADERS = env.bool("TRUST_PROXY_HEADERS", default=False)
+# Production: the role the API connects as; migrations revoke UPDATE/DELETE on audit tables from it.
+DB_APP_ROLE = env("DB_APP_ROLE", default="")
 # Legacy AI endpoints stay off until a DPIA covers them (ADR-014).
 AI_FEATURES_ENABLED = env.bool("AI_FEATURES_ENABLED", default=False)
 
@@ -192,6 +198,10 @@ CELERY_BEAT_SCHEDULE = {
     "purge-expired-idempotency-records": {
         "task": "apps.core.tasks.purge_expired_idempotency_records",
         "schedule": crontab(minute=15),
+    },
+    "anchor-audit-chains": {
+        "task": "apps.audit.tasks.anchor_audit_chains",
+        "schedule": crontab(hour=0, minute=10),
     },
     "flag-underperforming-facilities": {
         "task": "apps.facility_ops.tasks.flag_underperforming_facilities",

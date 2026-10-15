@@ -5,6 +5,7 @@ from .guards import check_production_settings
 
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 DATA_RESIDENCY_MODE = env("DATA_RESIDENCY_MODE", default="strict")
+TRUST_PROXY_HEADERS = env.bool("TRUST_PROXY_HEADERS", default=True)
 
 # TLS terminates at nginx, which sets X-Forwarded-Proto.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
