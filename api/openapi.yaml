@@ -7,6 +7,8 @@ paths:
   /api/v1/accounts/auth/login/:
     post:
       operationId: v1_accounts_auth_login_create
+      description: Legacy login/logout (session + JWT). Replaced by the P1-UAC-04
+        auth API.
       tags:
       - v1
       requestBody:
@@ -24,7 +26,6 @@ paths:
       security:
       - jwtAuth: []
       - cookieAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -35,6 +36,8 @@ paths:
   /api/v1/accounts/auth/logout/:
     post:
       operationId: v1_accounts_auth_logout_create
+      description: Legacy login/logout (session + JWT). Replaced by the P1-UAC-04
+        auth API.
       tags:
       - v1
       requestBody:
@@ -52,7 +55,6 @@ paths:
       security:
       - jwtAuth: []
       - cookieAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -87,32 +89,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedWorkerProfileList'
-          description: ''
-    post:
-      operationId: v1_accounts_profiles_create
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkerProfileRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/WorkerProfileRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/WorkerProfileRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkerProfile'
           description: ''
   /api/v1/accounts/profiles/{id}/:
     get:
@@ -201,23 +177,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkerProfile'
           description: ''
-    delete:
-      operationId: v1_accounts_profiles_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this worker profile.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/accounts/users/:
     get:
       operationId: v1_accounts_users_list
@@ -359,89 +318,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
-    delete:
-      operationId: v1_accounts_users_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this user.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/v1/accounts/users/{id}/approve/:
-    post:
-      operationId: v1_accounts_users_approve_create
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this user.
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
   /api/v1/accounts/users/me/:
     get:
       operationId: v1_accounts_users_me_retrieve
       tags:
       - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-  /api/v1/accounts/users/reset_password/:
-    post:
-      operationId: v1_accounts_users_reset_password_create
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-        required: true
       security:
       - jwtAuth: []
       - cookieAuth: []
@@ -509,87 +390,9 @@ paths:
           description: No response body
   /api/v1/analytics/inventory-alerts/:
     get:
-      operationId: v1_analytics_inventory_alerts_retrieve
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/v1/auth/auth/login/:
-    post:
-      operationId: v1_auth_auth_login_create
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AuthRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/AuthRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Auth'
-          description: ''
-  /api/v1/auth/auth/logout/:
-    post:
-      operationId: v1_auth_auth_logout_create
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AuthRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/AuthRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Auth'
-          description: ''
-  /api/v1/auth/profiles/:
-    get:
-      operationId: v1_auth_profiles_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
+      operationId: v1_analytics_inventory_alerts_list
+      description: Low-stock alerts for the stores of the request's facility (plain
+        list for legacy dashboards).
       tags:
       - v1
       security:
@@ -600,375 +403,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedWorkerProfileList'
-          description: ''
-    post:
-      operationId: v1_auth_profiles_create
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkerProfileRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/WorkerProfileRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/WorkerProfileRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkerProfile'
-          description: ''
-  /api/v1/auth/profiles/{id}/:
-    get:
-      operationId: v1_auth_profiles_retrieve
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this worker profile.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkerProfile'
-          description: ''
-    put:
-      operationId: v1_auth_profiles_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this worker profile.
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkerProfileRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/WorkerProfileRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/WorkerProfileRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkerProfile'
-          description: ''
-    patch:
-      operationId: v1_auth_profiles_partial_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this worker profile.
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedWorkerProfileRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedWorkerProfileRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedWorkerProfileRequest'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkerProfile'
-          description: ''
-    delete:
-      operationId: v1_auth_profiles_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this worker profile.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/v1/auth/users/:
-    get:
-      operationId: v1_auth_users_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedUserList'
-          description: ''
-    post:
-      operationId: v1_auth_users_create
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserCreateRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserCreateRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserCreateRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserCreate'
-          description: ''
-  /api/v1/auth/users/{id}/:
-    get:
-      operationId: v1_auth_users_retrieve
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this user.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-    put:
-      operationId: v1_auth_users_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this user.
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-    patch:
-      operationId: v1_auth_users_partial_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this user.
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-    delete:
-      operationId: v1_auth_users_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this user.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/v1/auth/users/{id}/approve/:
-    post:
-      operationId: v1_auth_users_approve_create
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this user.
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-  /api/v1/auth/users/me/:
-    get:
-      operationId: v1_auth_users_me_retrieve
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-  /api/v1/auth/users/reset_password/:
-    post:
-      operationId: v1_auth_users_reset_password_create
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
+                type: array
+                items:
+                  $ref: '#/components/schemas/RTInventoryAlert'
           description: ''
   /api/v1/facility-ops/alerts/:
     get:
-      operationId: v1_facility_ops_alerts_retrieve
+      operationId: v1_facility_ops_alerts_list
       tags:
       - v1
       security:
@@ -976,10 +417,16 @@ paths:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityAlert'
+          description: ''
   /api/v1/facility-ops/stats/:
     get:
-      operationId: v1_facility_ops_stats_retrieve
+      operationId: v1_facility_ops_stats_list
       tags:
       - v1
       security:
@@ -987,20 +434,43 @@ paths:
       - cookieAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityDailyStats'
+          description: ''
     post:
       operationId: v1_facility_ops_stats_create
       tags:
       - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilityDailyStatsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FacilityDailyStatsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FacilityDailyStatsRequest'
+        required: true
       security:
       - jwtAuth: []
       - cookieAuth: []
       responses:
-        '200':
-          description: No response body
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacilityDailyStats'
+          description: ''
   /api/v1/products/categories/:
     get:
       operationId: v1_products_categories_list
+      description: Audit catalogue changes on the acting facility's chain.
       parameters:
       - name: page
         required: false
@@ -1028,6 +498,7 @@ paths:
           description: ''
     post:
       operationId: v1_products_categories_create
+      description: Audit catalogue changes on the acting facility's chain.
       tags:
       - v1
       requestBody:
@@ -1055,6 +526,7 @@ paths:
   /api/v1/products/categories/{id}/:
     get:
       operationId: v1_products_categories_retrieve
+      description: Audit catalogue changes on the acting facility's chain.
       parameters:
       - in: path
         name: id
@@ -1076,6 +548,7 @@ paths:
           description: ''
     put:
       operationId: v1_products_categories_update
+      description: Audit catalogue changes on the acting facility's chain.
       parameters:
       - in: path
         name: id
@@ -1109,6 +582,7 @@ paths:
           description: ''
     patch:
       operationId: v1_products_categories_partial_update
+      description: Audit catalogue changes on the acting facility's chain.
       parameters:
       - in: path
         name: id
@@ -1139,26 +613,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
           description: ''
-    delete:
-      operationId: v1_products_categories_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Commodity Category.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/products/inventory/:
     get:
       operationId: v1_products_inventory_list
+      description: Stock levels in the stores of the request's facility.
       parameters:
       - name: page
         required: false
@@ -1186,6 +644,7 @@ paths:
           description: ''
     post:
       operationId: v1_products_inventory_create
+      description: Stock levels in the stores of the request's facility.
       tags:
       - v1
       requestBody:
@@ -1213,6 +672,7 @@ paths:
   /api/v1/products/inventory/{id}/:
     get:
       operationId: v1_products_inventory_retrieve
+      description: Stock levels in the stores of the request's facility.
       parameters:
       - in: path
         name: id
@@ -1234,6 +694,7 @@ paths:
           description: ''
     put:
       operationId: v1_products_inventory_update
+      description: Stock levels in the stores of the request's facility.
       parameters:
       - in: path
         name: id
@@ -1267,6 +728,7 @@ paths:
           description: ''
     patch:
       operationId: v1_products_inventory_partial_update
+      description: Stock levels in the stores of the request's facility.
       parameters:
       - in: path
         name: id
@@ -1297,26 +759,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Inventory'
           description: ''
-    delete:
-      operationId: v1_products_inventory_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Facility Stock Level.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/products/products/:
     get:
       operationId: v1_products_products_list
+      description: Audit catalogue changes on the acting facility's chain.
       parameters:
       - name: page
         required: false
@@ -1344,6 +790,7 @@ paths:
           description: ''
     post:
       operationId: v1_products_products_create
+      description: Audit catalogue changes on the acting facility's chain.
       tags:
       - v1
       requestBody:
@@ -1371,6 +818,7 @@ paths:
   /api/v1/products/products/{id}/:
     get:
       operationId: v1_products_products_retrieve
+      description: Audit catalogue changes on the acting facility's chain.
       parameters:
       - in: path
         name: id
@@ -1392,6 +840,7 @@ paths:
           description: ''
     put:
       operationId: v1_products_products_update
+      description: Audit catalogue changes on the acting facility's chain.
       parameters:
       - in: path
         name: id
@@ -1425,6 +874,7 @@ paths:
           description: ''
     patch:
       operationId: v1_products_products_partial_update
+      description: Audit catalogue changes on the acting facility's chain.
       parameters:
       - in: path
         name: id
@@ -1457,6 +907,7 @@ paths:
           description: ''
     delete:
       operationId: v1_products_products_destroy
+      description: Audit catalogue changes on the acting facility's chain.
       parameters:
       - in: path
         name: id
@@ -1564,81 +1015,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductImage'
           description: ''
-    put:
-      operationId: v1_products_products_images_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this product image.
-        required: true
-      - in: path
-        name: product_pk
-        schema:
-          type: integer
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductImageRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/ProductImageRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/ProductImageRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductImage'
-          description: ''
-    patch:
-      operationId: v1_products_products_images_partial_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this product image.
-        required: true
-      - in: path
-        name: product_pk
-        schema:
-          type: integer
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedProductImageRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedProductImageRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedProductImageRequest'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductImage'
-          description: ''
     delete:
       operationId: v1_products_products_images_destroy
       parameters:
@@ -1664,6 +1040,8 @@ paths:
   /api/v1/public/alerts/:
     get:
       operationId: v1_public_alerts_retrieve
+      description: 'Non-PHI public API for integrators: hashed API keys, service-account
+        role, throttled.'
       tags:
       - v1
       responses:
@@ -1672,6 +1050,8 @@ paths:
   /api/v1/public/facilities/:
     get:
       operationId: v1_public_facilities_retrieve
+      description: 'Non-PHI public API for integrators: hashed API keys, service-account
+        role, throttled.'
       tags:
       - v1
       responses:
@@ -1680,6 +1060,8 @@ paths:
   /api/v1/public/facility-stats/{facility_id}/:
     get:
       operationId: v1_public_facility_stats_retrieve
+      description: 'Non-PHI public API for integrators: hashed API keys, service-account
+        role, throttled.'
       parameters:
       - in: path
         name: facility_id
@@ -1832,26 +1214,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/BinLocation'
           description: ''
-    delete:
-      operationId: v1_warehouses_bins_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Bin Location.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/warehouses/branches/:
     get:
       operationId: v1_warehouses_branches_list
+      description: The organisation unit behind the facility. New branches come with
+        new facilities.
       parameters:
       - name: page
         required: false
@@ -1877,35 +1244,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedBranchList'
           description: ''
-    post:
-      operationId: v1_warehouses_branches_create
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BranchRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/BranchRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/BranchRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Branch'
-          description: ''
   /api/v1/warehouses/branches/{id}/:
     get:
       operationId: v1_warehouses_branches_retrieve
+      description: The organisation unit behind the facility. New branches come with
+        new facilities.
       parameters:
       - in: path
         name: id
@@ -1927,6 +1270,8 @@ paths:
           description: ''
     put:
       operationId: v1_warehouses_branches_update
+      description: The organisation unit behind the facility. New branches come with
+        new facilities.
       parameters:
       - in: path
         name: id
@@ -1960,6 +1305,8 @@ paths:
           description: ''
     patch:
       operationId: v1_warehouses_branches_partial_update
+      description: The organisation unit behind the facility. New branches come with
+        new facilities.
       parameters:
       - in: path
         name: id
@@ -1990,26 +1337,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Branch'
           description: ''
-    delete:
-      operationId: v1_warehouses_branches_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this branch.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/warehouses/transfers/:
     get:
       operationId: v1_warehouses_transfers_list
+      description: 'Transfers are records: created, approved by someone else, received
+        — never edited.'
       parameters:
       - name: page
         required: false
@@ -2037,6 +1369,8 @@ paths:
           description: ''
     post:
       operationId: v1_warehouses_transfers_create
+      description: 'Transfers are records: created, approved by someone else, received
+        — never edited.'
       tags:
       - v1
       requestBody:
@@ -2064,6 +1398,8 @@ paths:
   /api/v1/warehouses/transfers/{id}/:
     get:
       operationId: v1_warehouses_transfers_retrieve
+      description: 'Transfers are records: created, approved by someone else, received
+        — never edited.'
       parameters:
       - in: path
         name: id
@@ -2083,91 +1419,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/StockTransfer'
           description: ''
-    put:
-      operationId: v1_warehouses_transfers_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Stock Transfer.
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/StockTransferRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/StockTransferRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/StockTransferRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StockTransfer'
-          description: ''
-    patch:
-      operationId: v1_warehouses_transfers_partial_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Stock Transfer.
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedStockTransferRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedStockTransferRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedStockTransferRequest'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StockTransfer'
-          description: ''
-    delete:
-      operationId: v1_warehouses_transfers_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Stock Transfer.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/warehouses/transfers/{id}/approve/:
     post:
       operationId: v1_warehouses_transfers_approve_create
+      description: 'Transfers are records: created, approved by someone else, received
+        — never edited.'
       parameters:
       - in: path
         name: id
@@ -2202,6 +1458,8 @@ paths:
   /api/v1/warehouses/transfers/{id}/complete/:
     post:
       operationId: v1_warehouses_transfers_complete_create
+      description: 'Transfers are records: created, approved by someone else, received
+        — never edited.'
       parameters:
       - in: path
         name: id
@@ -2374,25 +1632,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/Warehouse'
           description: ''
-    delete:
-      operationId: v1_warehouses_warehouses_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this warehouse.
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
 components:
   schemas:
+    AlertTypeEnum:
+      enum:
+      - understaffed
+      - low_footfall
+      - overcrowded
+      - stockout_risk
+      - custom
+      type: string
+      description: |-
+        * `understaffed` - Understaffed
+        * `low_footfall` - Low Footfall
+        * `overcrowded` - Overcrowded
+        * `stockout_risk` - Stock-Out Risk
+        * `custom` - Custom
     Auth:
       type: object
       properties:
@@ -2775,6 +2030,125 @@ components:
         * `KISII` - Kisii
         * `NYAMIRA` - Nyamira
         * `NAIROBI` - Nairobi
+    FacilityAlert:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        warehouse:
+          type: integer
+          title: Health Facility
+        warehouse_name:
+          type: string
+          readOnly: true
+        alert_type:
+          $ref: '#/components/schemas/AlertTypeEnum'
+        message:
+          type: string
+          description: Gemma-generated or manually entered narrative
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        resolved:
+          type: boolean
+        resolved_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - alert_type
+      - created_at
+      - id
+      - message
+      - resolved_at
+      - warehouse
+      - warehouse_name
+    FacilityDailyStats:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        warehouse:
+          type: integer
+          title: Health Facility
+        warehouse_name:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        patient_footfall:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        beds_total:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        beds_occupied:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        doctors_scheduled:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        doctors_present:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        bed_occupancy_rate:
+          type: string
+          readOnly: true
+        attendance_rate:
+          type: string
+          readOnly: true
+      required:
+      - attendance_rate
+      - bed_occupancy_rate
+      - date
+      - id
+      - warehouse
+      - warehouse_name
+    FacilityDailyStatsRequest:
+      type: object
+      properties:
+        warehouse:
+          type: integer
+          title: Health Facility
+        date:
+          type: string
+          format: date
+        patient_footfall:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        beds_total:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        beds_occupied:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        doctors_scheduled:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        doctors_present:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+      - date
+      - warehouse
     Inventory:
       type: object
       properties:
@@ -3173,18 +2547,6 @@ components:
           type: integer
         warehouse:
           type: integer
-    PatchedProductImageRequest:
-      type: object
-      properties:
-        image:
-          type: string
-          format: binary
-          description: 'Optimal size: 800x800px'
-        is_primary:
-          type: boolean
-        caption:
-          type: string
-          maxLength: 100
     PatchedProductRequest:
       type: object
       properties:
@@ -3225,48 +2587,6 @@ components:
           type: boolean
         category:
           type: integer
-    PatchedStockTransferRequest:
-      type: object
-      properties:
-        is_active:
-          type: boolean
-        transfer_type:
-          $ref: '#/components/schemas/TransferTypeEnum'
-        quantity:
-          type: integer
-          maximum: 2147483647
-          minimum: 0
-        status:
-          $ref: '#/components/schemas/StatusEnum'
-        delivery_note:
-          type: string
-          maxLength: 50
-        transporter:
-          type: string
-          maxLength: 100
-        transporter_license:
-          type: string
-          maxLength: 50
-        notes:
-          type: string
-        product:
-          type: integer
-        from_warehouse:
-          type: integer
-        to_warehouse:
-          type: integer
-        from_bin:
-          type:
-          - integer
-          - 'null'
-        to_bin:
-          type:
-          - integer
-          - 'null'
-        approved_by:
-          type:
-          - integer
-          - 'null'
     PatchedUserRequest:
       type: object
       properties:
@@ -3616,6 +2936,40 @@ components:
         * `PHYSICAL` - Physical Product
         * `DIGITAL` - Digital Product
         * `SERVICE` - Service
+    RTInventoryAlert:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        product_name:
+          type: string
+          readOnly: true
+        warehouse:
+          type: integer
+        warehouse_name:
+          type: string
+          readOnly: true
+        current_stock:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        resolved:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - current_stock
+      - id
+      - product
+      - product_name
+      - warehouse
+      - warehouse_name
     RoleEnum:
       enum:
       - ADMIN
@@ -3632,6 +2986,16 @@ components:
         * `WAREHOUSE` - Warehouse Staff
         * `CASHIER` - Cashier
         * `REPORTER` - Reports Viewer
+    SeverityEnum:
+      enum:
+      - low
+      - medium
+      - high
+      type: string
+      description: |-
+        * `low` - Low
+        * `medium` - Medium
+        * `high` - High
     StatusEnum:
       enum:
       - PENDING

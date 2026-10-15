@@ -1,18 +1,6 @@
-from rest_framework import permissions
+"""Permission catalogue for this app (DESIGN §7.5). Legacy role checks were removed in P1-UAC-03."""
 
-
-class IsInventoryManager(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.role in ["WAREHOUSE", "BRANCH_MANAGER", "ADMIN", "PROCUREMENT"]
-
-
-class CanEditProducts(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.role in ["ADMIN", "PROCUREMENT", "BRANCH_MANAGER"]
-
-
-# --- Permission catalogue (DESIGN §7.5) ----------------------------------------------------------
-from apps.access.catalogue import PermissionDef as P  # noqa: E402
+from apps.access.catalogue import PermissionDef as P
 
 PERMISSIONS = [
     P("inventory.product.read", "View the product and medicines catalogue"),

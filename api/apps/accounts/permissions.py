@@ -1,31 +1,7 @@
-from rest_framework import permissions
+"""Permission catalogue for this app (DESIGN §7.5). Legacy role checks were removed in P1-UAC-03."""
 
-
-class IsAdminOrManager(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            request.user.role in ["ADMIN", "BRANCH_MANAGER"] or request.user.is_superuser
-        )
-
-
-class IsProfileOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.user == request.user
-
-
-class CanManageWorkers(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.has_perm("accounts.manage_workers")
-
-
-class CanApproveWorkers(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.has_perm("accounts.approve_workers")
-
-
-# --- Permission catalogue (DESIGN §7.5) ----------------------------------------------------------
-from apps.access.catalogue import PermissionDef as P  # noqa: E402
-from apps.access.catalogue import Sensitivity as S  # noqa: E402
+from apps.access.catalogue import PermissionDef as P
+from apps.access.catalogue import Sensitivity as S
 
 PERMISSIONS = [
     P("admin.user.read", "View staff user accounts", S.ADMIN),

@@ -196,3 +196,24 @@ class ApprovalDecision(models.Model):
 
     def __str__(self) -> str:
         return f"{self.decision} by {self.approver_id}"
+
+
+class ApiClient(models.Model):
+    """A service account for integrators (DESIGN §7.2): hashed key, service role, IP allowlist."""
+
+    name = models.CharField(max_length=120, unique=True)
+    key_prefix = models.CharField(max_length=12, unique=True)
+    key_hash = models.CharField(max_length=64)
+    role = models.ForeignKey(
+        Role, on_delete=models.PROTECT, limit_choices_to={"service_account": True}
+    )
+    allowed_ips = models.JSONField(default=list, blank=True, help_text="Empty = any address")
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name

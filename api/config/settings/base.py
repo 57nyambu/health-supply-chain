@@ -147,8 +147,11 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
-        "apps.ai.authentication.PublicAPIKeyAuth",
+        "apps.access.authentication.ApiKeyAuthentication",
     ],
+    # Default deny: every view declares a policy (apps.access.drf, P1-UAC-03).
+    "DEFAULT_PERMISSION_CLASSES": ["apps.access.drf.PolicyPermission"],
+    "DEFAULT_THROTTLE_RATES": {"public_api": env("PUBLIC_API_RATE", default="120/min")},
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.FormParser",
@@ -230,7 +233,6 @@ GEMMA_API_KEY = env("GEMMA_API_KEY", default="")
 GEMMA_MODEL_ASSISTANT = env("GEMMA_MODEL_ASSISTANT", default="gemma-4-4b-it")
 GEMMA_MODEL_VISION = env("GEMMA_MODEL_VISION", default="gemma-4-12b-it")
 GEMMA_CACHE_TTL_SECONDS = env.int("GEMMA_CACHE_TTL_SECONDS", default=1200)
-PUBLIC_API_KEY = env("PUBLIC_API_KEY", default="")
 MPESA_CONSUMER_KEY = env("MPESA_CONSUMER_KEY", default="")
 MPESA_CONSUMER_SECRET = env("MPESA_CONSUMER_SECRET", default="")
 MPESA_BUSINESS_SHORTCODE = env("MPESA_BUSINESS_SHORTCODE", default="")

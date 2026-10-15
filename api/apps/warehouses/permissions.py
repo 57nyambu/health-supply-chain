@@ -1,32 +1,7 @@
-from rest_framework import permissions
+"""Permission catalogue for this app (DESIGN §7.5). Legacy role checks were removed in P1-UAC-03."""
 
-
-class IsWarehouseManager(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return request.user.role in ["WAREHOUSE", "BRANCH_MANAGER", "ADMIN"] and (
-            obj.manager == request.user or request.user.is_superuser
-        )
-
-
-class CanApproveTransfers(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.has_perm("warehouses.approve_transfers")
-
-
-class CanViewInventory(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.role in [
-            "WAREHOUSE",
-            "BRANCH_MANAGER",
-            "ADMIN",
-            "PROCUREMENT",
-            "REPORTER",
-        ]
-
-
-# --- Permission catalogue (DESIGN §7.5) ----------------------------------------------------------
-from apps.access.catalogue import PermissionDef as P  # noqa: E402
-from apps.access.catalogue import Sensitivity as S  # noqa: E402
+from apps.access.catalogue import PermissionDef as P
+from apps.access.catalogue import Sensitivity as S
 
 PERMISSIONS = [
     P("inventory.store.read", "View stores (warehouses) and bin locations"),

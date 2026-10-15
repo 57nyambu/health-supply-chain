@@ -1,5 +1,6 @@
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils import timezone
 
 from apps.core.models import BaseModel
 
@@ -146,5 +147,5 @@ class StockTransfer(BaseModel):
         if not self.reference_no:
             last_transfer = StockTransfer.objects.order_by("-id").first()
             last_id = last_transfer.id if last_transfer else 0
-            self.reference_no = f"TRF-{self.created_at.year}-{last_id + 1:04d}"
+            self.reference_no = f"TRF-{timezone.now().year}-{last_id + 1:04d}"
         super().save(*args, **kwargs)

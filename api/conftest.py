@@ -14,6 +14,16 @@ from apps.facilities.tests.factories import FacilityFactory
 _emails = itertools.count(1)
 
 
+@pytest.fixture(autouse=True)
+def _isolated_audit_context():
+    """Views called without the middleware may refine the audit context; never leak it."""
+    from apps.audit import context
+
+    token = context._context.set(context.AuditContext())
+    yield
+    context._context.reset(token)
+
+
 @pytest.fixture
 def make_user(django_user_model):
     def make(email: str | None = None, **fields: Any):
@@ -26,6 +36,23 @@ def make_user(django_user_model):
 @pytest.fixture
 def facility(db) -> Facility:
     return FacilityFactory.create()
+
+
+@pytest.fixture
+def api_as(make_user, grant):
+    """api_as("store_keeper", facility) → an APIClient signed in as a new user with that role."""
+    from rest_framework.test import APIClient
+
+    def make(*role_codes: str, facility: Facility, user: Any = None) -> APIClient:
+        person = user or make_user()
+        for code in role_codes:
+            grant(person, code, facility)
+        client = APIClient()
+        client.force_login(person)
+        client.user = person  # type: ignore[attr-defined]
+        return client
+
+    return make
 
 
 @pytest.fixture

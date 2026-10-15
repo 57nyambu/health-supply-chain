@@ -70,6 +70,6 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | Variable | Purpose |
 |---|---|
 | `GEMMA_API_KEY`, `GEMMA_MODEL_ASSISTANT`, `GEMMA_MODEL_VISION`, `GEMMA_CACHE_TTL_SECONDS` | Legacy AI endpoints (disabled by `AI_FEATURES_ENABLED`). Secret: `GEMMA_API_KEY`. |
-| `PUBLIC_API_KEY` | Shared key for the legacy `/api/v1/public/` endpoints (secret). |
+| `PUBLIC_API_RATE` | Throttle for each API client on `/api/v1/public/` (default `120/min`). Clients are created with `manage.py create_api_client`; keys are stored only as HMACs. The legacy shared `PUBLIC_API_KEY` was removed in P1-UAC-03. |
 | `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_BUSINESS_SHORTCODE`, `MPESA_PASSKEY`, `MPESA_CALLBACK_URL` | Legacy M-Pesa STK push (secrets). Replaced by `payments/adapters/mpesa` in Phase 2. |
 | `AT_USERNAME`, `AT_API_KEY` | Africa's Talking SMS (secret: `AT_API_KEY`). |

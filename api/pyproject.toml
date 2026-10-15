@@ -80,24 +80,6 @@ omit = [
     "apps/analytics/tasks.py",            # becomes reporting (Phase 2)
     "apps/facility_ops/tasks.py",
     "apps/facility_ops/management/commands/seed_facility_demo_data.py",
-    # Legacy views and permission classes: reworked behind default-deny policies with
-    # tests in P1-UAC-03, which removes these entries.
-    "apps/accounts/views.py",
-    "apps/accounts/permissions.py",
-    "apps/accounts/signals.py",
-    "apps/ai/views.py",
-    "apps/ai/authentication.py",
-    "apps/ai/permissions.py",
-    "apps/analytics/views.py",
-    "apps/core/authentication.py",
-    "apps/core/permissions.py",
-    "apps/core/views.py",
-    "apps/facility_ops/views.py",
-    "apps/products/views.py",
-    "apps/products/permissions.py",
-    "apps/sales/views.py",
-    "apps/warehouses/views.py",
-    "apps/warehouses/permissions.py",
 ]
 
 [tool.coverage.report]

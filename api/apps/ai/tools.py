@@ -4,10 +4,10 @@ from apps.products.models import Inventory
 from apps.warehouses.models import Warehouse
 
 
-def get_low_stock_alerts(warehouse_id=None, limit=10):
-    qs = Inventory.objects.select_related("product", "warehouse").all()
-    if warehouse_id:
-        qs = qs.filter(warehouse_id=warehouse_id)
+def get_low_stock_alerts(warehouse_ids, limit=10):
+    qs = Inventory.objects.select_related("product", "warehouse").filter(
+        warehouse_id__in=warehouse_ids
+    )
 
     low_rows = [item for item in qs if item.quantity <= item.product.reorder_level]
     low_rows.sort(key=lambda item: item.quantity)
@@ -41,10 +41,10 @@ def get_facility_stats(warehouse_id, days=7):
     ]
 
 
-def get_transfer_candidates(product_id, warehouse_scope=None):
-    qs = Inventory.objects.select_related("product", "warehouse").filter(product_id=product_id)
-    if warehouse_scope:
-        qs = qs.filter(warehouse_id=warehouse_scope)
+def get_transfer_candidates(product_id, warehouse_ids):
+    qs = Inventory.objects.select_related("product", "warehouse").filter(
+        product_id=product_id, warehouse_id__in=warehouse_ids
+    )
 
     if not qs:
         return []
@@ -87,24 +87,6 @@ def get_transfer_candidates(product_id, warehouse_scope=None):
             break
 
     return suggestions
-
-
-def get_underperforming_facilities(limit=10):
-    qs = (
-        FacilityAlert.objects.select_related("warehouse")
-        .filter(resolved=False)
-        .order_by("-created_at")[:limit]
-    )
-    return [
-        {
-            "warehouse_id": row.warehouse_id,
-            "warehouse_name": row.warehouse.name,
-            "alert_type": row.alert_type,
-            "severity": row.severity,
-            "message": row.message,
-        }
-        for row in qs
-    ]
 
 
 def local_forecast(warehouse_id, product_id):

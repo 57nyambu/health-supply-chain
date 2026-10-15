@@ -1,93 +1,58 @@
-from rest_framework import status
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
+"""Daily facility statistics and alerts for the legacy dashboards, scoped to the active facility.
 
-from apps.core.permissions import user_tier, user_warehouse_id
+Responses stay plain lists (no pagination) until the dashboards move to web/ (P1-WEB-06).
+"""
+
+from rest_framework import generics, serializers
+
+from apps.access.drf import request_facility
+from apps.audit.services import record
+from apps.warehouses.selectors import facility_warehouses, warehouse_facility_id
 
 from .models import FacilityAlert, FacilityDailyStats
 from .serializers import FacilityAlertSerializer, FacilityDailyStatsSerializer
 
 
-class FacilityStatsView(APIView):
-    permission_classes = [IsAuthenticated]
+class FacilityStatsView(generics.ListCreateAPIView):
+    serializer_class = FacilityDailyStatsSerializer
+    pagination_class = None
+    policy = {"GET": "operations.stats.read", "POST": "operations.stats.submit"}
 
-    def _get_scoped_queryset(self, request):
-        tier = user_tier(request.user)
-        queryset = FacilityDailyStats.objects.select_related("warehouse").all()
+    def get_queryset(self):
+        queryset = FacilityDailyStats.objects.filter(
+            warehouse__in=facility_warehouses(request_facility(self.request))
+        ).select_related("warehouse")
+        warehouse = self.request.query_params.get("warehouse")
+        return queryset.filter(warehouse_id=warehouse) if warehouse else queryset
 
-        if tier == 1:
-            warehouse = request.query_params.get("warehouse")
-            if warehouse:
-                queryset = queryset.filter(warehouse_id=warehouse)
-            return queryset
+    def facility_of(self, obj):
+        return warehouse_facility_id(obj.warehouse)
 
-        if tier == 2:
-            warehouse_id = user_warehouse_id(request.user)
-            if not warehouse_id:
-                return FacilityDailyStats.objects.none()
-            return queryset.filter(warehouse_id=warehouse_id)
-
-        if tier == 3:
-            warehouse = request.query_params.get("warehouse")
-            if warehouse:
-                queryset = queryset.filter(warehouse_id=warehouse)
-            return queryset
-
-        raise PermissionDenied("You do not have access to facility stats.")
-
-    def get(self, request):
-        queryset = self._get_scoped_queryset(request)
-        serializer = FacilityDailyStatsSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        tier = user_tier(request.user)
-        if tier not in (1, 2):
-            raise PermissionDenied("Only Tier 1 and Tier 2 users can submit facility stats.")
-
-        payload = request.data.copy()
-        if tier == 2:
-            scoped_warehouse_id = user_warehouse_id(request.user)
-            if not scoped_warehouse_id:
-                raise ValidationError("Tier 2 user is not assigned to a facility warehouse.")
-
-            incoming_warehouse = payload.get("warehouse")
-            if incoming_warehouse:
-                try:
-                    incoming_warehouse_id = int(incoming_warehouse)
-                except (TypeError, ValueError) as exc:
-                    raise ValidationError("warehouse must be a valid numeric id.") from exc
-
-                if incoming_warehouse_id != scoped_warehouse_id:
-                    raise PermissionDenied(
-                        "Tier 2 users can only submit stats for their own facility."
-                    )
-
-            payload["warehouse"] = scoped_warehouse_id
-
-        serializer = FacilityDailyStatsSerializer(data=payload)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def perform_create(self, serializer):
+        warehouse = serializer.validated_data["warehouse"]
+        if warehouse_facility_id(warehouse) != request_facility(self.request):
+            raise serializers.ValidationError(
+                {"warehouse": "Submit statistics for your own facility."}
+            )
+        stats = serializer.save()
+        record(
+            "operations.stats.submitted",
+            self.request.user,
+            stats,
+            facility=request_facility(self.request),
+            detail={"date": stats.date},
+        )
 
 
-class FacilityAlertsView(APIView):
-    permission_classes = [IsAuthenticated]
+class FacilityAlertsView(generics.ListAPIView):
+    serializer_class = FacilityAlertSerializer
+    pagination_class = None
+    policy = "operations.alert.read"
 
-    def get(self, request):
-        tier = user_tier(request.user)
-        queryset = FacilityAlert.objects.select_related("warehouse").all()
+    def get_queryset(self):
+        return FacilityAlert.objects.filter(
+            warehouse__in=facility_warehouses(request_facility(self.request))
+        ).select_related("warehouse")
 
-        if tier == 2:
-            scoped_warehouse_id = user_warehouse_id(request.user)
-            if not scoped_warehouse_id:
-                queryset = FacilityAlert.objects.none()
-            else:
-                queryset = queryset.filter(warehouse_id=scoped_warehouse_id)
-        elif tier not in (1, 3):
-            raise PermissionDenied("You do not have access to facility alerts.")
-
-        serializer = FacilityAlertSerializer(queryset, many=True)
-        return Response(serializer.data)
+    def facility_of(self, obj):
+        return warehouse_facility_id(obj.warehouse)

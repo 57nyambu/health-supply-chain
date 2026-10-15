@@ -16,6 +16,8 @@ The agent updates this file at the end of every session (and before context runs
 - [ ] SMART and Slade360: integration agreements, API specs, test credentials
 - [ ] Daraja (shortcode, passkey, initiator), JengaHQ merchant onboarding, KCB Buni app + go-live letter, Pesapal merchant account
 - [ ] KRA eTIMS: decide system-to-system (OSCU/VSCU) or KRA tools at go-live
+- [ ] Public API integrators: the shared `PUBLIC_API_KEY` is gone (P1-UAC-03). Create one key per integrator with `python manage.py create_api_client --name <who>` and send it securely; keys are stored only as HMACs
+- [ ] After deploying Phase 1, review the administrators created from legacy ADMIN users (ADR-019) and grant branch managers the roles they still need
 - [x] Rotate any secrets the P1-REPO-02 scan finds — full-history gitleaks scan (2026-10-15) found none; no history rewrite needed
 
 ## Questions for owner

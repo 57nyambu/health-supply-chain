@@ -1,9 +1,9 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 
 from .views import BinLocationViewSet, BranchViewSet, StockTransferViewSet, WarehouseViewSet
 
-router = DefaultRouter()
+router = SimpleRouter()
 router.register(r"branches", BranchViewSet)
 router.register(r"warehouses", WarehouseViewSet, basename="warehouse")
 router.register(r"bins", BinLocationViewSet, basename="binlocation")

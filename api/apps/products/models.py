@@ -1,7 +1,13 @@
+from decimal import ROUND_HALF_UP, Decimal
+
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils import timezone
 
 from apps.core.models import BaseModel
+
+VAT_STANDARD_RATE = Decimal("0.16")
+CENTS = Decimal("0.01")
 
 
 class Category(BaseModel):
@@ -75,15 +81,15 @@ class Product(BaseModel):
         if not self.sku:
             last_product = Product.objects.order_by("-id").first()
             last_id = last_product.id if last_product else 0
-            self.sku = f"SKU-{self.created_at.year}-{last_id + 1:04d}"
+            self.sku = f"SKU-{timezone.now().year}-{last_id + 1:04d}"
         super().save(*args, **kwargs)
 
     @property
     def vat_amount(self):
         """Calculate VAT based on category"""
         if self.category.vat_category == "STANDARD":
-            return self.selling_price * 0.16
-        return 0
+            return (self.selling_price * VAT_STANDARD_RATE).quantize(CENTS, rounding=ROUND_HALF_UP)
+        return Decimal("0.00")
 
 
 class ProductImage(models.Model):
