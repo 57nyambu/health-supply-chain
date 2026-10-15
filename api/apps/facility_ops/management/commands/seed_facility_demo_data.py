@@ -1,8 +1,9 @@
 import random
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.models.signals import post_save
 from django.utils import timezone
@@ -15,8 +16,6 @@ from apps.warehouses.models import Branch, Warehouse
 
 class Command(BaseCommand):
     help = "Seed demo facility daily stats and alert-rich sample data for AfyaSync demos."
-
-    demo_password = "AfyaSync@123"
 
     def _ensure_branch(self):
         branch, _ = Branch.objects.get_or_create(
@@ -122,7 +121,7 @@ class Command(BaseCommand):
         demo_users = [
             {
                 "email": "admin@afyasync.dima.co.ke",
-                "password": self.demo_password,
+                "password": settings.SEED_PASSWORD,
                 "defaults": {
                     "first_name": "Demo",
                     "last_name": "Admin",
@@ -135,7 +134,7 @@ class Command(BaseCommand):
             },
             {
                 "email": "facility@afyasync.dima.co.ke",
-                "password": self.demo_password,
+                "password": settings.SEED_PASSWORD,
                 "defaults": {
                     "first_name": "Demo",
                     "last_name": "Facility",
@@ -148,7 +147,7 @@ class Command(BaseCommand):
             },
             {
                 "email": "reporter@afyasync.dima.co.ke",
-                "password": self.demo_password,
+                "password": settings.SEED_PASSWORD,
                 "defaults": {
                     "first_name": "Demo",
                     "last_name": "Reporter",
@@ -255,6 +254,8 @@ class Command(BaseCommand):
                 )
 
     def handle(self, *args, **options):
+        if not settings.SEED_PASSWORD:
+            raise CommandError("Set SEED_PASSWORD (see .env.example) before seeding demo users.")
         with transaction.atomic():
             branch = self._ensure_branch()
             warehouses = self._ensure_warehouses(branch)
@@ -269,4 +270,4 @@ class Command(BaseCommand):
                 "Demo users: admin@afyasync.dima.co.ke, facility@afyasync.dima.co.ke, reporter@afyasync.dima.co.ke"
             )
         )
-        self.stdout.write(self.style.SUCCESS(f"Demo password: {self.demo_password}"))
+        self.stdout.write(self.style.SUCCESS("Demo password: the value of SEED_PASSWORD"))

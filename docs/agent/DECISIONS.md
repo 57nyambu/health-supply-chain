@@ -107,7 +107,14 @@ Status: accepted · Date: 2026-10-15
 Decision: Django apps as bounded contexts calling each other's services; domain events written to `core.Outbox` in the same transaction and relayed by Celery to idempotent consumers.
 Consequences: One deployable unit with reliable async integration; revisit only if a module needs independent scaling.
 
+## ADR-017 Quality-gate baseline for legacy code
+Status: accepted · Date: 2026-10-15
+Context: `make check` enforces ≥ 85 % line coverage and mypy (IMPLEMENTATION §6). The legacy retail code had no tests; much of it is disabled (AI, ADR-014), scheduled for replacement (M-Pesa/SMS clients → Phase 2 adapters, sales receipts → payments, analytics → reporting) or rewritten behind default-deny policies in P1-UAC-03.
+Decision: The gate applies from P1-OPS-01. Modules in that category are listed in `api/pyproject.toml` `[tool.coverage.run] omit` with the reason and the feature that removes them; mypy runs on everything with default settings, and new apps (`access`, `audit`, `facilities`, `patients`, `documents`) get the per-module strict flags. The list only shrinks: a feature that reworks a listed module removes its entry and adds tests in the same commit. P1-UAC-03 removes the legacy view and permission entries.
+Consequences: The 85 % gate is meaningful for all new code from the first commit; legacy code that is about to change is not tested twice. Revisit if any entry is still listed at the end of Phase 2.
+
 ---
 
 ## Findings
 <!-- Format: YYYY-MM-DD — fact — source URL — impact -->
+- 2026-10-15 — MinIO no longer publishes server images on Docker Hub (`minio/minio` returns "object not found"); `pgsty/minio` publishes maintained rebuilds (latest `RELEASE.2026-08-04T00-00-00Z`) — https://hub.docker.com/v2/repositories/minio/minio , https://hub.docker.com/r/pgsty/minio — dev/CI compose uses `pgsty/minio` for the S3-compatible test backend; production S3 is whatever Kenyan endpoint ADR-006 selects, never this image.

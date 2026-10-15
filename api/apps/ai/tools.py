@@ -127,7 +127,7 @@ def local_forecast(warehouse_id, product_id):
     else:
         avg_footfall = 60
 
-    avg_daily_consumption = max(1, int(round(avg_footfall * 0.08)))
+    avg_daily_consumption = max(1, round(avg_footfall * 0.08))
     forecast_days_remaining = max(0, int(inventory.quantity // avg_daily_consumption))
 
     return {

@@ -27,6 +27,7 @@ class MpesaGateway:
             url,
             auth=(self.consumer_key, self.consumer_secret),
             headers={"Content-Type": "application/json"},
+            timeout=(5, 30),
         )
         if response.status_code == 200:
             self.auth_token = response.json().get("access_token")
@@ -63,6 +64,7 @@ class MpesaGateway:
             "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
             json=payload,
             headers=headers,
+            timeout=(5, 30),
         )
 
         if response.status_code == 200:

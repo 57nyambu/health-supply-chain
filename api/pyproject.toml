@@ -61,7 +61,44 @@ filterwarnings = [
 [tool.coverage.run]
 branch = true
 source = ["apps", "config"]
-omit = ["*/migrations/*", "*/tests/*", "manage.py", "config/asgi.py", "config/wsgi.py"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "manage.py",
+    "config/asgi.py",
+    "config/wsgi.py",
+    # Legacy baseline (ADR-017): code that is disabled or scheduled for replacement and
+    # has no tests. Remove an entry when its module is reworked; the list only shrinks.
+    "apps/ai/gemma_client.py",            # external AI, disabled until a DPIA (ADR-014)
+    "apps/ai/tools.py",
+    "apps/integrations/mpesa.py",         # replaced by payments/adapters/mpesa (Phase 2)
+    "apps/integrations/sms.py",           # replaced by notification adapters (Phase 2)
+    "apps/integrations/emails.py",
+    "apps/integrations/services.py",
+    "apps/integrations/tasks.py",
+    "apps/sales/signals.py",              # receipts move to payments (Phase 2)
+    "apps/analytics/tasks.py",            # becomes reporting (Phase 2)
+    "apps/facility_ops/tasks.py",
+    "apps/facility_ops/management/commands/seed_facility_demo_data.py",
+    # Legacy views and permission classes: reworked behind default-deny policies with
+    # tests in P1-UAC-03, which removes these entries.
+    "apps/accounts/views.py",
+    "apps/accounts/permissions.py",
+    "apps/accounts/signals.py",
+    "apps/ai/views.py",
+    "apps/ai/authentication.py",
+    "apps/ai/permissions.py",
+    "apps/analytics/views.py",
+    "apps/core/authentication.py",
+    "apps/core/permissions.py",
+    "apps/core/views.py",
+    "apps/facility_ops/views.py",
+    "apps/products/views.py",
+    "apps/products/permissions.py",
+    "apps/sales/views.py",
+    "apps/warehouses/views.py",
+    "apps/warehouses/permissions.py",
+]
 
 [tool.coverage.report]
 show_missing = true
@@ -77,6 +114,7 @@ select = ["E", "F", "W", "I", "B", "UP", "DJ", "S", "SIM", "RUF"]
 ignore = [
     "E501",    # long lines are left to the formatter
     "RUF012",  # Django Meta/class attributes are not ClassVar-annotated
+    "SIM102",  # nested ifs are sometimes the clearer way to state a rule
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -84,6 +122,8 @@ ignore = [
 "tests/**" = ["S101", "S105", "S106"]
 "config/settings/*.py" = ["F403", "F405"]
 "config/settings/test.py" = ["F403", "F405", "S105"]
+# Synthetic demo data: non-cryptographic randomness is intended.
+"**/management/commands/seed*.py" = ["S311"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "config"]
@@ -94,6 +134,27 @@ plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 ignore_missing_imports = true
 warn_unused_ignores = true
 exclude = ["migrations/"]
+
+# New apps are strict (per-module equivalent of --strict); legacy modules keep the
+# default settings, a baseline that only shrinks (ADR-017). Tests are exempt from
+# annotation rules.
+[[tool.mypy.overrides]]
+module = ["apps.access.*", "apps.audit.*", "apps.facilities.*", "apps.patients.*", "apps.documents.*"]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_any_generics = true
+check_untyped_defs = true
+warn_return_any = true
+no_implicit_reexport = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = ["apps.*.tests.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
 
 [tool.django-stubs]
 django_settings_module = "config.settings.test"

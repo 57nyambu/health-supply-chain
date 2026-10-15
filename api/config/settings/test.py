@@ -10,4 +10,5 @@ CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = False
 
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+SEED_PASSWORD = "synthetic-seed-password-for-tests"
 LOGGING = logging_config("WARNING")

@@ -29,6 +29,3 @@ class ReceiptAdmin(admin.ModelAdmin):
 
 
 admin.site.register(OrderItem)
-from django.contrib import admin
-
-# Register your models here.

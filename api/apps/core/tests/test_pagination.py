@@ -1,6 +1,7 @@
 import pytest
 from django.conf import settings
 from rest_framework import generics, serializers
+from rest_framework.pagination import BasePagination
 from rest_framework.permissions import AllowAny
 from rest_framework.test import APIRequestFactory
 
@@ -21,7 +22,7 @@ class CursorList(generics.ListAPIView):
     serializer_class = UserRowSerializer
     permission_classes = [AllowAny]
     authentication_classes = []
-    pagination_class = LargeListCursorPagination
+    pagination_class: type[BasePagination] = LargeListCursorPagination
 
 
 class CatalogueList(CursorList):

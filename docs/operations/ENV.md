@@ -34,6 +34,7 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `STORAGE_MASTER_KEYS` | empty | yes | JSON `{"<kid>": "<base64 32-byte key>"}` that wrap per-document data keys (envelope encryption). |
 | `DATA_RESIDENCY_MODE` | `warn` (`strict` in prod) | `strict`/`warn` | Residency guard (DESIGN §8.3). `off` is refused in production. |
 | `RESIDENCY_ALLOWED_HOSTS` | empty | — | Hosts allowed to receive PHI (S3 endpoint, backup target, error tracker, log shipper). Adding a non-Kenyan host needs an ADR. |
+| `SEED_PASSWORD` | empty | — | Password for the synthetic users created by `make seed` (dev/CI only; seeding refuses to run without it and in production). |
 | `AI_FEATURES_ENABLED` | `False` | — | Legacy AI endpoints; off until a DPIA covers them (ADR-014). |
 
 ## Production transport security

@@ -5,9 +5,9 @@ variables, and every remaining string passes through the PHI scrubber.
 """
 
 import logging
-from typing import Any
 
 from django.conf import settings
+from sentry_sdk.types import Event, Hint
 
 from apps.core import residency
 from apps.core.scrubbing import scrub_text, scrub_value
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 _DROPPED_REQUEST_KEYS = ("data", "cookies", "headers", "query_string", "env")
 
 
-def scrub_event(event: dict[str, Any], hint: dict[str, Any] | None = None) -> dict[str, Any]:
+def scrub_event(event: Event, hint: Hint | None = None) -> Event:
     request = event.get("request")
     if isinstance(request, dict):
         for key in _DROPPED_REQUEST_KEYS:

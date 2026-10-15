@@ -64,7 +64,7 @@ Also: stray packages `apps/migrations/`, `root/migrations/`, `static/migrations/
 
 **Plan check.** The PHASE-1 order fits. Adjustments, each recorded where it happens:
 - Legacy browser auth is SimpleJWT bearer tokens (not DRF `TokenAuthentication`); P1-UAC-04 removes JWT authentication and blacklists outstanding refresh tokens.
-- DESIGN §4 makes `Facility` 1:1 with `warehouses.Branch`, but legacy dashboards key facility data on `Warehouse`; `Facility` follows DESIGN and legacy facility_ops data reaches it via `warehouse.branch` (ADR-017, P1-FAC-01).
+- DESIGN §4 makes `Facility` 1:1 with `warehouses.Branch`, but legacy dashboards key facility data on `Warehouse`; `Facility` follows DESIGN and legacy facility_ops data reaches it via `warehouse.branch` (ADR-018, P1-FAC-01).
 - The unauthenticated `sales` views and the AI endpoints are closed in P1-UAC-03 (AI behind `AI_FEATURES_ENABLED=false`).
 
 ## Session log

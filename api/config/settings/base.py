@@ -128,6 +128,8 @@ STORAGE_MASTER_KEYS = env("STORAGE_MASTER_KEYS", default="")
 # Residency guard (DESIGN §8.3): strict | warn | off.
 DATA_RESIDENCY_MODE = env("DATA_RESIDENCY_MODE", default="warn")
 RESIDENCY_ALLOWED_HOSTS = env.list("RESIDENCY_ALLOWED_HOSTS", default=[])
+# Password for synthetic seed users (make seed); never a real person's password.
+SEED_PASSWORD = env("SEED_PASSWORD", default="")
 # Legacy AI endpoints stay off until a DPIA covers them (ADR-014).
 AI_FEATURES_ENABLED = env.bool("AI_FEATURES_ENABLED", default=False)
 

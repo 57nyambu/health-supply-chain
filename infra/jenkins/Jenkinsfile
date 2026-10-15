@@ -1,0 +1,74 @@
+// AfyaSync CI: every push to main runs the commit gate and the end-to-end suite.
+// Agent requirements: Docker + Compose v2, uv, Node 24 + pnpm, gitleaks, GNU make.
+// Configure the job as a multibranch/pipeline job on main with a push webhook;
+// pollSCM is a fallback when the webhook is not available.
+
+pipeline {
+    agent { label 'docker' }
+
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        timeout(time: 75, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '20'))
+    }
+
+    environment {
+        // CI uses compose services on 127.0.0.1 and fake integrations only.
+        DJANGO_ENV = 'test'
+        SEED_PASSWORD = credentials('afyasync-ci-seed-password')
+        CI = 'true'
+    }
+
+    stages {
+        stage('Setup') {
+            steps {
+                sh 'make setup'
+            }
+        }
+
+        stage('Secret scan (full history)') {
+            steps {
+                sh 'make secrets-history'
+            }
+        }
+
+        stage('Dependency audit') {
+            steps {
+                // pip-audit and pnpm audit: high/critical findings fail the build.
+                sh 'mkdir -p reports && make deps-audit'
+            }
+        }
+
+        stage('Commit gate') {
+            steps {
+                sh 'make check'
+            }
+        }
+
+        stage('End-to-end scenarios') {
+            steps {
+                sh 'DJANGO_ENV=dev make seed'
+                sh 'make e2e'
+            }
+        }
+
+        stage('Audit chain') {
+            steps {
+                sh 'make audit-verify'
+            }
+        }
+    }
+
+    post {
+        always {
+            junit allowEmptyResults: true, testResults: 'reports/pytest.xml, web/test-results/*.xml'
+            archiveArtifacts allowEmptyArchive: true, artifacts: 'reports/**, web/playwright-report/**, web/test-results/**'
+            sh 'make down || true'
+        }
+    }
+}

@@ -41,7 +41,7 @@ class User(AbstractUser, BaseModel):
         CASHIER = "CASHIER", _("Cashier")
         REPORTER = "REPORTER", _("Reports Viewer")
 
-    username = None
+    username = None  # type: ignore[assignment]  # e-mail is the login
     email = models.EmailField(_("email address"), unique=True)
     phone = models.CharField(
         max_length=15,
@@ -56,7 +56,7 @@ class User(AbstractUser, BaseModel):
     failed_login_attempts = models.PositiveIntegerField(default=0)
     account_locked = models.BooleanField(default=False)
 
-    objects = UserManager()
+    objects = UserManager()  # type: ignore[misc, assignment]
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -109,7 +109,8 @@ class WorkerProfile(BaseModel):
         validators=[FileExtensionValidator(["png", "jpg", "jpeg"])],
     )
     is_active = models.BooleanField(default=True)
-    pin_code = models.CharField(max_length=6, blank=True, null=True)  # For POS quick login
+    # Legacy plaintext POS PIN; replaced by a hashed workstation PIN in P1-UAC-06.
+    pin_code = models.CharField(max_length=6, blank=True, null=True)  # noqa: DJ001
 
     def __str__(self):
         return f"{self.user.email} profile"

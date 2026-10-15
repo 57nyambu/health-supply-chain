@@ -40,7 +40,7 @@ INTERPOLATING_CODES = {
 class ApiProblem(exceptions.APIException):
     """Base for project API errors; ``detail`` must never contain PHI."""
 
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code: int = status.HTTP_400_BAD_REQUEST
     default_detail = "The request could not be processed."
     default_code = "bad_request"
 
