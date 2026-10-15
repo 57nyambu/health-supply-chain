@@ -83,3 +83,19 @@ class IsAnyInternalTier(BasePermission):
 
     def has_permission(self, request, view):
         return user_tier(request.user) is not None
+
+
+# --- Permission catalogue (DESIGN §7.5) ----------------------------------------------------------
+from apps.access.catalogue import PermissionDef as P  # noqa: E402
+from apps.access.catalogue import Sensitivity as S  # noqa: E402
+
+PERMISSIONS = [
+    P("admin.config.read", "View system configuration", S.ADMIN),
+    P(
+        "admin.config.manage",
+        "Change system configuration and feature flags",
+        S.ADMIN,
+        privileged=True,
+    ),
+    P("admin.api.read_schema", "View the API schema and documentation", S.ADMIN),
+]

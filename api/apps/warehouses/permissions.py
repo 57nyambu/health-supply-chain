@@ -22,3 +22,18 @@ class CanViewInventory(permissions.BasePermission):
             "PROCUREMENT",
             "REPORTER",
         ]
+
+
+# --- Permission catalogue (DESIGN §7.5) ----------------------------------------------------------
+from apps.access.catalogue import PermissionDef as P  # noqa: E402
+from apps.access.catalogue import Sensitivity as S  # noqa: E402
+
+PERMISSIONS = [
+    P("inventory.store.read", "View stores (warehouses) and bin locations"),
+    P("inventory.store.manage", "Create and edit stores and bin locations"),
+    P("inventory.branch.manage", "Create and edit branches (organisation units)", S.ADMIN),
+    P("inventory.transfer.read", "View stock transfers"),
+    P("inventory.transfer.create", "Request stock transfers"),
+    P("inventory.transfer.approve", "Approve stock transfers"),
+    P("inventory.transfer.receive", "Receive stock transfers at the destination store"),
+]

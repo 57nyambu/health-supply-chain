@@ -30,7 +30,7 @@ Requirements with automated evidence: **2 of 39**.
 | KE-DPA-03 | A Data Protection Impact Assessment is required for high-risk processing. | — |
 | KE-DPA-04 | Personal data breaches are notified to the Data Commissioner within 72 hours of awareness, and to data subj… | — |
 | KE-DPA-05 | Data subject rights: information, access, correction, deletion (limited by retention law), objection, porta… | — |
-| KE-DPA-06 | Data protection by design and by default; security safeguards (pseudonymisation, encryption, access control). | `api/config/tests/test_settings.py::test_each_production_guard_fires` |
+| KE-DPA-06 | Data protection by design and by default; security safeguards (pseudonymisation, encryption, access control). | `api/config/tests/test_settings.py::test_each_production_guard_fires`<br>`api/tests/test_policy_matrix.py::test_every_role_permission_cell` |
 | KE-DPA-07 | Transfers outside Kenya only under the Act's conditions (appropriate safeguards, adequacy, consent for sens… | — |
 | KE-HLT-01 | No person shall be denied emergency medical treatment; all providers (public and private) owe emergency tre… | — |
 | KE-HLT-02 | Hospitals may not detain patients (or bodies) over unpaid bills; courts have repeatedly ruled it unlawful (… | — |
