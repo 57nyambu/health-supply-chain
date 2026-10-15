@@ -1,11 +1,63 @@
-venv
-__pycache__
+# Secrets — only .env.example is committed
 .env
-*.log
-tests*
-backup*
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Databases, dumps and backups — never commit (may contain PHI)
 db.sqlite3
-flow.png
+*.sqlite3
+*.dump
+*.sql
+*.sql.gz
+*.tar.gz
+/backups/
+
 # Local object storage (real patient files in production) — never commit
 data/*
 !data/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+api/staticfiles/
+api/media/
+
+# Node / web
+node_modules/
+.next/
+out/
+web/coverage/
+web/playwright-report/
+web/test-results/
+web/blob-report/
+*.tsbuildinfo
+next-env.d.ts
+
+# Reports produced by make check / CI
+/reports/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local Claude Code settings (project settings in .claude/settings.json are shared)
+.claude/settings.local.json
+
+flow.png

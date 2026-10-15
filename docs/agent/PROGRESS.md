@@ -16,7 +16,7 @@ The agent updates this file at the end of every session (and before context runs
 - [ ] SMART and Slade360: integration agreements, API specs, test credentials
 - [ ] Daraja (shortcode, passkey, initiator), JengaHQ merchant onboarding, KCB Buni app + go-live letter, Pesapal merchant account
 - [ ] KRA eTIMS: decide system-to-system (OSCU/VSCU) or KRA tools at go-live
-- [ ] Rotate any secrets the P1-REPO-02 scan finds; decide whether to rewrite git history (agent will not do it unasked)
+- [x] Rotate any secrets the P1-REPO-02 scan finds — full-history gitleaks scan (2026-10-15) found none; no history rewrite needed
 
 ## Questions for owner
 <!-- - [Q-001] question — options — recommendation — default used meanwhile -->
