@@ -18,3 +18,8 @@ class AccessConfig(AppConfig):
     def ready(self) -> None:
         # Keep the database catalogue identical to the code after every migrate.
         post_migrate.connect(_sync_after_migrate, sender=self)
+        # Audit events record the roles the actor held when acting.
+        from apps.access import policies
+        from apps.audit import context
+
+        context.role_resolver = lambda actor: ",".join(policies.role_codes(actor))

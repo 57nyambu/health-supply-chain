@@ -200,6 +200,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.core.tasks.purge_expired_idempotency_records",
         "schedule": crontab(minute=15),
     },
+    "expire-approval-requests": {
+        "task": "apps.access.tasks.expire_approval_requests",
+        "schedule": crontab(minute=5),
+    },
     "anchor-audit-chains": {
         "task": "apps.audit.tasks.anchor_audit_chains",
         "schedule": crontab(hour=0, minute=10),

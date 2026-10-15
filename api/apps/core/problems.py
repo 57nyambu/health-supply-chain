@@ -11,6 +11,7 @@ from collections.abc import Iterator
 from typing import Any
 
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import Http404, JsonResponse
 from rest_framework import exceptions, status
 from rest_framework.response import Response
@@ -55,6 +56,14 @@ class PreconditionRequired(ApiProblem):
     status_code = status.HTTP_428_PRECONDITION_REQUIRED
     default_detail = "A required request header is missing."
     default_code = "precondition_required"
+
+
+class Forbidden(ApiProblem):
+    """403 with a project-written (PHI-free) explanation, e.g. "You cannot approve your own request"."""
+
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "You do not have permission to perform this action."
+    default_code = "permission_denied"
 
 
 class UnprocessableEntity(ApiProblem):
@@ -191,7 +200,13 @@ def exception_handler(exc, context):
     if isinstance(exc, Http404):
         exc = exceptions.NotFound()
     elif isinstance(exc, DjangoPermissionDenied):
-        exc = exceptions.PermissionDenied()
+        # Service-layer denials carry messages written by us, never PHI.
+        exc = Forbidden(detail=str(exc)) if str(exc) else exceptions.PermissionDenied()
+    elif isinstance(exc, DjangoValidationError):
+        # Service-layer validation: same problem+json as serializer errors.
+        exc = exceptions.ValidationError(
+            detail=exc.message_dict if hasattr(exc, "error_dict") else exc.messages
+        )
 
     if isinstance(exc, exceptions.ValidationError):
         set_rollback()

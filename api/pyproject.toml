@@ -115,6 +115,7 @@ ignore = [
     "E501",    # long lines are left to the formatter
     "RUF012",  # Django Meta/class attributes are not ClassVar-annotated
     "SIM102",  # nested ifs are sometimes the clearer way to state a rule
+    "SIM103",  # authorization code states each deny step explicitly
 ]
 
 [tool.ruff.lint.per-file-ignores]
