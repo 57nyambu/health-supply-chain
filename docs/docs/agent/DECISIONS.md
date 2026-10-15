@@ -1,0 +1,113 @@
+# Architecture Decision Records
+
+Append new ADRs at the end; never edit an accepted ADR — supersede it with a new one that references it. Template:
+
+```
+## ADR-NNN Title
+Status: proposed | accepted | superseded by ADR-MMM   Date: YYYY-MM-DD
+Context: why a decision is needed (link register IDs / sources).
+Decision: what we do.
+Consequences: what follows, good and bad; what would make us revisit.
+```
+
+Research notes (a fact checked against a primary source, with the URL and date) also go here under "Findings" at the bottom.
+
+---
+
+## ADR-001 Trunk-based development on `main`
+Status: accepted (owner) · Date: 2026-10-15
+Context: The owner wants each phase in its own session with all code committed to `main`.
+Decision: Commit directly to `main`; `make check` before every commit; annotated tag `phase-n-complete` at each phase end; no force-push or history rewrite.
+Consequences: `main` must stay green; work-in-progress hides behind feature flags; CI on every push is the safety net.
+
+## ADR-002 Django 5.2 LTS
+Status: accepted · Date: 2026-10-15
+Context: The legacy app targets Django 4.2, which reached end of life on 7 April 2026. Supported lines in Oct 2026: 5.2 LTS (to April 2028), 6.0 (to April 2027), 6.1.
+Decision: Upgrade to Django 5.2 LTS on Python 3.12+.
+Consequences: Longest support window with the best third-party compatibility; revisit when 6.2 LTS ships (April 2027).
+
+## ADR-003 Monorepo layout
+Status: accepted · Date: 2026-10-15
+Context: The owner asked for `api/` and `web/` separation.
+Decision: `api/` (Django; legacy `root/` renamed `config/`), `web/` (Next.js), `infra/` (compose, nginx, Jenkins, backup scripts), `data/` (local object store, git-ignored), `docs/`. App names with migrations are not renamed.
+Consequences: One repo, one history, one CI; moves done with `git mv` in separate commits.
+
+## ADR-004 Next.js 16 for the web app
+Status: accepted · Date: 2026-10-15
+Context: The owner asked to move the frontend to Next.js. Next.js 16 is the active LTS line (released 21 Oct 2025); Next.js 15 support ends 21 Oct 2026.
+Decision: Next.js 16 App Router, React 19, TypeScript strict, Tailwind CSS 4, Radix primitives wrapped as owned components, TanStack Query, generated OpenAPI client.
+Consequences: Modern stack with a support runway; verify version-specific APIs (e.g. request interception file naming, caching defaults) against the installed version's docs.
+
+## ADR-005 Session authentication over a same-origin `/api`
+Status: accepted · Date: 2026-10-15
+Context: Legacy DRF tokens never expire and would sit in browser storage; an HMIS on shared workstations needs server-controlled sessions.
+Decision: Django sessions in httpOnly cookies with CSRF; Next.js and nginx route `/api/*` to Django so the browser sees one origin; DRF token auth removed for browsers; service accounts use hashed, scoped API keys.
+Consequences: No CORS, simpler CSRF, server-side revocation; Next.js server components forward the session cookie when fetching.
+
+## ADR-006 Data residency for production patient data
+Status: **proposed — owner decision required** · Date: 2026-10-15
+Context: Kenyan law expects health data for primary and secondary care to be stored/processed in Kenya, with transfers out only under prescribed conditions (KE-DHA-06, KE-DPA-07). Contabo's object storage regions are EU, US and Singapore; the owner's current servers are Contabo.
+Decision (default until the owner decides): production PHI (database, documents, backups, logs that could contain identifiers) is hosted in Kenya. Contabo is used for development and staging with synthetic data. The residency guard runs `strict` in production with an allowlist of approved endpoints.
+Consequences: The storage switch still supports Contabo (and any S3 endpoint); pointing production at a non-Kenyan endpoint requires a new ADR stating the legal basis, signed off by the owner and the facility DPO.
+
+## ADR-007 Storage abstraction with per-object backend and envelope encryption
+Status: accepted · Date: 2026-10-15
+Context: Files must live under `data/` by default or in an S3-compatible bucket, switchable.
+Decision: `documents.storage` with two named backends; each `Document` row records its backend; new writes go to `STORAGE_BACKEND`; `storage_migrate` moves objects; every object envelope-encrypted (AES-256-GCM); files served only through an authorised, audited stream.
+Consequences: Switching is a config change with no downtime; migration is resumable; presigned URLs are not used.
+
+## ADR-008 ICD-11 as the primary diagnosis code system
+Status: accepted · Date: 2026-10-15
+Context: SHA requires valid ICD-11 codes on all claims (KE-SHA-02); MOH 705 reporting uses condition categories; some private insurers may still use ICD-10.
+Decision: Clinicians code in ICD-11 (WHO MMS release, versioned). ICD-10 and MOH 705 categories come from `ConceptMap` tables.
+Consequences: One clinical vocabulary; maps maintained by the HRIO; per-scheme code system on private payers.
+
+## ADR-009 SHA transport: HIE eClaims REST primary, AfyaLink FHIR bundles secondary
+Status: accepted · Date: 2026-10-15
+Context: DHA documents two paths: the HIE eClaims API (virtual claim per visit, consent tokens, scenarios, UAT checklist — hie-docs, updated Sept 2026) and FHIR bundle submission via AfyaLink (`/v1/shr-med/bundle`). Certification asks for FHIR conformance.
+Decision: Build the HIE REST path first (it is what the UAT checklist exercises); keep a FHIR mapping layer and the AfyaLink transport behind `SHA_TRANSPORT=fhir`.
+Consequences: Two adapters behind one port; the FHIR layer doubles as SHR export and DSAR export.
+
+## ADR-010 Private insurance through SMART and Slade360
+Status: accepted · Date: 2026-10-15
+Context: The owner requires at least three insurance integrations including SHA. Most Kenyan private insurers are reached through switches: SMART (Smart Applications International / MediSmart) and Slade360 (Savannah Informatics EDI/HealthCloud). Neither publishes open API docs.
+Decision: SHA + SMART + Slade360, plus a manual claim-pack payer; M-TIBA optional. Vendor adapters are built from vendor specs only; until then, fakes and contract tests.
+Consequences: Owner must secure partner agreements; adapters may be blocked on external parties without blocking the rest of Phase 3.
+
+## ADR-011 Banks and cards
+Status: accepted · Date: 2026-10-15
+Context: Two banks and cards required.
+Decision: Equity Bank via Jenga API v3; KCB via Buni; online cards via Pesapal API 3.0 hosted checkout; counter cards via standalone bank PDQ terminals with settlement-file reconciliation.
+Consequences: No card data handled by our servers (minimal PCI scope); bank statement imports power reconciliation.
+
+## ADR-012 Money movement rules
+Status: accepted · Date: 2026-10-15
+Decision: Idempotency keys on every initiation; a payment is posted only after the provider confirms by query where a query API exists; money-moving or claim-submitting writes are never auto-retried — uncertainty is resolved by querying; duplicate notifications are deduplicated on provider reference.
+Consequences: Slightly slower confirmation; no double charges or phantom payments.
+
+## ADR-013 Emergencies are never gated; discharge is never blocked by balance
+Status: accepted · Date: 2026-10-15
+Context: Constitution Art. 43(2), Health Act ss. 7 and 12, court rulings against detention (KE-HLT-01, KE-HLT-02).
+Decision: Gate engine bypasses every gate for emergency visits; there is no state or permission that holds a patient or body for payment; balances become invoices and debt agreements.
+Consequences: Encoded as tests that must never be removed.
+
+## ADR-014 No PHI to external AI services
+Status: accepted · Date: 2026-10-15
+Context: Legacy `ai` endpoints exist; health data is sensitive and localised (KE-DPA-01, KE-DHA-06).
+Decision: `AI_FEATURES_ENABLED=false` by default; no PHI sent to external AI/LLM APIs; any future AI feature needs a DPIA, de-identified input or in-country processing, and an ADR.
+Consequences: Some legacy AI functionality is unavailable until reviewed.
+
+## ADR-015 Flat 2.0 high-contrast light design system
+Status: accepted (owner) · Date: 2026-10-15
+Decision: Light mode only; text contrast ≥ 7:1, UI boundaries and focus ≥ 3:1 (verified in CI); Atkinson Hyperlegible Next; depth only for overlays; journey rail as the signature element.
+Consequences: Tokens are fixed; changes go through DESIGN-SYSTEM.md and the contrast check.
+
+## ADR-016 Modular monolith with a transactional outbox
+Status: accepted · Date: 2026-10-15
+Decision: Django apps as bounded contexts calling each other's services; domain events written to `core.Outbox` in the same transaction and relayed by Celery to idempotent consumers.
+Consequences: One deployable unit with reliable async integration; revisit only if a module needs independent scaling.
+
+---
+
+## Findings
+<!-- Format: YYYY-MM-DD — fact — source URL — impact -->
