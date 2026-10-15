@@ -119,6 +119,12 @@ Context: DESIGN §4 makes `facilities.Facility` 1:1 with `warehouses.Branch`, bu
 Decision: `Facility` follows DESIGN (1:1 with `Branch`); a warehouse belongs to the facility of its branch, so legacy warehouse-keyed data is scoped through `warehouse.branch.facility`. Build order inside Phase 1: UAC-01 → AUD-01 core (record, chain, anchors, verifier) → FAC-01 → UAC-10 → UAC-02 → UAC-03 → UAC-04…07 → DATA-01 → PAT-01 → UAC-08/09 and AUD-01 PHI-read logging → DATA-02, STO-*, PAT-02 → WEB-*. Acceptance criteria are unchanged.
 Consequences: Every API added after UAC-03 is born under default deny; AUD-01 is flipped only when PHI-read logging exists (after PAT-01 and STO-01).
 
+## ADR-019 Mapping legacy retail roles to HMIS roles
+Status: accepted · Date: 2026-10-15
+Context: Existing staff hold one of six legacy roles (`User.role`). Default deny (P1-UAC-03) means they would lose all access without role assignments.
+Decision: A data migration assigns, in the facility of each user's WorkerProfile branch: ADMIN → system administrator + facility administrator; BRANCH_MANAGER → store keeper + report viewer; PROCUREMENT and WAREHOUSE → store keeper; CASHIER → cashier; REPORTER → report viewer. Privileged grants made by this migration skip the second approver once, because no approver exists before the first administrator; every later privileged grant uses maker-checker. Users without a profile get nothing. `User.role` stays for the legacy dashboards until P1-WEB-06 and no longer grants anything.
+Consequences: Branch managers lose user management until a facility administrator grants it explicitly; the owner should review migrated administrators after deployment (listed in the access review report).
+
 ---
 
 ## Findings

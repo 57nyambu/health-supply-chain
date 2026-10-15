@@ -23,3 +23,7 @@ class AccessConfig(AppConfig):
         from apps.audit import context
 
         context.role_resolver = lambda actor: ",".join(policies.role_codes(actor))
+        # Privileged role grants are activated by the maker-checker flow.
+        from apps.access import approvals, assignments
+
+        approvals.register_executor(assignments.GRANT_ACTION, assignments.activate_privileged_grant)

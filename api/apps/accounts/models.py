@@ -126,3 +126,29 @@ def handle_new_user(sender, instance, created, **kwargs):
     if created and not instance.is_superuser:
         # Send credentials to new workers
         send_welcome_credentials_task.delay(instance.id)
+
+
+class UserSession(models.Model):
+    """One login on one browser/device: lets the server end every session of a user at once."""
+
+    class EndReason(models.TextChoices):
+        LOGOUT = "logout", "Logged out"
+        IDLE = "idle", "Idle timeout"
+        ABSOLUTE = "absolute", "Absolute timeout"
+        REVOKED = "revoked", "Revoked by an administrator"
+        DEACTIVATED = "deactivated", "User deactivated"
+        SWITCHED = "switched", "Workstation switched user"
+
+    session_key = models.CharField(max_length=40, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sessions")
+    started_at = models.DateTimeField(auto_now_add=True)
+    last_activity_at = models.DateTimeField(null=True, blank=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    end_reason = models.CharField(max_length=20, choices=EndReason.choices, blank=True)
+
+    class Meta:
+        ordering = ["-started_at"]
+        indexes = [models.Index(fields=["user", "ended_at"])]
+
+    def __str__(self):
+        return f"session of user {self.user_id} ({'open' if self.ended_at is None else self.end_reason})"
