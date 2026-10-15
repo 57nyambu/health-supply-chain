@@ -82,6 +82,7 @@ ignore = [
 "**/tests/**" = ["S101", "S105", "S106"]
 "tests/**" = ["S101", "S105", "S106"]
 "config/settings/*.py" = ["F403", "F405"]
+"config/settings/test.py" = ["F403", "F405", "S105"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "config"]

@@ -5,7 +5,9 @@ from pathlib import Path
 
 API_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = API_DIR.parent
-ENV_READ = re.compile(r"""\benv(?:\.(?:bool|int|list|db|str|float|json))?\(\s*["']([A-Z][A-Z0-9_]+)["']""")
+ENV_READ = re.compile(
+    r"""\benv(?:\.(?:bool|int|list|db|str|float|json))?\(\s*["']([A-Z][A-Z0-9_]+)["']"""
+)
 
 
 def variables_read_by_settings():
@@ -17,7 +19,11 @@ def variables_read_by_settings():
 
 
 def test_settings_read_some_variables():
-    assert {"DJANGO_SECRET_KEY", "DATABASE_URL", "FIELD_ENCRYPTION_KEYS"} <= variables_read_by_settings()
+    assert {
+        "DJANGO_SECRET_KEY",
+        "DATABASE_URL",
+        "FIELD_ENCRYPTION_KEYS",
+    } <= variables_read_by_settings()
 
 
 def test_every_variable_is_in_env_example():

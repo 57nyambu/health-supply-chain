@@ -35,3 +35,30 @@ class AuditLog(BaseModel):
 
     def __str__(self):
         return f"{self.user} {self.action}d {self.model} #{self.object_id}"
+
+class IdempotencyRecord(models.Model):
+    """A stored response for an Idempotency-Key, replayed for 24 hours (DESIGN §17)."""
+
+    class State(models.TextChoices):
+        IN_PROGRESS = "in_progress", "In progress"
+        COMPLETED = "completed", "Completed"
+
+    principal = models.CharField(max_length=80)
+    key = models.CharField(max_length=255)
+    method = models.CharField(max_length=10)
+    path = models.CharField(max_length=500)
+    request_hash = models.CharField(max_length=64)
+    state = models.CharField(max_length=20, choices=State.choices, default=State.IN_PROGRESS)
+    status_code = models.PositiveSmallIntegerField(null=True, blank=True)
+    content_type = models.CharField(max_length=100, blank=True)
+    response_body = models.BinaryField(blank=True, default=b"")
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["principal", "key"], name="core_idempotency_principal_key"),
+        ]
+
+    def __str__(self):
+        return f"{self.method} {self.path} ({self.state})"

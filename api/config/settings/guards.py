@@ -51,7 +51,9 @@ def production_problems(settings: Mapping[str, Any]) -> list[str]:
         problems.append("STORAGE_MASTER_KEYS must be a non-empty JSON object of key id -> key.")
 
     if settings.get("DATA_RESIDENCY_MODE") not in ("strict", "warn"):
-        problems.append("DATA_RESIDENCY_MODE must be 'strict' (or 'warn') in production, never 'off'.")
+        problems.append(
+            "DATA_RESIDENCY_MODE must be 'strict' (or 'warn') in production, never 'off'."
+        )
 
     if not settings.get("ALLOWED_HOSTS") or "*" in settings.get("ALLOWED_HOSTS", []):
         problems.append("DJANGO_ALLOWED_HOSTS must list the real host names (no '*').")

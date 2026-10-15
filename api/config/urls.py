@@ -30,3 +30,6 @@ urlpatterns = [
     path('api/v1/suppliers/', include('apps.suppliers.urls')),
     path('api/v1/warehouses/', include('apps.warehouses.urls')),
 ]
+
+handler404 = "apps.core.problems.handler404"
+handler500 = "apps.core.problems.handler500"

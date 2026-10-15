@@ -65,6 +65,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "apps.core.request_id.RequestIdMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -72,7 +73,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.core.idempotency.IdempotencyMiddleware",
 ]
+CSRF_FAILURE_VIEW = "apps.core.problems.csrf_failure"
 
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
@@ -139,13 +142,19 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.FormParser",
         "rest_framework.parsers.MultiPartParser",
     ],
+    "EXCEPTION_HANDLER": "apps.core.problems.exception_handler",
+    # Catalogues page by number; large lists opt into LargeListCursorPagination.
+    "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.CataloguePagination",
+    "PAGE_SIZE": 50,
 }
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "AfyaSync HMIS API",
     "DESCRIPTION": "AfyaSync hospital management information system API.",
     "VERSION": "1.0.0",
+    "OAS_VERSION": "3.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 # Legacy browser auth (SimpleJWT + CORS), removed in P1-UAC-04 (ADR-005).
@@ -174,6 +183,10 @@ CELERY_BEAT_SCHEDULE = {
     "generate-daily-reports": {
         "task": "apps.analytics.tasks.generate_daily_sales_report",
         "schedule": crontab(hour=0, minute=0),
+    },
+    "purge-expired-idempotency-records": {
+        "task": "apps.core.tasks.purge_expired_idempotency_records",
+        "schedule": crontab(minute=15),
     },
     "flag-underperforming-facilities": {
         "task": "apps.facility_ops.tasks.flag_underperforming_facilities",

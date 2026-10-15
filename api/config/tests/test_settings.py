@@ -59,7 +59,9 @@ def test_each_production_guard_fires(override, message):
 
 
 def _import_prod(extra_env):
-    env = {k: v for k, v in os.environ.items() if not k.startswith(("DJANGO_", "FIELD_", "STORAGE_"))}
+    env = {
+        k: v for k, v in os.environ.items() if not k.startswith(("DJANGO_", "FIELD_", "STORAGE_"))
+    }
     env.pop("DATA_RESIDENCY_MODE", None)
     env.update(extra_env)
     env["DJANGO_SETTINGS_MODULE"] = "config.settings.prod"
@@ -69,7 +71,12 @@ def _import_prod(extra_env):
         "s.SECURE_REFERRER_POLICY, s.DATA_RESIDENCY_MODE)"
     )
     return subprocess.run(  # noqa: S603 - fixed interpreter and arguments
-        [sys.executable, "-c", code], cwd=API_DIR, env=env, capture_output=True, text=True, check=False
+        [sys.executable, "-c", code],
+        cwd=API_DIR,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
     )
 
 
