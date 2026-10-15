@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-from xml.parsers.expat import model
 
 import environ
 from celery.schedules import crontab
@@ -20,21 +19,14 @@ def _csv_env(name, default=""):
     return [part.strip() for part in raw.split(',') if part.strip()]
 
 
-def clean_database_config(database_config):
-    if not isinstance(database_config, dict):
-        return database_config
-
-    cleaned_config = dict(database_config)
-    cleaned_config.pop('schema', None)
-
-    options = cleaned_config.get('OPTIONS')
-    if isinstance(options, dict):
-        cleaned_options = dict(options)
-        cleaned_options.pop('schema', None)
-        cleaned_config['OPTIONS'] = cleaned_options
-
-    return cleaned_config
-
+# PostgreSQL everywhere (dev, test, prod); SQLite is not supported.
+DATABASES = {
+    'default': env.db(
+        'DATABASE_URL',
+        default='postgres://afyasync:afyasync@127.0.0.1:5432/afyasync',
+    )
+}
+DATABASES['default']['CONN_MAX_AGE'] = env.int('DB_CONN_MAX_AGE', default=60)
 
 # Security / host configuration
 SECRET_KEY = env('DJANGO_SECRET_KEY', default=env('SECRET_KEY', default='unsafe-dev-secret'))

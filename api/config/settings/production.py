@@ -1,21 +1,9 @@
-import dj_database_url
 from .base import *
 
 # Set DEBUG to False for production
 DEBUG = False
 
 # Allowed hosts come from DJANGO_ALLOWED_HOSTS in .env.
-
-# Database settings
-DATABASES = {
-    'default': dj_database_url.config(
-        default='postgres://postgres:postgres@localhost:5432/afyasync',
-        conn_max_age=600,
-        ssl_require=False,
-    )
-}
-
-DATABASES['default'] = clean_database_config(DATABASES['default'])
 
 # Static and media files
 STATIC_ROOT = BASE_DIR / 'staticfiles'

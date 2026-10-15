@@ -1,0 +1,97 @@
+[project]
+name = "afyasync-api"
+version = "0.1.0"
+description = "AfyaSync HMIS API (Django modular monolith)"
+readme = "CLAUDE.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "django>=5.2,<5.3",
+    "djangorestframework>=3.16",
+    "drf-spectacular>=0.28",
+    "django-environ>=0.12",
+    "psycopg[binary]>=3.2",
+    "celery>=5.5",
+    "redis>=5.2",
+    "pillow>=11.0",
+    "gunicorn>=23.0",
+    # Legacy integrations, replaced by adapters in later phases.
+    "africastalking>=1.2",
+    "requests>=2.32",
+    # Legacy browser auth, removed in P1-UAC-04 (ADR-005).
+    "djangorestframework-simplejwt>=5.5",
+    "django-cors-headers>=4.7",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.10",
+    "pytest-cov>=6.0",
+    "factory-boy>=3.3",
+    "time-machine>=2.16",
+    "respx>=0.22",
+    "hypothesis>=6.130",
+    "moto[s3]>=5.1",
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "django-stubs[compatible-mypy]>=5.2",
+    "djangorestframework-stubs[compatible-mypy]>=3.16",
+    "pip-audit>=2.9",
+]
+
+[tool.uv]
+package = false
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py"]
+testpaths = ["apps", "config", "tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "req(id): the test proves a regulatory requirement from docs/compliance/KENYA-REGULATORY-REGISTER.md",
+]
+filterwarnings = [
+    "error::DeprecationWarning:apps.*",
+    "error::DeprecationWarning:config.*",
+    "error::django.utils.deprecation.RemovedInNextVersionWarning",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["apps", "config"]
+omit = ["*/migrations/*", "*/tests/*", "manage.py", "config/asgi.py", "config/wsgi.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["apps/*/migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ", "S", "SIM", "RUF"]
+ignore = [
+    "E501",    # long lines are left to the formatter
+    "RUF012",  # Django Meta/class attributes are not ClassVar-annotated
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "S105", "S106"]
+"tests/**" = ["S101", "S105", "S106"]
+"config/settings/*.py" = ["F403", "F405"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+exclude = ["migrations/"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"

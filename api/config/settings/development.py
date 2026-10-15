@@ -1,15 +1,4 @@
 from .base import *
-import dj_database_url
-
-# Database
-DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
-    )
-}
-
-DATABASES['default'] = clean_database_config(DATABASES['default'])
 
 DEBUG = True
 
