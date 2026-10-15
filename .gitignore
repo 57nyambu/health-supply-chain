@@ -6,3 +6,6 @@ tests*
 backup*
 db.sqlite3
 flow.png
+# Local object storage (real patient files in production) — never commit
+data/*
+!data/.gitkeep

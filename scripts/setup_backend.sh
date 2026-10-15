@@ -24,14 +24,14 @@ fi
 
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python manage.py migrate
+python -m pip install -r api/requirements.txt
+python api/manage.py migrate
 
 if [[ "$SKIP_SEED" -eq 0 ]]; then
-  python manage.py seed_facility_demo_data
+  python api/manage.py seed_facility_demo_data
 fi
 
-python manage.py check
+python api/manage.py check
 
 echo "Backend setup complete."
-echo "Run: source .venv/bin/activate && python manage.py runserver"
+echo "Run: source .venv/bin/activate && python api/manage.py runserver"

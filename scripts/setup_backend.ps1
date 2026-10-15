@@ -55,7 +55,7 @@ if (-not (Test-Path $pythonExe)) {
 Write-Host "Upgrading pip"
 & $pythonExe -m pip install --upgrade pip
 
-$requirementsPath = Join-Path $repoRoot "requirements.txt"
+$requirementsPath = Join-Path $repoRoot "api\requirements.txt"
 if (-not (Test-Path $requirementsPath)) {
     throw "requirements.txt not found at $requirementsPath"
 }
@@ -64,19 +64,19 @@ Write-Host "Installing dependencies"
 & $pythonExe -m pip install -r $requirementsPath
 
 Write-Host "Running migrations"
-& $pythonExe manage.py migrate
+& $pythonExe api\manage.py migrate
 
 if (-not $SkipSeed) {
     Write-Host "Seeding demo facility data"
-    & $pythonExe manage.py seed_facility_demo_data
+    & $pythonExe api\manage.py seed_facility_demo_data
 } else {
     Write-Host "Skipping seed step"
 }
 
 Write-Host "Running Django system check"
-& $pythonExe manage.py check
+& $pythonExe api\manage.py check
 
 Write-Host "" 
 Write-Host "Backend setup complete." -ForegroundColor Green
 Write-Host "To start the API:" -ForegroundColor Green
-Write-Host "$pythonExe manage.py runserver"
+Write-Host "$pythonExe api\manage.py runserver"
