@@ -16,6 +16,8 @@ urlpatterns = [
     path("api/docs/swagger/", api_docs.SwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/docs/redoc/", api_docs.RedocView.as_view(url_name="schema"), name="redoc"),
     path("api/v1/accounts/", include("apps.accounts.urls")),
+    path("api/v1/facilities/", include("apps.facilities.api.urls")),
+    path("api/v1/audit/", include("apps.audit.api.urls")),
     path("api/v1/analytics/", include("apps.analytics.urls")),
     path("api/v1/facility-ops/", include("apps.facility_ops.urls")),
     path("api/v1/ai/", include("apps.ai.urls")),

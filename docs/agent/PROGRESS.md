@@ -78,6 +78,15 @@ Done this session:
 - P1-REPO-02 — ignore rules (legacy `tests*`/`backup*` patterns removed), `.gitleaksignore` for the reviewed placeholder, ENV docs + test (`f1f3c44`, P1-API-02 commit)
 - P1-API-01 — Django 5.2.18 on uv/pyproject, pytest, PostgreSQL only, dead modules removed (`0884976`)
 - P1-API-02 — `config/settings/{base,dev,test,prod}.py` by `DJANGO_ENV`, production guards with a test per guard, `docs/operations/ENV.md`
+- P1-API-03 — problem+json, request IDs, pagination classes, Idempotency-Key middleware, OpenAPI 3.1 + drift test (`20c7025`)
+- P1-API-04 — /healthz, /readyz, scrubbed JSON logs, residency-gated error tracker (`460ecae`)
+- P1-OPS-01 / P1-QA-01 (in progress) — Makefile (`make check` is the gate from `aa7b0df`), compose, Dockerfile, Jenkinsfile; compose and Jenkins not executable here (no Docker)
+- P1-UAC-01 — permission catalogue (144 codes), 32 seeded roles, role matrix + per-cell test (`37a82b8`)
+- P1-AUD-01 (in progress) — hash-chained audit, anchors, `make audit-verify`, append-only triggers, prod grant revocation (`44ea058`); viewer API and PHI-read logging pending
+- P1-FAC-01 (in progress) — facilities, departments, service points, wards, beds (`d26d464`); admin API pending
+- P1-UAC-10 — maker-checker approvals (`293a922`)
+- P1-UAC-02 — scoped/time-bound assignments, privileged grants with second approver, session revocation on deactivation, legacy role migration ADR-019 (`729114a`)
+- P1-UAC-03 — default deny on every view, URLconf tests, legacy endpoints reworked or removed, API-key service accounts (`7deda80`)
 
 <!--
 ### Session YYYY-MM-DD — Phase n

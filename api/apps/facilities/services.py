@@ -158,6 +158,36 @@ def set_bed_status(bed: Bed, *, actor: Any, status: str) -> Bed:
     return bed
 
 
+LAYOUT_FIELDS: dict[type, set[str]] = {
+    Department: {"name"},
+    ServicePoint: {"name", "kind", "department"},
+    Ward: {"name", "kind", "sex", "department"},
+    Bed: {"code"},
+}
+
+
+@transaction.atomic
+def update_layout(instance: Any, *, actor: Any, **changes: Any) -> Any:
+    """Rename or re-type a layout entry; codes of departments, points and wards stay fixed."""
+    model = type(instance)
+    instance = model.objects.select_for_update().get(pk=instance.pk)
+    department = changes.get("department")
+    facility_id = instance.ward.facility_id if isinstance(instance, Bed) else instance.facility_id
+    if department is not None and department.facility_id != facility_id:
+        raise ValidationError({"department": "The department belongs to another facility."})
+    changed = _changed(instance, changes, LAYOUT_FIELDS[model])
+    if changed:
+        instance.save()
+        record(
+            f"facilities.{model._meta.model_name}.updated",
+            actor,
+            instance,
+            facility=facility_id,
+            detail={"fields": changed},
+        )
+    return instance
+
+
 @transaction.atomic
 def set_active(
     instance: Department | ServicePoint | Ward | Bed, *, actor: Any, active: bool

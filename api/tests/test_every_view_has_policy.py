@@ -40,7 +40,8 @@ def drf_targets(callback) -> Iterator[tuple[type[APIView], str | None, str]]:
     actions = getattr(callback, "actions", None)
     if actions:
         for method, action in list(actions.items()):
-            if method not in ("options", "head"):
+            # Methods excluded by http_method_names are answered 405 and never reach a handler.
+            if method not in ("options", "head") and method in view_class.http_method_names:
                 yield view_class, action, method
         return
     for method in view_class.http_method_names:

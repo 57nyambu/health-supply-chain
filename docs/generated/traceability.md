@@ -10,7 +10,7 @@ Requirements with automated evidence: **4 of 39**.
 | KE-DHA-01 | Digital health solutions used in service delivery must be certified by DHA under its Certification Framewor… | — |
 | KE-DHA-02 | Practitioner guides list six items DHA expects for HMIS certification: self-attestation report (DHA HMIS fo… | — |
 | KE-DHA-03 | HIE integration go-live path is four mandatory phases: development and testing; UAT demo with the HIE integ… | — |
-| KE-DHA-04 | Exchange goes through the national HIE and its registries: Client Registry (patients, CR… IDs), Facility Re… | `api/apps/facilities/tests/test_services.py` (module) |
+| KE-DHA-04 | Exchange goes through the national HIE and its registries: Client Registry (patients, CR… IDs), Facility Re… | `api/apps/facilities/tests/test_api.py` (module)<br>`api/apps/facilities/tests/test_services.py` (module) |
 | KE-DHA-05 | Health data in the system must be retained for at least 20 years. | — |
 | KE-DHA-06 | Health data must be stored/processed in Kenya; cross-border transfer only under prescribed conditions (Data… | — |
 | KE-DHA-07 | Health data controllers transfer records to the national health data bank (and county banks when operationa… | — |
@@ -30,7 +30,7 @@ Requirements with automated evidence: **4 of 39**.
 | KE-DPA-03 | A Data Protection Impact Assessment is required for high-risk processing. | — |
 | KE-DPA-04 | Personal data breaches are notified to the Data Commissioner within 72 hours of awareness, and to data subj… | — |
 | KE-DPA-05 | Data subject rights: information, access, correction, deletion (limited by retention law), objection, porta… | — |
-| KE-DPA-06 | Data protection by design and by default; security safeguards (pseudonymisation, encryption, access control). | `api/apps/audit/tests/test_audit_chain.py` (module)<br>`api/config/tests/test_settings.py::test_each_production_guard_fires`<br>`api/tests/test_every_view_has_policy.py::test_unauthenticated_requests_are_refused_everywhere`<br>`api/tests/test_policy_matrix.py::test_every_role_permission_cell` |
+| KE-DPA-06 | Data protection by design and by default; security safeguards (pseudonymisation, encryption, access control). | `api/apps/audit/tests/test_api.py` (module)<br>`api/apps/audit/tests/test_audit_chain.py` (module)<br>`api/config/tests/test_settings.py::test_each_production_guard_fires`<br>`api/tests/test_every_view_has_policy.py::test_unauthenticated_requests_are_refused_everywhere`<br>`api/tests/test_policy_matrix.py::test_every_role_permission_cell` |
 | KE-DPA-07 | Transfers outside Kenya only under the Act's conditions (appropriate safeguards, adequacy, consent for sens… | `api/apps/ai/tests/test_views.py::test_ai_endpoints_are_off_by_default` |
 | KE-HLT-01 | No person shall be denied emergency medical treatment; all providers (public and private) owe emergency tre… | — |
 | KE-HLT-02 | Hospitals may not detain patients (or bodies) over unpaid bills; courts have repeatedly ruled it unlawful (… | — |

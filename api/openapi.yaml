@@ -407,6 +407,645 @@ paths:
                 items:
                   $ref: '#/components/schemas/RTInventoryAlert'
           description: ''
+  /api/v1/audit/events/:
+    get:
+      operationId: v1_audit_events_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditEventList'
+          description: ''
+  /api/v1/audit/events/{id}/:
+    get:
+      operationId: v1_audit_events_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this audit event.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEvent'
+          description: ''
+  /api/v1/facilities/beds/:
+    get:
+      operationId: v1_facilities_beds_list
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBedList'
+          description: ''
+    post:
+      operationId: v1_facilities_beds_create
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BedRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BedRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BedRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bed'
+          description: ''
+  /api/v1/facilities/beds/{id}/:
+    get:
+      operationId: v1_facilities_beds_retrieve
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bed.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bed'
+          description: ''
+    patch:
+      operationId: v1_facilities_beds_partial_update
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bed.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBedRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBedRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBedRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bed'
+          description: ''
+  /api/v1/facilities/beds/{id}/status/:
+    post:
+      operationId: v1_facilities_beds_status_create
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bed.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BedStatusRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BedStatusRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BedStatusRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BedStatus'
+          description: ''
+  /api/v1/facilities/departments/:
+    get:
+      operationId: v1_facilities_departments_list
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDepartmentList'
+          description: ''
+    post:
+      operationId: v1_facilities_departments_create
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+  /api/v1/facilities/departments/{id}/:
+    get:
+      operationId: v1_facilities_departments_retrieve
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this department.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+    patch:
+      operationId: v1_facilities_departments_partial_update
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this department.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+  /api/v1/facilities/facilities/:
+    get:
+      operationId: v1_facilities_facilities_list
+      description: Facilities the user holds a role in; identifiers and settings edited
+        by facility admins.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFacilityList'
+          description: ''
+  /api/v1/facilities/facilities/{id}/:
+    get:
+      operationId: v1_facilities_facilities_retrieve
+      description: Facilities the user holds a role in; identifiers and settings edited
+        by facility admins.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this facility.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Facility'
+          description: ''
+    patch:
+      operationId: v1_facilities_facilities_partial_update
+      description: Facilities the user holds a role in; identifiers and settings edited
+        by facility admins.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this facility.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFacilityRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFacilityRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFacilityRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Facility'
+          description: ''
+  /api/v1/facilities/service-points/:
+    get:
+      operationId: v1_facilities_service_points_list
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedServicePointList'
+          description: ''
+    post:
+      operationId: v1_facilities_service_points_create
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServicePointRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServicePointRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServicePointRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePoint'
+          description: ''
+  /api/v1/facilities/service-points/{id}/:
+    get:
+      operationId: v1_facilities_service_points_retrieve
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service point.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePoint'
+          description: ''
+    patch:
+      operationId: v1_facilities_service_points_partial_update
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service point.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedServicePointRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedServicePointRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedServicePointRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePoint'
+          description: ''
+  /api/v1/facilities/wards/:
+    get:
+      operationId: v1_facilities_wards_list
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWardList'
+          description: ''
+    post:
+      operationId: v1_facilities_wards_create
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ward'
+          description: ''
+  /api/v1/facilities/wards/{id}/:
+    get:
+      operationId: v1_facilities_wards_retrieve
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ward.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ward'
+          description: ''
+    patch:
+      operationId: v1_facilities_wards_partial_update
+      description: 'Shared behaviour: scoped to the request facility; PATCH {active}
+        (de)activates.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ward.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWardRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ward'
+          description: ''
   /api/v1/facility-ops/alerts/:
     get:
       operationId: v1_facility_ops_alerts_list
@@ -1648,6 +2287,92 @@ components:
         * `overcrowded` - Overcrowded
         * `stockout_risk` - Stock-Out Risk
         * `custom` - Custom
+    AuditEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        ts:
+          type: string
+          format: date-time
+          readOnly: true
+        facility_id:
+          type: integer
+          readOnly: true
+          description: 0 for system-level events
+        seq:
+          type: integer
+          readOnly: true
+        actor_id:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        actor_role:
+          type: string
+          readOnly: true
+        workstation_id:
+          type: string
+          readOnly: true
+        ip:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        request_id:
+          type: string
+          readOnly: true
+        action:
+          type: string
+          readOnly: true
+        resource_type:
+          type: string
+          readOnly: true
+        resource_id:
+          type: string
+          readOnly: true
+        patient_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        purpose:
+          type: string
+          readOnly: true
+        outcome:
+          allOf:
+          - $ref: '#/components/schemas/OutcomeEnum'
+          readOnly: true
+        severity:
+          type: string
+          readOnly: true
+        detail:
+          readOnly: true
+        hash:
+          type: string
+          readOnly: true
+      required:
+      - action
+      - actor_id
+      - actor_role
+      - detail
+      - facility_id
+      - hash
+      - id
+      - ip
+      - outcome
+      - patient_id
+      - purpose
+      - request_id
+      - resource_id
+      - resource_type
+      - seq
+      - severity
+      - ts
+      - workstation_id
     Auth:
       type: object
       properties:
@@ -1670,6 +2395,63 @@ components:
       required:
       - email
       - password
+    Bed:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        ward:
+          type: integer
+        code:
+          type: string
+          maxLength: 20
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusCcdEnum'
+          readOnly: true
+        active:
+          type: boolean
+        status_changed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - id
+      - status
+      - status_changed_at
+      - ward
+    BedRequest:
+      type: object
+      properties:
+        ward:
+          type: integer
+        code:
+          type: string
+          minLength: 1
+          maxLength: 20
+        active:
+          type: boolean
+      required:
+      - code
+      - ward
+    BedStatus:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusCcdEnum'
+      required:
+      - status
+    BedStatusRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusCcdEnum'
+      required:
+      - status
     BinLocation:
       type: object
       properties:
@@ -2030,6 +2812,126 @@ components:
         * `KISII` - Kisii
         * `NYAMIRA` - Nyamira
         * `NAIROBI` - Nairobi
+    Department:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          maxLength: 20
+        name:
+          type: string
+          maxLength: 120
+        active:
+          type: boolean
+      required:
+      - code
+      - id
+      - name
+    DepartmentRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        active:
+          type: boolean
+      required:
+      - code
+      - name
+    Facility:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        mfl_code:
+          title: KMHFL MFL code
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            pattern: ^\d{5,6}$
+            maxLength: 6
+          - type: string
+            maxLength: 0
+        fid:
+          title: Facility Registry ID
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            pattern: ^FID-[A-Za-z0-9-]+$
+            maxLength: 40
+          - type: string
+            maxLength: 0
+        keph_level:
+          minimum: 0
+          maximum: 32767
+          oneOf:
+          - $ref: '#/components/schemas/KephLevelEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        sha_contract_number:
+          type: string
+          maxLength: 50
+        kra_pin:
+          oneOf:
+          - type: string
+            pattern: ^[A-Z]\d{9}[A-Z]$
+            maxLength: 11
+          - type: string
+            maxLength: 0
+        odpc_controller_registration:
+          type: string
+          title: ODPC registration (controller)
+          maxLength: 50
+        odpc_processor_registration:
+          type: string
+          title: ODPC registration of the system vendor/host (processor)
+          maxLength: 50
+        slade_provider_code:
+          type: string
+          maxLength: 50
+        mrn_format:
+          type: string
+          description: 'Placeholders: {MFL}, {YY}, {YYYY}, {seq} (gap-free per facility
+            per year)'
+          maxLength: 60
+        require_mfa_for_all:
+          type: boolean
+        workstation_lock_minutes:
+          type: integer
+          maximum: 30
+          minimum: 1
+        session_idle_minutes:
+          type: integer
+          maximum: 120
+          minimum: 5
+        session_absolute_hours:
+          type: integer
+          maximum: 24
+          minimum: 1
+        care_team_expiry_hours:
+          type: integer
+          maximum: 720
+          minimum: 1
+        active:
+          type: boolean
+          readOnly: true
+      required:
+      - active
+      - id
+      - name
     FacilityAlert:
       type: object
       properties:
@@ -2212,6 +3114,74 @@ components:
       required:
       - product
       - warehouse
+    KephLevelEnum:
+      enum:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      type: integer
+      description: |-
+        * `2` - Level 2 — dispensary
+        * `3` - Level 3 — health centre
+        * `4` - Level 4 — sub-county hospital / medical centre
+        * `5` - Level 5 — county referral hospital
+        * `6` - Level 6 — national referral hospital
+    NullEnum:
+      type: 'null'
+    OutcomeEnum:
+      enum:
+      - success
+      - denied
+      - failure
+      type: string
+      description: |-
+        * `success` - Success
+        * `denied` - Denied
+        * `failure` - Failure
+    PaginatedAuditEventList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
+    PaginatedBedList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Bed'
     PaginatedBinLocationList:
       type: object
       required:
@@ -2281,6 +3251,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Category'
+    PaginatedDepartmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Department'
+    PaginatedFacilityList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Facility'
     PaginatedInventoryList:
       type: object
       required:
@@ -2350,6 +3366,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Product'
+    PaginatedServicePointList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicePoint'
     PaginatedStockTransferList:
       type: object
       required:
@@ -2396,6 +3435,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
+    PaginatedWardList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ward'
     PaginatedWarehouseList:
       type: object
       required:
@@ -2442,6 +3504,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WorkerProfile'
+    PatchedBedRequest:
+      type: object
+      properties:
+        ward:
+          type: integer
+        code:
+          type: string
+          minLength: 1
+          maxLength: 20
+        active:
+          type: boolean
     PatchedBinLocationRequest:
       type: object
       properties:
@@ -2534,6 +3607,97 @@ components:
           type: string
         vat_category:
           $ref: '#/components/schemas/VatCategoryEnum'
+    PatchedDepartmentRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        active:
+          type: boolean
+    PatchedFacilityRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        mfl_code:
+          title: KMHFL MFL code
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            pattern: ^\d{5,6}$
+            maxLength: 6
+          - type: string
+            maxLength: 0
+        fid:
+          title: Facility Registry ID
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            pattern: ^FID-[A-Za-z0-9-]+$
+            maxLength: 40
+          - type: string
+            maxLength: 0
+        keph_level:
+          minimum: 0
+          maximum: 32767
+          oneOf:
+          - $ref: '#/components/schemas/KephLevelEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        sha_contract_number:
+          type: string
+          maxLength: 50
+        kra_pin:
+          oneOf:
+          - type: string
+            pattern: ^[A-Z]\d{9}[A-Z]$
+            maxLength: 11
+          - type: string
+            maxLength: 0
+        odpc_controller_registration:
+          type: string
+          title: ODPC registration (controller)
+          maxLength: 50
+        odpc_processor_registration:
+          type: string
+          title: ODPC registration of the system vendor/host (processor)
+          maxLength: 50
+        slade_provider_code:
+          type: string
+          maxLength: 50
+        mrn_format:
+          type: string
+          minLength: 1
+          description: 'Placeholders: {MFL}, {YY}, {YYYY}, {seq} (gap-free per facility
+            per year)'
+          maxLength: 60
+        require_mfa_for_all:
+          type: boolean
+        workstation_lock_minutes:
+          type: integer
+          maximum: 30
+          minimum: 1
+        session_idle_minutes:
+          type: integer
+          maximum: 120
+          minimum: 5
+        session_absolute_hours:
+          type: integer
+          maximum: 24
+          minimum: 1
+        care_team_expiry_hours:
+          type: integer
+          maximum: 720
+          minimum: 1
     PatchedInventoryRequest:
       type: object
       properties:
@@ -2587,6 +3751,25 @@ components:
           type: boolean
         category:
           type: integer
+    PatchedServicePointRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        kind:
+          $ref: '#/components/schemas/ServicePointKindEnum'
+        department:
+          type:
+          - integer
+          - 'null'
+        active:
+          type: boolean
     PatchedUserRequest:
       type: object
       properties:
@@ -2614,6 +3797,27 @@ components:
         role:
           $ref: '#/components/schemas/RoleEnum'
         is_approved:
+          type: boolean
+    PatchedWardRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        kind:
+          $ref: '#/components/schemas/WardKindEnum'
+        sex:
+          $ref: '#/components/schemas/SexEnum'
+        department:
+          type:
+          - integer
+          - 'null'
+        active:
           type: boolean
     PatchedWarehouseRequest:
       type: object
@@ -2986,6 +4190,82 @@ components:
         * `WAREHOUSE` - Warehouse Staff
         * `CASHIER` - Cashier
         * `REPORTER` - Reports Viewer
+    ServicePoint:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          maxLength: 20
+        name:
+          type: string
+          maxLength: 120
+        kind:
+          $ref: '#/components/schemas/ServicePointKindEnum'
+        department:
+          type:
+          - integer
+          - 'null'
+        active:
+          type: boolean
+      required:
+      - code
+      - id
+      - kind
+      - name
+    ServicePointKindEnum:
+      enum:
+      - reception
+      - triage
+      - consultation
+      - emergency
+      - lab
+      - imaging
+      - pharmacy
+      - cashier
+      - treatment_room
+      - ward_station
+      - records
+      - other
+      type: string
+      description: |-
+        * `reception` - Reception
+        * `triage` - Triage
+        * `consultation` - Consultation room
+        * `emergency` - Emergency / resuscitation
+        * `lab` - Laboratory
+        * `imaging` - Imaging
+        * `pharmacy` - Pharmacy
+        * `cashier` - Cashier
+        * `treatment_room` - Treatment / procedure room
+        * `ward_station` - Ward station
+        * `records` - Health records
+        * `other` - Other
+    ServicePointRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        kind:
+          $ref: '#/components/schemas/ServicePointKindEnum'
+        department:
+          type:
+          - integer
+          - 'null'
+        active:
+          type: boolean
+      required:
+      - code
+      - kind
+      - name
     SeverityEnum:
       enum:
       - low
@@ -2996,22 +4276,28 @@ components:
         * `low` - Low
         * `medium` - Medium
         * `high` - High
-    StatusEnum:
+    SexEnum:
       enum:
-      - PENDING
-      - APPROVED
-      - IN_TRANSIT
-      - RECEIVED
-      - VERIFIED
-      - CANCELLED
+      - female
+      - male
+      - mixed
       type: string
       description: |-
-        * `PENDING` - Pending Approval
-        * `APPROVED` - Approved
-        * `IN_TRANSIT` - In Transit
-        * `RECEIVED` - Received
-        * `VERIFIED` - Verified
-        * `CANCELLED` - Cancelled
+        * `female` - Female
+        * `male` - Male
+        * `mixed` - Mixed
+    StatusCcdEnum:
+      enum:
+      - available
+      - occupied
+      - cleaning
+      - out_of_service
+      type: string
+      description: |-
+        * `available` - Available
+        * `occupied` - Occupied
+        * `cleaning` - Cleaning
+        * `out_of_service` - Out of service
     StockTransfer:
       type: object
       properties:
@@ -3050,7 +4336,7 @@ components:
           maximum: 2147483647
           minimum: 0
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/StockTransferStatusEnum'
         delivery_note:
           type: string
           maxLength: 50
@@ -3176,7 +4462,7 @@ components:
           maximum: 2147483647
           minimum: 0
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/StockTransferStatusEnum'
         delivery_note:
           type: string
           maxLength: 50
@@ -3211,6 +4497,22 @@ components:
       - product
       - quantity
       - to_warehouse
+    StockTransferStatusEnum:
+      enum:
+      - PENDING
+      - APPROVED
+      - IN_TRANSIT
+      - RECEIVED
+      - VERIFIED
+      - CANCELLED
+      type: string
+      description: |-
+        * `PENDING` - Pending Approval
+        * `APPROVED` - Approved
+        * `IN_TRANSIT` - In Transit
+        * `RECEIVED` - Received
+        * `VERIFIED` - Verified
+        * `CANCELLED` - Cancelled
     TransferTypeEnum:
       enum:
       - INTERNAL
@@ -3373,6 +4675,84 @@ components:
         * `STANDARD` - Standard Rate (16%)
         * `ZERO` - Zero Rated (0%)
         * `EXEMPT` - Exempt
+    Ward:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          maxLength: 20
+        name:
+          type: string
+          maxLength: 120
+        kind:
+          $ref: '#/components/schemas/WardKindEnum'
+        sex:
+          $ref: '#/components/schemas/SexEnum'
+        department:
+          type:
+          - integer
+          - 'null'
+        active:
+          type: boolean
+        beds_total:
+          type: integer
+          readOnly: true
+        beds_available:
+          type: integer
+          readOnly: true
+      required:
+      - beds_available
+      - beds_total
+      - code
+      - id
+      - name
+    WardKindEnum:
+      enum:
+      - general
+      - maternity
+      - paediatric
+      - newborn
+      - icu
+      - hdu
+      - isolation
+      - surgical
+      type: string
+      description: |-
+        * `general` - General
+        * `maternity` - Maternity
+        * `paediatric` - Paediatric
+        * `newborn` - Newborn unit
+        * `icu` - ICU
+        * `hdu` - HDU
+        * `isolation` - Isolation
+        * `surgical` - Surgical
+    WardRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        kind:
+          $ref: '#/components/schemas/WardKindEnum'
+        sex:
+          $ref: '#/components/schemas/SexEnum'
+        department:
+          type:
+          - integer
+          - 'null'
+        active:
+          type: boolean
+      required:
+      - code
+      - name
     Warehouse:
       type: object
       properties:
