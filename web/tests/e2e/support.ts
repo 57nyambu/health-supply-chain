@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHmac } from "node:crypto";
 
 import AxeBuilder from "@axe-core/playwright";
@@ -13,13 +13,36 @@ export function seedPassword(): string {
 
 /** A fresh synthetic user with these roles at the seed facility (`manage.py e2e_user`). */
 export function createUser(...roles: string[]): { email: string; id: number } {
-  const output = execFileSync(
-    "uv",
-    ["run", "--project", "../api", "python", "../api/manage.py", "e2e_user", ...roles.flatMap((r) => ["--role", r])],
-    { encoding: "utf8", env: { ...process.env, DJANGO_ENV: process.env.DJANGO_ENV ?? "dev" } },
-  );
+  return createUserWith({ roles });
+}
+
+/** As createUser, optionally on a patient's care team or with an expired licence. */
+export function createUserWith(options: { roles: string[]; careTeam?: string; licenceExpired?: boolean }): { email: string; id: number } {
+  const args = ["e2e_user", ...options.roles.flatMap((r) => ["--role", r])];
+  if (options.careTeam) args.push("--care-team", options.careTeam);
+  if (options.licenceExpired) args.push("--licence-expired");
+  const output = execFileSync("uv", ["run", "--project", "../api", "python", "../api/manage.py", ...args], {
+    encoding: "utf8",
+    env: { ...process.env, DJANGO_ENV: process.env.DJANGO_ENV ?? "dev" },
+  });
   const last = output.trim().split(/\r?\n/).pop() ?? "{}";
   return JSON.parse(last) as { email: string; id: number };
+}
+
+/** Run a manage.py command against the scenario database; never throws (check `status`). */
+export function manage(args: string[], env: Record<string, string> = {}): { status: number; stdout: string; stderr: string } {
+  const result = spawnSync("uv", ["run", "--project", "../api", "python", "../api/manage.py", ...args], {
+    encoding: "utf8",
+    env: { ...process.env, DJANGO_ENV: process.env.DJANGO_ENV ?? "dev", ...env },
+  });
+  return { status: result.status ?? 1, stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
+}
+
+/** Evaluate Python in `manage.py shell` and return its last printed line (test-only DB access). */
+export function djangoShell(code: string, env: Record<string, string> = {}): string {
+  const result = manage(["shell", "-c", code], env);
+  if (result.status !== 0) throw new Error(`manage.py shell failed: ${result.stderr.slice(-500)}`);
+  return result.stdout.trim().split(/\r?\n/).pop() ?? "";
 }
 
 function base32(secret: string): Buffer {

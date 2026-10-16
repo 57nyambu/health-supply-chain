@@ -10,9 +10,12 @@
 
 No ``policy`` (or no entry for the method/action) denies the request. Codes are
 checked in the request's facility; object-level checks use the object's facility.
+A signed-in user refused by a policy is audited (``access.denied``): the DPO reviews
+attempts outside a user's role, e.g. reception asking for the clinical record (E2E-11).
 """
 
 import logging
+import uuid
 from typing import TYPE_CHECKING, Any
 
 from django.db.models import Model
@@ -154,7 +157,10 @@ class PolicyPermission(BasePermission):
         facility = request_facility(request)
         if facility is None:
             return False
-        return policies.has_permission(user, code, facility=facility)
+        allowed = policies.has_permission(user, code, facility=facility)
+        if not allowed:
+            audit_denial(request, view, code, facility)
+        return allowed
 
     def has_object_permission(self, request: "Request", view: "APIView", obj: Model) -> bool:
         code = policy_for(view, request)
@@ -166,6 +172,31 @@ class PolicyPermission(BasePermission):
         if facility is None:
             return True
         return policies.has_permission(request.user, code, facility=facility)
+
+
+def audit_denial(request: "Request", view: "APIView", code: str, facility: int) -> None:
+    """Record a refused request: permission and endpoint, the patient when the URL names
+    one (``patient_lookup_kwarg`` on the view), never request data."""
+    from apps.audit.models import AuditEvent
+    from apps.audit.services import record
+
+    patient = None
+    kwarg = getattr(view, "patient_lookup_kwarg", None)
+    if kwarg:
+        try:
+            patient = uuid.UUID(str(getattr(view, "kwargs", {}).get(kwarg, "")))
+        except ValueError:
+            patient = None
+    action = getattr(view, "action", None) or (request.method or "").lower()
+    record(
+        "access.denied",
+        request.user,
+        patient=patient,
+        facility=facility,
+        outcome=AuditEvent.Outcome.DENIED,
+        severity="notice",
+        detail={"permission": code, "endpoint": f"{type(view).__name__}.{action}"},
+    )
 
 
 class FacilityScopedMixin:

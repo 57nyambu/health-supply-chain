@@ -17,13 +17,14 @@ scripts/  developer helper scripts
 
 ## Getting started
 
-Requirements: Docker with Compose v2, Python 3.12+ and [uv](https://docs.astral.sh/uv/), Node.js 24 with pnpm 10+, GNU make.
+Requirements: Docker with Compose v2, Python 3.12 or 3.13 with [uv](https://docs.astral.sh/uv/), Node.js 22.12+ with pnpm 11, GNU make. Without Docker, run PostgreSQL yourself (`scripts/dev/local-postgres.sh start` gives a private trust-auth cluster on port 5433) and set `DATABASE_URL`.
 
 ```bash
 make setup   # install api + web dependencies, create .env from .env.example, start services
 make dev     # run the dev stack
 make seed    # load synthetic data (never real patients)
 make check   # the commit gate: lint, types, tests, migrations, OpenAPI drift, contrast, secrets, smoke
+make e2e     # the Playwright scenarios (needs SEED_PASSWORD; see docs/operations/ENV.md)
 ```
 
 Every make target is described in `docs/agent/IMPLEMENTATION.md` §5. Environment variables are documented in `.env.example` and `docs/operations/ENV.md`.

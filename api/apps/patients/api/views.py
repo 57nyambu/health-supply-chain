@@ -83,6 +83,7 @@ class PatientViewSet(
 ):
     serializer_class = PatientSerializer
     queryset = Patient.objects.none()
+    patient_lookup_kwarg = "pk"  # refused requests are audited against this patient
     throttle_classes = [PatientThrottle]
     throttle_scope = "patient_search"
     http_method_names = ["get", "post", "patch"]

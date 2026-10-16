@@ -53,7 +53,8 @@ pipeline {
         stage('End-to-end scenarios') {
             steps {
                 sh 'DJANGO_ENV=dev make seed'
-                sh 'make e2e'
+                // E2E-12 writes to the compose MinIO (credentials from .env, as compose uses).
+                sh 'E2E_S3_ENDPOINT=http://127.0.0.1:9000 make e2e'
             }
         }
 

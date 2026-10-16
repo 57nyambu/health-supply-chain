@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { ESLint } from "eslint";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 // DESIGN-SYSTEM §2 / web/CLAUDE.md: colours come from tokens; no PHI in the console.
 describe("project lint rules", () => {
@@ -9,6 +9,12 @@ describe("project lint rules", () => {
     const [result] = await eslint.lintText(code, { filePath: "src/components/ui/sample.tsx" });
     return result?.messages.map((m) => m.message) ?? [];
   };
+
+  // The first lint loads the config and the typed program for the whole project; that cold
+  // start grows with the codebase, so it gets its own allowance and the checks keep theirs.
+  beforeAll(async () => {
+    await lint("export const warm = 1;\n");
+  }, 240_000);
 
   it("rejects raw hex colours in components", async () => {
     const messages = await lint('export const Swatch = () => <div style={{ color: "#A3121A" }} />;\n');

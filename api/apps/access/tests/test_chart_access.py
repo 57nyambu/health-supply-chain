@@ -284,6 +284,27 @@ def test_a_custom_role_without_chart_access_cannot_search(api_as, facility):
     assert response.status_code == 403
 
 
+@pytest.mark.req("KE-DPA-06")
+def test_refused_requests_are_audited_for_the_dpo(api_as, facility, patient):
+    """Reception asking for the clinical record is refused and the attempt is on record."""
+    reception = api_as("receptionist", facility=facility)
+    assert reception.get(f"/api/v1/patients/{patient.pk}/chart/").status_code == 403
+    event = AuditEvent.objects.get(action="access.denied")
+    assert (event.outcome, event.patient_id, event.actor_id, event.facility_id) == (
+        "denied",
+        patient.pk,
+        reception.user.pk,
+        facility.pk,
+    )
+    assert event.detail == {
+        "permission": "clinical.record.read_summary",
+        "endpoint": "PatientViewSet.chart",
+    }
+    # A malformed id in the URL is still refused and audited, without a patient.
+    assert reception.get("/api/v1/patients/not-a-uuid/chart/").status_code == 403
+    assert AuditEvent.objects.filter(action="access.denied", patient_id=None).count() == 1
+
+
 def test_every_patient_read_endpoint_asks_the_chart_policy(api_as, facility, patient, monkeypatch):
     client = api_as("receptionist", "clinical_officer", facility=facility)
     monkeypatch.setattr(chart, "decide", lambda *args, **kwargs: chart.NO_ACCESS)

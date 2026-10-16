@@ -88,6 +88,18 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `API_ORIGIN` | `http://127.0.0.1:8000` | Where `next dev` forwards `/api/*` (compose sets `http://api:8000`). Production does not use it: nginx routes `/api/` to Django. |
 | `DESIGN_CATALOGUE` | off | `on` shows the `/design` component catalogue in a production build (it is always on in development). It contains only synthetic examples. |
 
+## Browser scenarios (test runner only, `make e2e`)
+
+Read by `web/playwright.config.ts` and `web/tests/e2e/storage-env.ts`; never by a deployed app.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `SEED_PASSWORD` | — | Password of the synthetic seed and test users (required; see Data protection). |
+| `E2E_REUSE` | off | `1` reuses a web server already running on port 3100 instead of building one. |
+| `E2E_STORAGE` | on | `off` skips the S3 endpoint and the second API server that E2E-12 needs (`make smoke` sets it). |
+| `E2E_S3_ENDPOINT` | — | S3 endpoint for E2E-12, e.g. MinIO from the compose services (`http://127.0.0.1:9000`). Unset: Playwright starts a throwaway moto S3 server on port 9105 and moves the scenario's files back to local disk afterwards. |
+| `E2E_S3_BUCKET`, `E2E_S3_ACCESS_KEY_ID`, `E2E_S3_SECRET_ACCESS_KEY` | `S3_BUCKET` / `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD`, then the compose defaults | Bucket and credentials for that endpoint (dev/CI only). |
+
 ## Legacy integrations (replaced by adapters in later phases)
 
 | Variable | Purpose |
