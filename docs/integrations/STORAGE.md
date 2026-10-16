@@ -60,6 +60,7 @@ Contabo's object storage regions are the EU, US and Singapore; none is in Kenya.
   5. Report: copied, skipped, failed (with reasons); audit event per batch.
 - The same command migrates back (`--from s3 --to local`).
 - `storage_verify` checks a sample (or all) objects: exists, ciphertext hash matches, decrypts, plaintext hash matches.
+- `storage_init` (dev/CI only; the compose `api` service runs it at start) creates `DATA_DIR/objects` and, when `S3_BUCKET` is set, the bucket. Production buckets are created and locked down by operations.
 
 ## 7. Backups and operations
 

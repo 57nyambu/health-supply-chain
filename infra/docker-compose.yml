@@ -34,6 +34,7 @@ x-api: &api
   depends_on:
     postgres: { condition: service_healthy }
     redis: { condition: service_healthy }
+    minio: { condition: service_started }
 
 services:
   postgres:
@@ -76,7 +77,7 @@ services:
 
   api:
     <<: *api
-    command: ["sh", "-c", "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"]
+    command: ["sh", "-c", "python manage.py migrate --noinput && python manage.py storage_init && python manage.py runserver 0.0.0.0:8000"]
     ports: ["127.0.0.1:8000:8000"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]

@@ -6,7 +6,7 @@ The agent updates this file at the end of every session (and before context runs
 - **Active phase:** 1 (in progress)
 - **Last tag:** none
 - **`main` status:** green — `make check` passes (API tests, coverage gate, migrations, OpenAPI drift, secret scan); web gates skip until `web/` exists
-- **Next feature:** P1-STO-02 (storage_migrate / storage_verify), then P1-PAT-02
+- **Next feature:** P1-PAT-02 (Client Registry port, fake, contract tests), then the web workspaces
 
 ## Owner actions (external, long lead time — start now)
 - [ ] Decide production hosting for real patient data (ADR-006): Kenya-hosted, or Contabo with documented legal basis
@@ -86,6 +86,7 @@ Done this session:
 - P1-UAC-09 — `core.sensitivity` (`SensitiveRecord`, categories from DESIGN §7.7, `redact` placeholders); documents carry the flag; chart timeline and document lists show `hidden: sensitive` below level `sensitive`, break-glass included; a registry test makes every Note/Diagnosis/Result/Document model inherit the flag; DSAR exports use the same placeholders (ADR-021)
 - P1-DATA-02 — privacy-notice acknowledgement required at registration (version, method, who, staff) and append-only `Consent` rows; `DataSubjectRequest` register with due dates from the gazetted regulations (DECISIONS Findings 2026-10-16), identity check, FHIR-shaped JSON bundle + ReportLab PDF (ADR-020) stored as `dsar_export` documents and downloaded through the register; `retention_until`/`legal_hold` on patients and documents; merges move consents and documents
 - P1-AUD-01 — complete: document views now audited alongside chart opens and searches
+- P1-STO-02 — `storage_migrate` (dry run, copy + checksum + flip per row, keyset batches so re-runs resume, `--verify` read-back, `--purge-source` as a separate run that re-verifies the destination first, both directions, audit per batch), `storage_verify` (missing / ciphertext / decryption / plaintext checks), `storage_init` for the dev bucket (compose runs it)
 - Settings modules now pin `DJANGO_ENV` (tests ran as `dev` before); key caches reset when key settings change
 Verified:
 - `make check` ✔ (pytest, coverage 93.8 %, critical modules ≥ 95 %, migrations, OpenAPI drift, gitleaks); compose/Jenkins not runnable here (no Docker)
