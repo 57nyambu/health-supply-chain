@@ -16,7 +16,7 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from django.db.models import Model
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, PermissionDenied
 from rest_framework.permissions import BasePermission
 
 from apps.access import policies
@@ -70,6 +70,14 @@ def request_facility(request: Any) -> int | None:
     django_request._access_facility = facility_id
     if facility_id is not None:
         audit_context.update(facility_id=facility_id)
+    return facility_id
+
+
+def require_facility(request: Any) -> int:
+    """The request facility, for views whose policy already required one."""
+    facility_id = request_facility(request)
+    if facility_id is None:
+        raise PermissionDenied("Choose a facility first.")
     return facility_id
 
 

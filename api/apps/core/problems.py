@@ -232,7 +232,11 @@ def exception_handler(exc, context):
             detail = SAFE_BUILTIN_DETAILS.get(code) or _safe_message(
                 str(exc.detail), code, _submitted_strings(request)
             )
-        return problem_response(exc.status_code, code, detail, headers=headers or None)
+        response = problem_response(exc.status_code, code, detail, headers=headers or None)
+        extra = getattr(exc, "extra", None)
+        if isinstance(extra, dict):
+            response.data.update(extra)  # e.g. candidate IDs (opaque UUIDs, no PHI)
+        return response
 
     # Unexpected error: log it (no request data) and answer with a generic 500.
     set_rollback()

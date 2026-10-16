@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
     "apps.access",
     "apps.audit",
     "apps.facilities",
+    "apps.patients",
     "apps.products",
     "apps.suppliers",
     "apps.warehouses",
@@ -169,6 +171,7 @@ REST_FRAMEWORK = {
         "public_api": env("PUBLIC_API_RATE", default="120/min"),
         "login": env("LOGIN_RATE", default="20/min"),
         "pin": env("PIN_RATE", default="10/min"),
+        "patient_search": env("PATIENT_SEARCH_RATE", default="60/min"),
     },
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",

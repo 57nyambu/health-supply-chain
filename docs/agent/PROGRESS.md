@@ -5,8 +5,8 @@ The agent updates this file at the end of every session (and before context runs
 ## Current state
 - **Active phase:** 1 (in progress)
 - **Last tag:** none
-- **`main` status:** legacy has no tests; `manage.py check` clean (see Legacy inventory)
-- **Next feature:** P1-REPO-01
+- **`main` status:** green — `make check` passes (API tests, coverage gate, migrations, OpenAPI drift, secret scan); web gates skip until `web/` exists
+- **Next feature:** P1-UAC-08 (care-team chart access and break-glass)
 
 ## Owner actions (external, long lead time — start now)
 - [ ] Decide production hosting for real patient data (ADR-006): Kenya-hosted, or Contabo with documented legal basis
@@ -71,6 +71,24 @@ Also: stray packages `apps/migrations/`, `root/migrations/`, `static/migrations/
 - The unauthenticated `sales` views and the AI endpoints are closed in P1-UAC-03 (AI behind `AI_FEATURES_ENABLED=false`).
 
 ## Session log
+
+### Session 2026-10-16 — Phase 1
+Done this session:
+- P1-UAC-04 — session + CSRF only (JWT removed, outstanding refresh tokens blacklisted), argon2id, 12-character minimum with breached list, lockout with progressive delay, idle/absolute expiry (`7240645`)
+- P1-UAC-05 + P1-DATA-01 (in progress) — TOTP MFA with recovery codes; AES-256-GCM field encryption with key IDs, HMAC blind indexes, `rotate_field_keys` (`82def44`)
+- P1-UAC-06 — shared-workstation lock, PIN unlock and quick user switch (`a2fcc46`)
+- P1-UAC-07 — professional licences gate licensed permissions; HWR port + fake (`a1cd948`, GAP-HWR-001)
+- P1-FAC-01 admin API and P1-AUD-01 viewer API (`14f54f3`)
+- P1-PAT-01 — patient registry: encrypted identifiers/contacts/next of kin with blind-index search, gap-free MRN per facility per year (`core.sequences`), search-before-create with fuzzy name + DOB scoring and override reason, estimated DOB, unidentified emergency registration (ER-YYYY-NNNN), maker-checker merge and reversal; access admin API (roles, assignments, approvals inbox)
+Verified:
+- `make check` ✔ (pytest, coverage 93.8 %, critical modules ≥ 95 %, migrations, OpenAPI drift, gitleaks); compose/Jenkins not runnable here (no Docker)
+Next:
+- P1-UAC-08 care-team access levels and break-glass, then P1-UAC-09, P1-DATA-02, P1-STO-01/02, P1-PAT-02, web
+Blockers / risks:
+- P1-DATA-01 stays in progress until raw integration payloads use the encrypted field (ExchangeLog arrives with P1-PAT-02); consent tokens arrive with the Phase 3 payer-consent model and will use the same field type
+- P1-PAT-01 lists P1-DATA-01 as a dependency; the parts PAT-01 needs (encrypted fields, blind indexes, rotation) are done and tested, so PAT-01 was built now
+Decisions:
+- MRN format per facility (`Facility.mrn_format`), default `{MFL}-{YY}-{seq:06d}`, numbering gap-free per facility per year (DESIGN §5 default)
 
 ### Session 2026-10-15 — Phase 1
 Done this session:

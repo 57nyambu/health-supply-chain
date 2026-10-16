@@ -4,6 +4,282 @@ info:
   version: 1.0.0
   description: AfyaSync hospital management information system API.
 paths:
+  /api/v1/access/approvals/:
+    get:
+      operationId: v1_access_approvals_list
+      description: Requests the user made, or may decide, in the request facility
+        (services enforce rights).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedApprovalList'
+          description: ''
+  /api/v1/access/approvals/{id}/:
+    get:
+      operationId: v1_access_approvals_retrieve
+      description: Requests the user made, or may decide, in the request facility
+        (services enforce rights).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this approval request.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Approval'
+          description: ''
+  /api/v1/access/approvals/{id}/approve/:
+    post:
+      operationId: v1_access_approvals_approve_create
+      description: Requests the user made, or may decide, in the request facility
+        (services enforce rights).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this approval request.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+          description: ''
+  /api/v1/access/approvals/{id}/reject/:
+    post:
+      operationId: v1_access_approvals_reject_create
+      description: Requests the user made, or may decide, in the request facility
+        (services enforce rights).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this approval request.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+          description: ''
+  /api/v1/access/assignments/:
+    get:
+      operationId: v1_access_assignments_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAssignmentList'
+          description: ''
+    post:
+      operationId: v1_access_assignments_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AssignmentRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+          description: ''
+  /api/v1/access/assignments/{id}/:
+    get:
+      operationId: v1_access_assignments_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role assignment.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+          description: ''
+  /api/v1/access/assignments/{id}/revoke/:
+    post:
+      operationId: v1_access_assignments_revoke_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role assignment.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RevokeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RevokeRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Revoke'
+          description: ''
+  /api/v1/access/roles/:
+    get:
+      operationId: v1_access_roles_list
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+          description: ''
+  /api/v1/access/roles/{id}/:
+    get:
+      operationId: v1_access_roles_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
   /api/v1/accounts/licences/:
     get:
       operationId: v1_accounts_licences_list
@@ -24,6 +300,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -49,6 +326,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -70,6 +348,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -101,6 +380,7 @@ paths:
               $ref: '#/components/schemas/PatchedLicenceRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -134,6 +414,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -161,6 +442,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -182,6 +464,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -214,6 +497,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -245,6 +529,7 @@ paths:
               $ref: '#/components/schemas/PatchedWorkerProfileRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -272,6 +557,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -297,6 +583,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -318,6 +605,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -350,6 +638,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -381,6 +670,7 @@ paths:
               $ref: '#/components/schemas/PatchedUserRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -414,6 +704,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -449,6 +740,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -482,6 +774,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -496,6 +789,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -510,6 +804,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -531,6 +826,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -541,6 +837,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -551,6 +848,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -563,6 +861,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -592,6 +891,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -614,6 +914,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -637,6 +938,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -659,6 +961,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -673,6 +976,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -684,6 +988,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -705,6 +1010,7 @@ paths:
               $ref: '#/components/schemas/MfaCodeRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -720,6 +1026,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -742,6 +1049,7 @@ paths:
               $ref: '#/components/schemas/MfaCodeRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -768,6 +1076,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -791,6 +1100,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -818,6 +1128,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -844,6 +1155,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -873,6 +1185,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -900,6 +1213,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -923,6 +1237,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -956,6 +1271,7 @@ paths:
               $ref: '#/components/schemas/PatchedBedRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -991,6 +1307,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1020,6 +1337,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1047,6 +1365,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -1070,6 +1389,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1103,6 +1423,7 @@ paths:
               $ref: '#/components/schemas/PatchedDepartmentRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1132,6 +1453,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1155,6 +1477,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1188,6 +1511,7 @@ paths:
               $ref: '#/components/schemas/PatchedFacilityRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1217,6 +1541,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1244,6 +1569,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -1267,6 +1593,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1300,6 +1627,7 @@ paths:
               $ref: '#/components/schemas/PatchedServicePointRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1329,6 +1657,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1356,6 +1685,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -1379,6 +1709,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1412,6 +1743,7 @@ paths:
               $ref: '#/components/schemas/PatchedWardRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1426,6 +1758,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1442,6 +1775,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1469,6 +1803,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -1483,6 +1818,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -1506,12 +1842,343 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FacilityChoice'
+          description: ''
+  /api/v1/patients/:
+    post:
+      operationId: v1_patients_create
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /api/v1/patients/{id}/:
+    get:
+      operationId: v1_patients_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+    patch:
+      operationId: v1_patients_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /api/v1/patients/{id}/contacts/:
+    post:
+      operationId: v1_patients_contacts_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContactInputRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactInput'
+          description: ''
+  /api/v1/patients/{id}/identifiers/:
+    post:
+      operationId: v1_patients_identifiers_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdentifierInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IdentifierInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IdentifierInputRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentifierInput'
+          description: ''
+  /api/v1/patients/{id}/merge/:
+    post:
+      operationId: v1_patients_merge_create
+      description: Request merging ``duplicate`` into this record (an HRIO supervisor
+        approves).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MergeRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MergeRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MergeRequestRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MergeRequest'
+          description: ''
+  /api/v1/patients/{id}/next-of-kin/:
+    post:
+      operationId: v1_patients_next_of_kin_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NextOfKinInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NextOfKinInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NextOfKinInputRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NextOfKinInput'
+          description: ''
+  /api/v1/patients/merges/:
+    get:
+      operationId: v1_patients_merges_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMergeList'
+          description: ''
+  /api/v1/patients/merges/{id}/:
+    get:
+      operationId: v1_patients_merges_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient merge.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Merge'
+          description: ''
+  /api/v1/patients/merges/{id}/unmerge/:
+    post:
+      operationId: v1_patients_merges_unmerge_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient merge.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnmergeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UnmergeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UnmergeRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unmerge'
+          description: ''
+  /api/v1/patients/search/:
+    get:
+      operationId: v1_patients_search_retrieve
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResult'
+          description: ''
+  /api/v1/patients/unidentified/:
+    post:
+      operationId: v1_patients_unidentified_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnidentifiedRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UnidentifiedRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UnidentifiedRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unidentified'
           description: ''
   /api/v1/products/categories/:
     get:
@@ -1534,6 +2201,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1560,6 +2228,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -1582,6 +2251,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1615,6 +2285,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1647,6 +2318,7 @@ paths:
               $ref: '#/components/schemas/PatchedCategoryRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1675,6 +2347,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1701,6 +2374,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -1723,6 +2397,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1756,6 +2431,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1788,6 +2464,7 @@ paths:
               $ref: '#/components/schemas/PatchedInventoryRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1816,6 +2493,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1842,6 +2520,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -1864,6 +2543,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1897,6 +2577,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1929,6 +2610,7 @@ paths:
               $ref: '#/components/schemas/PatchedProductRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -1950,6 +2632,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '204':
           description: No response body
@@ -1978,6 +2661,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2009,6 +2693,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -2035,6 +2720,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2060,6 +2746,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '204':
           description: No response body
@@ -2070,6 +2757,8 @@ paths:
         role, throttled.'
       tags:
       - v1
+      security:
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -2080,6 +2769,8 @@ paths:
         role, throttled.'
       tags:
       - v1
+      security:
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -2096,6 +2787,8 @@ paths:
         required: true
       tags:
       - v1
+      security:
+      - apiKey: []
       responses:
         '200':
           description: No response body
@@ -2119,6 +2812,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2144,6 +2838,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -2165,6 +2860,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2197,6 +2893,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2228,6 +2925,7 @@ paths:
               $ref: '#/components/schemas/PatchedBinLocationRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2257,6 +2955,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2280,6 +2979,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2314,6 +3014,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2347,6 +3048,7 @@ paths:
               $ref: '#/components/schemas/PatchedBranchRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2376,6 +3078,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2403,6 +3106,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -2426,6 +3130,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2461,6 +3166,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2496,6 +3202,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2523,6 +3230,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2548,6 +3256,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '201':
           content:
@@ -2569,6 +3278,7 @@ paths:
       - v1
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2601,6 +3311,7 @@ paths:
         required: true
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2632,6 +3343,7 @@ paths:
               $ref: '#/components/schemas/PatchedWarehouseRequest'
       security:
       - cookieAuth: []
+      - apiKey: []
       responses:
         '200':
           content:
@@ -2655,6 +3367,198 @@ components:
         * `overcrowded` - Overcrowded
         * `stockout_risk` - Stock-Out Risk
         * `custom` - Custom
+    Approval:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        action:
+          type: string
+          readOnly: true
+          description: Executor key, e.g. access.assignment.grant
+        required_permissions:
+          readOnly: true
+          description: Permission codes, one approval needed per entry
+        amount:
+          type:
+          - string
+          - 'null'
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        threshold_band:
+          type: string
+          readOnly: true
+        resource_type:
+          type: string
+          readOnly: true
+        resource_id:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ApprovalStatusEnum'
+          readOnly: true
+        requested_by:
+          type: integer
+          readOnly: true
+        requested_at:
+          type: string
+          format: date-time
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+        decided_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+      required:
+      - action
+      - amount
+      - decided_at
+      - expires_at
+      - id
+      - reason
+      - requested_at
+      - requested_by
+      - required_permissions
+      - resource_id
+      - resource_type
+      - status
+      - threshold_band
+    ApprovalStatusEnum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      - expired
+      - cancelled
+      - invalidated
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `approved` - Approved
+        * `rejected` - Rejected
+        * `expired` - Expired
+        * `cancelled` - Cancelled
+        * `invalidated` - Invalidated
+    Assignment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        role:
+          type: string
+        department:
+          type:
+          - integer
+          - 'null'
+        ward:
+          type:
+          - integer
+          - 'null'
+        valid_from:
+          type: string
+          format: date-time
+        valid_to:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AssignmentStatusEnum'
+          readOnly: true
+        reason:
+          type: string
+          maxLength: 255
+        granted_by:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        approved_by:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        approval:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        revoked_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+      required:
+      - approval
+      - approved_by
+      - granted_by
+      - id
+      - reason
+      - revoked_at
+      - role
+      - status
+      - user
+    AssignmentRequest:
+      type: object
+      properties:
+        user:
+          type: integer
+        role:
+          type: string
+          minLength: 1
+        department:
+          type:
+          - integer
+          - 'null'
+        ward:
+          type:
+          - integer
+          - 'null'
+        valid_from:
+          type: string
+          format: date-time
+        valid_to:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        reason:
+          type: string
+          maxLength: 255
+      required:
+      - reason
+      - role
+      - user
+    AssignmentStatusEnum:
+      enum:
+      - pending_approval
+      - active
+      - rejected
+      - revoked
+      type: string
+      description: |-
+        * `pending_approval` - Pending approval
+        * `active` - Active
+        * `rejected` - Rejected
+        * `revoked` - Revoked
     AuditEvent:
       type: object
       properties:
@@ -3060,6 +3964,71 @@ components:
           $ref: '#/components/schemas/VatCategoryEnum'
       required:
       - name
+    ChartBaselineEnum:
+      enum:
+      - none
+      - demographics
+      - summary
+      - full
+      - sensitive
+      type: string
+      description: |-
+        * `none` - none
+        * `demographics` - demographics
+        * `summary` - summary
+        * `full` - full
+        * `sensitive` - sensitive
+    ChartCareTeamEnum:
+      enum:
+      - none
+      - demographics
+      - summary
+      - full
+      - sensitive
+      type: string
+      description: |-
+        * `none` - none
+        * `demographics` - demographics
+        * `summary` - summary
+        * `full` - full
+        * `sensitive` - sensitive
+    ContactInput:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/ContactInputKindEnum'
+        value:
+          type: string
+          maxLength: 120
+        is_primary:
+          type: boolean
+          default: false
+      required:
+      - kind
+      - value
+    ContactInputKindEnum:
+      enum:
+      - phone
+      - email
+      type: string
+      description: |-
+        * `phone` - Phone
+        * `email` - E-mail
+    ContactInputRequest:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/ContactInputKindEnum'
+        value:
+          type: string
+          minLength: 1
+          maxLength: 120
+        is_primary:
+          type: boolean
+          default: false
+      required:
+      - kind
+      - value
     CountyEnum:
       enum:
       - MOMBASA
@@ -3158,6 +4127,20 @@ components:
         * `KISII` - Kisii
         * `NYAMIRA` - Nyamira
         * `NAIROBI` - Nairobi
+    Decision:
+      type: object
+      properties:
+        comment:
+          type: string
+          default: ''
+          maxLength: 255
+    DecisionRequest:
+      type: object
+      properties:
+        comment:
+          type: string
+          default: ''
+          maxLength: 255
     Department:
       type: object
       properties:
@@ -3411,6 +4394,40 @@ components:
       required:
       - date
       - warehouse
+    IdentifierInput:
+      type: object
+      properties:
+        type:
+          type: string
+          maxLength: 20
+        value:
+          type: string
+          maxLength: 40
+        issuer:
+          type: string
+          default: ''
+          maxLength: 40
+      required:
+      - type
+      - value
+    IdentifierInputRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          minLength: 1
+          maxLength: 20
+        value:
+          type: string
+          minLength: 1
+          maxLength: 40
+        issuer:
+          type: string
+          default: ''
+          maxLength: 40
+      required:
+      - type
+      - value
     Inventory:
       type: object
       properties:
@@ -3593,6 +4610,97 @@ components:
       required:
       - email
       - password
+    Merge:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        survivor:
+          type: string
+          format: uuid
+          readOnly: true
+        duplicate:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MergeStatusEnum'
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        approval:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        reversal_approval:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        merged_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        reversed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+      required:
+      - approval
+      - duplicate
+      - id
+      - merged_at
+      - reason
+      - reversal_approval
+      - reversed_at
+      - status
+      - survivor
+    MergeRequest:
+      type: object
+      properties:
+        duplicate:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          maxLength: 255
+      required:
+      - duplicate
+      - reason
+    MergeRequestRequest:
+      type: object
+      properties:
+        duplicate:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - duplicate
+      - reason
+    MergeStatusEnum:
+      enum:
+      - requested
+      - merged
+      - reversed
+      type: string
+      description: |-
+        * `requested` - Waiting for approval
+        * `merged` - Merged
+        * `reversed` - Reversed
     MfaCode:
       type: object
       properties:
@@ -3611,6 +4719,40 @@ components:
         recovery_code:
           type: string
           maxLength: 20
+    NextOfKinInput:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        relationship:
+          type: string
+          maxLength: 40
+        phone:
+          type: string
+          default: ''
+          maxLength: 20
+      required:
+      - name
+      - relationship
+    NextOfKinInputRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        relationship:
+          type: string
+          minLength: 1
+          maxLength: 40
+        phone:
+          type: string
+          default: ''
+          maxLength: 20
+      required:
+      - name
+      - relationship
     NullEnum:
       type: 'null'
     OutcomeEnum:
@@ -3623,6 +4765,52 @@ components:
         * `success` - Success
         * `denied` - Denied
         * `failure` - Failure
+    PaginatedApprovalList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Approval'
+    PaginatedAssignmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Assignment'
     PaginatedAuditEventList:
       type: object
       required:
@@ -3826,6 +5014,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Licence'
+    PaginatedMergeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Merge'
     PaginatedProductImageList:
       type: object
       required:
@@ -4359,7 +5570,7 @@ components:
         kind:
           $ref: '#/components/schemas/WardKindEnum'
         sex:
-          $ref: '#/components/schemas/SexEnum'
+          $ref: '#/components/schemas/WardSexEnum'
         department:
           type:
           - integer
@@ -4425,6 +5636,101 @@ components:
           - integer
           - 'null'
           description: Facility assignment for Tier-2 scoped dashboards and AI endpoints.
+    Patient:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        mrn:
+          type: string
+          readOnly: true
+          title: Medical record number
+        given_name:
+          type: string
+          readOnly: true
+        middle_name:
+          type: string
+          readOnly: true
+        family_name:
+          type: string
+          readOnly: true
+        display_name:
+          type: string
+          readOnly: true
+        sex:
+          allOf:
+          - $ref: '#/components/schemas/SexD10Enum'
+          readOnly: true
+        date_of_birth:
+          type:
+          - string
+          - 'null'
+          format: date
+          readOnly: true
+        dob_estimated:
+          type: boolean
+          readOnly: true
+        age:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        is_unidentified:
+          type: boolean
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+          description: Placeholder for unidentified patients, e.g. Unknown male, approx.
+            30y
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PatientStatusEnum'
+          readOnly: true
+        merged_into:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+        identifiers:
+          readOnly: true
+        contacts:
+          readOnly: true
+        next_of_kin:
+          readOnly: true
+      required:
+      - age
+      - contacts
+      - date_of_birth
+      - description
+      - display_name
+      - dob_estimated
+      - family_name
+      - given_name
+      - id
+      - identifiers
+      - is_unidentified
+      - merged_into
+      - middle_name
+      - mrn
+      - next_of_kin
+      - sex
+      - status
+      - version
+    PatientStatusEnum:
+      enum:
+      - active
+      - merged
+      type: string
+      description: |-
+        * `active` - Active
+        * `merged` - Merged into another record
     Pin:
       type: object
       properties:
@@ -4788,6 +6094,81 @@ components:
         * `PPB` - Pharmacy and Poisons Board
         * `KMLTTB` - Kenya Medical Laboratory Technicians and Technologists Board
         * `OTHER` - Other regulator
+    Revoke:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 255
+      required:
+      - reason
+    RevokeRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - reason
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        privileged:
+          type: boolean
+          readOnly: true
+          description: Granting it needs a second facility admin
+        mfa_required:
+          type: boolean
+          readOnly: true
+        addon:
+          type: boolean
+          readOnly: true
+          description: Supervisor add-on assigned on top of a base role
+        requires_cosign:
+          type: boolean
+          readOnly: true
+        chart_baseline:
+          allOf:
+          - $ref: '#/components/schemas/ChartBaselineEnum'
+          readOnly: true
+        chart_care_team:
+          allOf:
+          - $ref: '#/components/schemas/ChartCareTeamEnum'
+          readOnly: true
+        licence_regulators:
+          readOnly: true
+          description: Regulators whose licence covers licensed permissions
+        permissions:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - addon
+      - chart_baseline
+      - chart_care_team
+      - code
+      - description
+      - id
+      - licence_regulators
+      - mfa_required
+      - name
+      - permissions
+      - privileged
+      - requires_cosign
     RoleEnum:
       enum:
       - ADMIN
@@ -4804,6 +6185,50 @@ components:
         * `WAREHOUSE` - Warehouse Staff
         * `CASHIER` - Cashier
         * `REPORTER` - Reports Viewer
+    SearchResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mrn:
+          type: string
+        display_name:
+          type: string
+        sex:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+        dob_estimated:
+          type: boolean
+        age:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        is_unidentified:
+          type: boolean
+        identifiers:
+          readOnly: true
+        score:
+          type: integer
+        reasons:
+          type: array
+          items:
+            type: string
+      required:
+      - age
+      - date_of_birth
+      - display_name
+      - dob_estimated
+      - id
+      - identifiers
+      - is_unidentified
+      - mrn
+      - reasons
+      - score
+      - sex
     ServicePoint:
       type: object
       properties:
@@ -4890,16 +6315,18 @@ components:
         * `low` - Low
         * `medium` - Medium
         * `high` - High
-    SexEnum:
+    SexD10Enum:
       enum:
       - female
       - male
-      - mixed
+      - intersex
+      - unknown
       type: string
       description: |-
         * `female` - Female
         * `male` - Male
-        * `mixed` - Mixed
+        * `intersex` - Intersex
+        * `unknown` - Unknown
     StatusCcdEnum:
       enum:
       - available
@@ -5165,6 +6592,49 @@ components:
         * `SUPPLIER` - Supplier Delivery
         * `CUSTOMER` - Customer Return
         * `DAMAGED` - Damaged Goods
+    Unidentified:
+      type: object
+      properties:
+        sex:
+          $ref: '#/components/schemas/SexD10Enum'
+        approx_age_years:
+          type:
+          - integer
+          - 'null'
+          maximum: 130
+          minimum: 0
+      required:
+      - sex
+    UnidentifiedRequest:
+      type: object
+      properties:
+        sex:
+          $ref: '#/components/schemas/SexD10Enum'
+        approx_age_years:
+          type:
+          - integer
+          - 'null'
+          maximum: 130
+          minimum: 0
+      required:
+      - sex
+    Unmerge:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 255
+      required:
+      - reason
+    UnmergeRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - reason
     User:
       type: object
       properties:
@@ -5330,7 +6800,7 @@ components:
         kind:
           $ref: '#/components/schemas/WardKindEnum'
         sex:
-          $ref: '#/components/schemas/SexEnum'
+          $ref: '#/components/schemas/WardSexEnum'
         department:
           type:
           - integer
@@ -5383,7 +6853,7 @@ components:
         kind:
           $ref: '#/components/schemas/WardKindEnum'
         sex:
-          $ref: '#/components/schemas/SexEnum'
+          $ref: '#/components/schemas/WardSexEnum'
         department:
           type:
           - integer
@@ -5393,6 +6863,16 @@ components:
       required:
       - code
       - name
+    WardSexEnum:
+      enum:
+      - female
+      - male
+      - mixed
+      type: string
+      description: |-
+        * `female` - Female
+        * `male` - Male
+        * `mixed` - Mixed
     Warehouse:
       type: object
       properties:
@@ -5575,6 +7055,10 @@ components:
       required:
       - branch
   securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
     cookieAuth:
       type: apiKey
       in: cookie

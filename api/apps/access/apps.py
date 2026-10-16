@@ -27,3 +27,5 @@ class AccessConfig(AppConfig):
         from apps.access import approvals, assignments
 
         approvals.register_executor(assignments.GRANT_ACTION, assignments.activate_privileged_grant)
+        # Service-account API keys appear as a security scheme in the OpenAPI document.
+        from apps.access import schema  # noqa: F401

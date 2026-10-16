@@ -1,6 +1,7 @@
 from django.db import models
 
 from apps.core.fields import EncryptedBinaryField
+from apps.core.ids import uuid7
 
 
 class BaseModel(models.Model):
@@ -73,3 +74,45 @@ class IdempotencyRecord(models.Model):
 
     def __str__(self):
         return f"{self.method} {self.path} ({self.state})"
+
+
+class Sequence(models.Model):
+    """Counter behind core.sequences.next_value (one row per facility, series and year)."""
+
+    facility_id = models.BigIntegerField()
+    name = models.CharField(max_length=40)
+    year = models.PositiveSmallIntegerField()
+    last_value = models.PositiveBigIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["facility_id", "name", "year"], name="core_sequence_series"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.name} {self.year} @ facility {self.facility_id}: {self.last_value}"
+
+
+class PhiModel(models.Model):
+    """Base for patient data (api/CLAUDE.md): UUIDv7 key, facility scope, authorship, version.
+
+    ``version`` supports optimistic concurrency: updates send the version they read and
+    get 409 when someone else changed the row first.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    facility = models.ForeignKey("facilities.Facility", on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, null=True, related_name="+"
+    )
+    updated_by = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, null=True, related_name="+"
+    )
+    version = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        abstract = True
