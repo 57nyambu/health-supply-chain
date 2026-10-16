@@ -3,7 +3,8 @@ import { expect, test } from "@playwright/test";
 // P1-WEB-01: the browser reaches Django through /api/* on its own origin; the session
 // cookie is httpOnly and unsafe requests need Django's CSRF token — no CORS involved.
 test("the API is same-origin and CSRF-protected", async ({ page }) => {
-  await page.goto("/");
+  // A public page that stays put ("/" redirects signed-out visitors to sign in).
+  await page.goto("/session-expired");
   const result = await page.evaluate(async () => {
     const csrf = await fetch("/api/v1/auth/csrf").then((r) => r.json());
     const login = (headers: Record<string, string>) =>

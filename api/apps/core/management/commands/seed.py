@@ -8,6 +8,9 @@ from django.core.management.base import BaseCommand, CommandError
 # Ordered seed steps; each module exposes run(command). Steps are idempotent.
 SEED_STEPS = [
     "apps.facility_ops.seed",
+    "apps.facilities.seed",
+    "apps.accounts.seed",
+    "apps.patients.seed",
 ]
 
 

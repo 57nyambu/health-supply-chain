@@ -52,6 +52,7 @@ def test_safe_production_settings_pass():
         ({"DATA_RESIDENCY_MODE": "off"}, "DATA_RESIDENCY_MODE"),
         ({"ALLOWED_HOSTS": ["*"]}, "DJANGO_ALLOWED_HOSTS"),
         ({"STORAGE_ENCRYPTION": False}, "STORAGE_ENCRYPTION"),
+        ({"MFA_DEV_BYPASS": True}, "MFA_DEV_BYPASS"),
         ({"STORAGE_BACKEND": "ftp"}, "STORAGE_BACKEND"),
         ({"STORAGE_BACKEND": "s3", "S3_BUCKET": ""}, "S3_BUCKET"),
     ],

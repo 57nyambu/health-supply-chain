@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import Link from "next/link";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -29,7 +30,7 @@ describe("Button", () => {
   it("renders a link with asChild", () => {
     render(
       <Button asChild variant="secondary">
-        <a href="/reception">Go to reception</a>
+        <Link href="/reception">Go to reception</Link>
       </Button>,
     );
     expect(screen.getByRole("link", { name: "Go to reception" })).toHaveClass("border-border-strong");

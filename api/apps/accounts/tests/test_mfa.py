@@ -230,3 +230,18 @@ def test_admin_reset_removes_mfa_enrolment(admin, facility, api_as):
     other_admin = api_as("facility_admin", facility=facility)
     other_admin.post(f"/api/v1/accounts/users/{admin.pk}/reset-credentials/")
     assert not MfaDevice.objects.filter(user=admin, removed_at__isnull=True).exists()
+
+
+def test_dev_bypass_lets_seeded_admins_in_without_a_device_only_in_dev(admin, settings):
+    settings.MFA_DEV_BYPASS = True
+    settings.DJANGO_ENV = "test"
+    client = browser()
+    sign_in(client, admin)
+    assert client.get(USERS).json()["code"] == "mfa_enrolment_required"  # not dev: no bypass
+    settings.DJANGO_ENV = "dev"
+    assert client.get(USERS).status_code == 200
+    assert client.get("/api/v1/me").json()["mfa"]["required"] is False
+    secret, _codes = enrol(client)  # once enrolled, the second factor is asked again
+    fresh = browser()
+    assert sign_in(fresh, admin).json() == {"status": "mfa_required"}
+    assert post(fresh, "/api/v1/auth/mfa/verify", {"code": next_code(secret)}).status_code == 200

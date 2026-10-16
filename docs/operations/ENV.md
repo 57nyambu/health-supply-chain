@@ -12,7 +12,7 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `DJANGO_SECRET_KEY` | dev placeholder | yes | Session/CSRF signing. Production: random, ≥ 50 characters. |
 | `DJANGO_DEBUG` | `True` in dev, `False` elsewhere | must be off | Django debug mode. |
 | `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | yes, no `*` | Host names the API answers to. |
-| `CSRF_TRUSTED_ORIGINS` | empty (dev: `http://127.0.0.1:3000,http://localhost:3000`) | — | Origins (scheme + host) allowed to send unsafe requests with the CSRF token. In development the Next.js dev server proxies `/api/*` with Django's Host, so its origin must be listed; production is same-host behind nginx. |
+| `CSRF_TRUSTED_ORIGINS` | empty (dev: `http://127.0.0.1:3000,http://localhost:3000,http://127.0.0.1:3100`) | — | Origins (scheme + host) allowed to send unsafe requests with the CSRF token. In development the Next.js dev server proxies `/api/*` with Django's Host, so its origin must be listed; production is same-host behind nginx. |
 | `LOG_LEVEL` | `INFO` | — | Root log level. Logs are JSON on stdout with `request_id`, PHI-scrubbed. |
 | `ERROR_TRACKER_DSN` | empty | — | Sentry-compatible DSN. Enabled only when set and its host passes the residency guard (strict mode refuses to start otherwise). Request bodies, cookies, headers and local variables are never sent. |
 
@@ -46,6 +46,7 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `DATA_RESIDENCY_MODE` | `warn` (`strict` in prod) | `strict`/`warn` | Residency guard (DESIGN §8.3). `off` is refused in production. |
 | `RESIDENCY_ALLOWED_HOSTS` | empty | — | Hosts allowed to receive PHI (S3 endpoint, backup target, error tracker, log shipper). Adding a non-Kenyan host needs an ADR. |
 | `SEED_PASSWORD` | empty | — | Password for the synthetic users created by `make seed` (dev/CI only; seeding refuses to run without it and in production). |
+| `MFA_DEV_BYPASS` | `False` | `False` | Development only (`DJANGO_ENV=dev`): users without an enrolled authenticator are not asked for MFA, so seeded administrators can sign in. Anyone who enrols is still challenged. Production refuses to start with it on. |
 | `TRUST_PROXY_HEADERS` | `False` (`True` in prod) | — | Use `X-Real-IP` from nginx as the client IP in audit events. Enable only behind the project's nginx. |
 | `DB_APP_ROLE` | empty | recommended | The PostgreSQL role the API connects as in production. Run migrations as the table owner; the audit migration revokes UPDATE, DELETE and TRUNCATE on audit tables from this role. |
 | `AI_FEATURES_ENABLED` | `False` | — | Legacy AI endpoints; off until a DPIA covers them (ADR-014). |

@@ -191,6 +191,8 @@ STORAGES = {
 }
 # Password for synthetic seed users (make seed); never a real person's password.
 SEED_PASSWORD = env("SEED_PASSWORD", default="")
+# Development only: users without an enrolled authenticator skip MFA (IMPLEMENTATION §8).
+MFA_DEV_BYPASS = env.bool("MFA_DEV_BYPASS", default=False)
 # Networks treated as inside the facility; sign-ins from elsewhere need MFA (DESIGN §7.2).
 FACILITY_NETWORK_ALLOWLIST = env.list(
     "FACILITY_NETWORK_ALLOWLIST", default=["127.0.0.0/8", "::1/128"]

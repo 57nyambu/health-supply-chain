@@ -50,6 +50,8 @@ def production_problems(settings: Mapping[str, Any]) -> list[str]:
     if not _has_keys(settings.get("STORAGE_MASTER_KEYS", "")):
         problems.append("STORAGE_MASTER_KEYS must be a non-empty JSON object of key id -> key.")
 
+    if settings.get("MFA_DEV_BYPASS"):
+        problems.append("MFA_DEV_BYPASS must be off in production.")
     if not settings.get("STORAGE_ENCRYPTION", True):
         problems.append("STORAGE_ENCRYPTION must be on in production.")
     backend = settings.get("STORAGE_BACKEND", "local")

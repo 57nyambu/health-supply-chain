@@ -17,7 +17,7 @@ COVERAGE_MIN ?= 85
 
 .PHONY: help setup dev down seed reset-dev test test-api test-web e2e smoke lint typecheck \
         check check-fast migrations-check openapi openapi-check role-matrix traceability \
-        contrast secrets secrets-history deps-audit audit-verify services toolchain
+        contrast secrets secrets-history deps-audit audit-verify services toolchain seed-e2e
 
 help: ## List targets
 	@grep -hE '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-18s %s\n", $$1, $$2}'
@@ -67,12 +67,16 @@ test-api: ## pytest with coverage gates
 test-web: ## vitest
 	@if [ -n "$(HAS_WEB)" ]; then cd web && $(PNPM) test; else echo "test-web: web/ not scaffolded yet (P1-WEB-01)"; fi
 
-e2e: ## Playwright scenario suite (fake integrations, seeded data)
+e2e: seed-e2e ## Playwright scenario suite (fake integrations, synthetic seed; needs SEED_PASSWORD)
 	@if [ -n "$(HAS_WEB)" ]; then cd web && $(PNPM) e2e; else echo "e2e: web/ not scaffolded yet (P1-WEB-01)"; fi
 
-smoke: ## Playwright smoke: login, open a workspace, axe clean
+smoke: seed-e2e ## Playwright smoke: login, open a workspace, axe clean (needs SEED_PASSWORD)
 	@if [ -n "$(HAS_WEB)" ] && [ -f web/tests/e2e/smoke.spec.ts ]; then cd web && $(PNPM) smoke; \
 	else echo "smoke: login UI not built yet (P1-WEB-03)"; fi
+
+seed-e2e: ## Idempotent synthetic seed of the DJANGO_ENV=dev database for browser scenarios
+	@if [ -z "$$SEED_PASSWORD" ]; then echo "Set SEED_PASSWORD (the synthetic seed password) to run browser scenarios." >&2; exit 1; fi
+	cd api && DJANGO_ENV=dev $(UV) run python manage.py seed
 
 # --- Static checks ------------------------------------------------------------------------------
 

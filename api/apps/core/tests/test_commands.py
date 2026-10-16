@@ -7,13 +7,35 @@ from apps.warehouses.models import Warehouse
 
 
 @pytest.mark.django_db
-def test_seed_loads_synthetic_data_idempotently(settings):
+def test_seed_loads_synthetic_data_idempotently(settings, monkeypatch):
+    from apps.access.models import Role, RoleAssignment
+    from apps.accounts.models import ProfessionalLicence
+    from apps.facilities.models import Bed, Facility, ServicePoint
+    from apps.patients import seed as patient_seed
+    from apps.patients.models import Patient, PatientIdentifier
+
     settings.DJANGO_ENV = "dev"
+    monkeypatch.setattr(patient_seed, "COUNT", 6)
     call_command("seed")
     call_command("seed")
     assert Warehouse.objects.filter(code__startswith="WH-D").count() == 3
     admin = User.objects.get(email="admin@afyasync.dima.co.ke")
     assert admin.check_password(settings.SEED_PASSWORD)
+
+    site = Facility.objects.get(mfl_code="99999")
+    assert site.keph_level == 4
+    assert ServicePoint.objects.filter(facility=site).count() == 9
+    assert Bed.objects.filter(ward__facility=site).count() == 26
+    roles = Role.objects.filter(active=True, service_account=False)
+    assert RoleAssignment.objects.filter(facility=site, status="active").count() == roles.count()
+    reception = User.objects.get(email="receptionist@seed.afyasync.test")
+    assert reception.check_password(settings.SEED_PASSWORD)
+    assert ProfessionalLicence.objects.filter(
+        user__email="clinical_officer@seed.afyasync.test", regulator="COC"
+    ).exists()
+    assert Patient.objects.filter(facility=site).count() == 6
+    identifiers = PatientIdentifier.objects.filter(patient__facility=site, type="national_id")
+    assert all(row.value.startswith("000") for row in identifiers)
 
 
 @pytest.mark.django_db

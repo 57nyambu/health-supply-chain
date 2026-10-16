@@ -68,6 +68,10 @@ def role_requires_mfa(user: User) -> bool:
 
 
 def mfa_required(user: User, ip: str | None) -> bool:
+    # IMPLEMENTATION §8: seeded users may sign in without a second factor in development
+    # only; anyone who enrols a device is still challenged. Production refuses the switch.
+    if settings.MFA_DEV_BYPASS and settings.DJANGO_ENV == "dev" and active_device(user) is None:
+        return False
     if role_requires_mfa(user):
         return True
     if Facility.objects.filter(

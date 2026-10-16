@@ -65,3 +65,34 @@ export function problemMessage(problem: unknown, fallback = "Something went wron
   }
   return fallback;
 }
+
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly problem: Problem,
+  ) {
+    super(problem.code ?? `http_${status}`);
+  }
+}
+
+/**
+ * Same-origin JSON call for endpoints whose responses are not described in the schema
+ * (sign-in, MFA, workstation). Throws ApiError with the problem+json body on failure.
+ */
+export async function send<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+  const method = (init.method ?? "GET").toUpperCase();
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (init.body !== undefined) headers["Content-Type"] = "application/json";
+  if (UNSAFE.has(method)) headers["X-CSRFToken"] = await csrfToken();
+  const response = await fetch(path, {
+    method,
+    headers,
+    credentials: "same-origin",
+    cache: "no-store",
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  });
+  if (response.status === 204) return undefined as T;
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new ApiError(response.status, body as Problem);
+  return body as T;
+}

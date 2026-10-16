@@ -1,13 +1,21 @@
-import Link from "next/link";
+"use client";
 
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+import { destination, useMe } from "@/lib/auth/session";
+
+/** "/" sends a signed-in user to their first workspace; everyone else to sign-in. */
 export default function Home() {
+  const router = useRouter();
+  const { data: me, isError } = useMe();
+  useEffect(() => {
+    if (me) router.replace(destination(me));
+    else if (isError) router.replace("/login");
+  }, [me, isError, router]);
   return (
-    <main className="mx-auto max-w-xl p-8">
-      <h1 className="text-xl font-bold">AfyaSync</h1>
-      <p className="mt-2 text-ink-muted">Hospital management for Kenyan facilities.</p>
-      <Link className="mt-6 inline-block text-primary underline" href="/login">
-        Sign in
-      </Link>
-    </main>
+    <p role="status" className="p-8 text-ink-muted">
+      Loading…
+    </p>
   );
 }
