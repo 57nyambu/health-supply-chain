@@ -9,7 +9,6 @@ A hospital management information system for Kenyan health facilities — recept
 ```
 api/      Django 5.2 LTS + DRF modular monolith (manage.py, config/, apps/<domain>/)
 web/      Next.js 16 App Router + TypeScript web app (role workspaces)
-frontend/ legacy static dashboards — removed once web/ reaches parity (P1-WEB-06)
 infra/    docker compose, nginx, Jenkinsfile, systemd units, backup scripts
 data/     local object storage root (git-ignored; holds real patient files in production)
 docs/     agent/ (design, phases, decisions), compliance/, integrations/, operations/, legacy/
