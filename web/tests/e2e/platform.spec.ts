@@ -17,7 +17,7 @@ test("the API is same-origin and CSRF-protected", async ({ page }) => {
       tokenInCookie: document.cookie.includes("csrftoken="),
       withToken: await login({ "X-CSRFToken": csrf.csrf_token }),
       withoutToken: await login({}),
-      trailingSlash: (await fetch("/api/v1/patients/search/?q=abc")).status,
+      trailingSlash: (await fetch("/api/v1/patients/privacy-notice/")).status,
     };
   });
   expect(result.tokenInCookie).toBe(true);

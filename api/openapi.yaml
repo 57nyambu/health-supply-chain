@@ -2025,6 +2025,18 @@ paths:
       operationId: v1_patients_create
       tags:
       - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatientCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatientCreateRequest'
+        required: true
       security:
       - cookieAuth: []
       - apiKey: []
@@ -2048,6 +2060,18 @@ paths:
           format: uuid
         description: A UUID string identifying this patient.
         required: true
+      - in: query
+        name: purpose
+        schema:
+          type: string
+          enum:
+          - audit
+          - billing
+          - care
+          - records
+          - registration
+        description: Why the record is opened; registration and billing see demographics
+          only.
       tags:
       - v1
       security:
@@ -2058,7 +2082,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Patient'
+                $ref: '#/components/schemas/PatientRecord'
           description: ''
     patch:
       operationId: v1_patients_partial_update
@@ -2072,6 +2096,17 @@ paths:
         required: true
       tags:
       - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientUpdateRequest'
       security:
       - cookieAuth: []
       - apiKey: []
@@ -2113,11 +2148,11 @@ paths:
       - cookieAuth: []
       - apiKey: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BreakGlassRequest'
+                $ref: '#/components/schemas/BreakGlassGrant'
           description: ''
   /api/v1/patients/{id}/chart/:
     get:
@@ -2132,6 +2167,18 @@ paths:
           format: uuid
         description: A UUID string identifying this patient.
         required: true
+      - in: query
+        name: purpose
+        schema:
+          type: string
+          enum:
+          - audit
+          - billing
+          - care
+          - records
+          - registration
+        description: Why the record is opened; registration and billing see demographics
+          only.
       tags:
       - v1
       security:
@@ -2142,7 +2189,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Patient'
+                $ref: '#/components/schemas/Chart'
           description: ''
   /api/v1/patients/{id}/consents/:
     post:
@@ -2174,11 +2221,11 @@ paths:
       - cookieAuth: []
       - apiKey: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConsentInput'
+                $ref: '#/components/schemas/Consent'
           description: ''
   /api/v1/patients/{id}/contacts/:
     post:
@@ -2209,11 +2256,11 @@ paths:
       - cookieAuth: []
       - apiKey: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ContactInput'
+                $ref: '#/components/schemas/Contact'
           description: ''
   /api/v1/patients/{id}/identifiers/:
     post:
@@ -2244,11 +2291,11 @@ paths:
       - cookieAuth: []
       - apiKey: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IdentifierInput'
+                $ref: '#/components/schemas/Identifier'
           description: ''
   /api/v1/patients/{id}/merge/:
     post:
@@ -2281,11 +2328,11 @@ paths:
       - cookieAuth: []
       - apiKey: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MergeRequest'
+                $ref: '#/components/schemas/Merge'
           description: ''
   /api/v1/patients/{id}/next-of-kin/:
     post:
@@ -2316,11 +2363,11 @@ paths:
       - cookieAuth: []
       - apiKey: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NextOfKinInput'
+                $ref: '#/components/schemas/NextOfKin'
           description: ''
   /api/v1/patients/dsar/:
     get:
@@ -2660,18 +2707,32 @@ paths:
       - cookieAuth: []
       - apiKey: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegistryImport'
+                $ref: '#/components/schemas/Patient'
           description: ''
   /api/v1/patients/registry-search/:
-    get:
-      operationId: v1_patients_registry_search_retrieve
-      description: Local matches first, then the national Client Registry (P1-PAT-02).
+    post:
+      operationId: v1_patients_registry_search_create
+      description: |-
+        Local matches first, then the national Client Registry (P1-PAT-02). POST, so the
+        document number never appears in a URL.
       tags:
       - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistryQueryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegistryQueryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegistryQueryRequest'
+        required: true
       security:
       - cookieAuth: []
       - apiKey: []
@@ -2680,13 +2741,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegistryQuery'
+                $ref: '#/components/schemas/RegistrySearch'
           description: ''
   /api/v1/patients/search/:
-    get:
-      operationId: v1_patients_search_retrieve
+    post:
+      operationId: v1_patients_search_create
+      description: Search-before-create. POST, so the terms never appear in a URL
+        or access log.
       tags:
       - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQueryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SearchQueryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SearchQueryRequest'
+        required: true
       security:
       - cookieAuth: []
       - apiKey: []
@@ -2695,7 +2770,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchResult'
+                $ref: '#/components/schemas/SearchResponse'
           description: ''
   /api/v1/patients/unidentified/:
     post:
@@ -2718,11 +2793,11 @@ paths:
       - cookieAuth: []
       - apiKey: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unidentified'
+                $ref: '#/components/schemas/Patient'
           description: ''
   /api/v1/products/categories/:
     get:
@@ -3897,6 +3972,25 @@ paths:
           description: ''
 components:
   schemas:
+    Access:
+      type: object
+      description: The chart access decision the UI shows (selectors.access_payload).
+      properties:
+        level:
+          $ref: '#/components/schemas/ChartCareTeamEnum'
+        care_team:
+          type: boolean
+        break_glass:
+          oneOf:
+          - $ref: '#/components/schemas/BreakGlassAccess'
+          - type: 'null'
+        break_glass_available:
+          type: boolean
+      required:
+      - break_glass
+      - break_glass_available
+      - care_team
+      - level
     AlertTypeEnum:
       enum:
       - understaffed
@@ -4545,6 +4639,21 @@ components:
       - reviewed_by
       - user
       - user_name
+    BreakGlassAccess:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+      required:
+      - expires_at
+      - id
+      - reason
     BreakGlassEnded:
       type: object
       properties:
@@ -4561,17 +4670,47 @@ components:
       required:
       - ended_at
       - id
-    BreakGlassRequest:
+    BreakGlassGrant:
       type: object
       properties:
-        reason:
-          $ref: '#/components/schemas/ReasonEnum'
-        justification:
+        id:
           type: string
-          maxLength: 500
+          format: uuid
+          readOnly: true
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+        reason:
+          allOf:
+          - $ref: '#/components/schemas/ReasonEnum'
+          readOnly: true
+        granted_at:
+          type: string
+          format: date-time
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+        ended_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        review_status:
+          allOf:
+          - $ref: '#/components/schemas/ReviewStatusEnum'
+          readOnly: true
       required:
-      - justification
+      - ended_at
+      - expires_at
+      - granted_at
+      - id
+      - patient
       - reason
+      - review_status
     BreakGlassRequestRequest:
       type: object
       properties:
@@ -4699,20 +4838,29 @@ components:
         * `email` - E-mail
         * `letter` - Letter
         * `phone` - Phone
-    ChartBaselineEnum:
-      enum:
-      - none
-      - demographics
+    Chart:
+      type: object
+      description: Sections are ``null`` below their level; Phase 2 fills them (selectors.chart_sections).
+      properties:
+        access:
+          $ref: '#/components/schemas/Access'
+        patient:
+          $ref: '#/components/schemas/Patient'
+        summary:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+        record:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+      required:
+      - access
+      - patient
+      - record
       - summary
-      - full
-      - sensitive
-      type: string
-      description: |-
-        * `none` - none
-        * `demographics` - demographics
-        * `summary` - summary
-        * `full` - full
-        * `sensitive` - sensitive
     ChartCareTeamEnum:
       enum:
       - none
@@ -4727,37 +4875,48 @@ components:
         * `summary` - summary
         * `full` - full
         * `sensitive` - sensitive
-    ConsentInput:
+    Consent:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/KindA36Enum'
+          readOnly: true
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/DecisionEnum'
+          readOnly: true
         version:
           type: string
-          default: ''
-          maxLength: 20
+          readOnly: true
         method:
-          $ref: '#/components/schemas/MethodEnum'
+          allOf:
+          - $ref: '#/components/schemas/MethodEnum'
+          readOnly: true
         given_by:
           allOf:
           - $ref: '#/components/schemas/GivenByEnum'
-          default: patient
-        kind:
-          $ref: '#/components/schemas/ConsentInputKindEnum'
-        decision:
-          $ref: '#/components/schemas/DecisionEnum'
+          readOnly: true
+        recorded_at:
+          type: string
+          format: date-time
+          readOnly: true
+        recorded_by:
+          type: integer
+          readOnly: true
       required:
       - decision
+      - given_by
+      - id
       - kind
       - method
-    ConsentInputKindEnum:
-      enum:
-      - privacy_notice
-      - sms_reminders
-      - research
-      type: string
-      description: |-
-        * `privacy_notice` - Privacy notice acknowledged
-        * `sms_reminders` - SMS reminders
-        * `research` - Research use
+      - recorded_at
+      - recorded_by
+      - version
     ConsentInputRequest:
       type: object
       properties:
@@ -4772,40 +4931,39 @@ components:
           - $ref: '#/components/schemas/GivenByEnum'
           default: patient
         kind:
-          $ref: '#/components/schemas/ConsentInputKindEnum'
+          $ref: '#/components/schemas/KindA36Enum'
         decision:
           $ref: '#/components/schemas/DecisionEnum'
       required:
       - decision
       - kind
       - method
-    ContactInput:
+    Contact:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
         kind:
-          $ref: '#/components/schemas/ContactInputKindEnum'
+          $ref: '#/components/schemas/KindA4cEnum'
         value:
           type: string
-          maxLength: 120
         is_primary:
           type: boolean
-          default: false
+        active:
+          type: boolean
+          readOnly: true
       required:
+      - active
+      - id
       - kind
       - value
-    ContactInputKindEnum:
-      enum:
-      - phone
-      - email
-      type: string
-      description: |-
-        * `phone` - Phone
-        * `email` - E-mail
     ContactInputRequest:
       type: object
       properties:
         kind:
-          $ref: '#/components/schemas/ContactInputKindEnum'
+          $ref: '#/components/schemas/KindA4cEnum'
         value:
           type: string
           minLength: 1
@@ -5487,22 +5645,41 @@ components:
         * `patient` - The patient
         * `guardian` - Parent or guardian
         * `representative` - Next of kin or representative
-    IdentifierInput:
+    Identifier:
       type: object
       properties:
-        type:
+        id:
           type: string
-          maxLength: 20
+          format: uuid
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/IdentifierTypeEnum'
         value:
           type: string
-          maxLength: 40
         issuer:
           type: string
-          default: ''
+          description: Issuing country for passports
           maxLength: 40
+        source:
+          allOf:
+          - $ref: '#/components/schemas/SourceEnum'
+          readOnly: true
+        verified_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        active:
+          type: boolean
+          readOnly: true
       required:
+      - active
+      - id
+      - source
       - type
       - value
+      - verified_at
     IdentifierInputRequest:
       type: object
       properties:
@@ -5521,6 +5698,30 @@ components:
       required:
       - type
       - value
+    IdentifierTypeEnum:
+      enum:
+      - cr_id
+      - sha_number
+      - national_id
+      - maisha_namba
+      - alien_id
+      - refugee_id
+      - passport
+      - birth_certificate
+      - birth_notification
+      - temporary
+      type: string
+      description: |-
+        * `cr_id` - HIE Client Registry ID
+        * `sha_number` - SHA number
+        * `national_id` - National ID
+        * `maisha_namba` - Maisha Namba
+        * `alien_id` - Alien ID
+        * `refugee_id` - Refugee ID
+        * `passport` - Passport
+        * `birth_certificate` - Birth certificate
+        * `birth_notification` - Birth notification
+        * `temporary` - Temporary ID (unidentified patient)
     Inventory:
       type: object
       properties:
@@ -5598,6 +5799,24 @@ components:
         * `4` - Level 4 — sub-county hospital / medical centre
         * `5` - Level 5 — county referral hospital
         * `6` - Level 6 — national referral hospital
+    KindA36Enum:
+      enum:
+      - privacy_notice
+      - sms_reminders
+      - research
+      type: string
+      description: |-
+        * `privacy_notice` - Privacy notice acknowledged
+        * `sms_reminders` - SMS reminders
+        * `research` - Research use
+    KindA4cEnum:
+      enum:
+      - phone
+      - email
+      type: string
+      description: |-
+        * `phone` - Phone
+        * `email` - E-mail
     Licence:
       type: object
       properties:
@@ -5759,18 +5978,6 @@ components:
       - reversed_at
       - status
       - survivor
-    MergeRequest:
-      type: object
-      properties:
-        duplicate:
-          type: string
-          format: uuid
-        reason:
-          type: string
-          maxLength: 255
-      required:
-      - duplicate
-      - reason
     MergeRequestRequest:
       type: object
       properties:
@@ -5822,20 +6029,26 @@ components:
         recovery_code:
           type: string
           maxLength: 20
-    NextOfKinInput:
+    NextOfKin:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
         name:
           type: string
-          maxLength: 120
         relationship:
           type: string
           maxLength: 40
         phone:
           type: string
-          default: ''
-          maxLength: 20
+        active:
+          type: boolean
+          readOnly: true
       required:
+      - active
+      - id
       - name
       - relationship
     NextOfKinInputRequest:
@@ -6635,6 +6848,32 @@ components:
           maxLength: 50
         active:
           type: boolean
+    PatchedPatientUpdateRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        given_name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        middle_name:
+          type: string
+          maxLength: 80
+        family_name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        sex:
+          $ref: '#/components/schemas/SexD10Enum'
+        date_of_birth:
+          type:
+          - string
+          - 'null'
+          format: date
+        dob_estimated:
+          type: boolean
     PatchedProductRequest:
       type: object
       properties:
@@ -6853,7 +7092,7 @@ components:
             30y
         status:
           allOf:
-          - $ref: '#/components/schemas/PatientStatusEnum'
+          - $ref: '#/components/schemas/StatusD33Enum'
           readOnly: true
         merged_into:
           type:
@@ -6905,14 +7144,171 @@ components:
       - sex
       - status
       - version
-    PatientStatusEnum:
-      enum:
-      - active
-      - merged
-      type: string
-      description: |-
-        * `active` - Active
-        * `merged` - Merged into another record
+    PatientCreateRequest:
+      type: object
+      properties:
+        given_name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        middle_name:
+          type: string
+          default: ''
+          maxLength: 80
+        family_name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        sex:
+          $ref: '#/components/schemas/SexD10Enum'
+        date_of_birth:
+          type:
+          - string
+          - 'null'
+          format: date
+        age_years:
+          type:
+          - integer
+          - 'null'
+          maximum: 130
+          minimum: 0
+        age_months:
+          type:
+          - integer
+          - 'null'
+          maximum: 11
+          minimum: 0
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierInputRequest'
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactInputRequest'
+        next_of_kin:
+          type: array
+          items:
+            $ref: '#/components/schemas/NextOfKinInputRequest'
+        override_reason:
+          type: string
+          default: ''
+          maxLength: 255
+        privacy_notice:
+          $ref: '#/components/schemas/PrivacyNoticeRequest'
+      required:
+      - family_name
+      - given_name
+      - privacy_notice
+      - sex
+    PatientRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        mrn:
+          type: string
+          readOnly: true
+          title: Medical record number
+        given_name:
+          type: string
+          readOnly: true
+        middle_name:
+          type: string
+          readOnly: true
+        family_name:
+          type: string
+          readOnly: true
+        display_name:
+          type: string
+          readOnly: true
+        sex:
+          allOf:
+          - $ref: '#/components/schemas/SexD10Enum'
+          readOnly: true
+        date_of_birth:
+          type:
+          - string
+          - 'null'
+          format: date
+          readOnly: true
+        dob_estimated:
+          type: boolean
+          readOnly: true
+        age:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        is_unidentified:
+          type: boolean
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+          description: Placeholder for unidentified patients, e.g. Unknown male, approx.
+            30y
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusD33Enum'
+          readOnly: true
+        merged_into:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+        identifiers:
+          readOnly: true
+        contacts:
+          readOnly: true
+        next_of_kin:
+          readOnly: true
+        consents:
+          description: The current decision per kind (privacy notice, SMS reminders,
+            research).
+          readOnly: true
+        retention_until:
+          type:
+          - string
+          - 'null'
+          format: date
+          readOnly: true
+        legal_hold:
+          type: boolean
+          readOnly: true
+        access:
+          allOf:
+          - $ref: '#/components/schemas/Access'
+          readOnly: true
+      required:
+      - access
+      - age
+      - consents
+      - contacts
+      - date_of_birth
+      - description
+      - display_name
+      - dob_estimated
+      - family_name
+      - given_name
+      - id
+      - identifiers
+      - is_unidentified
+      - legal_hold
+      - merged_into
+      - middle_name
+      - mrn
+      - next_of_kin
+      - retention_until
+      - sex
+      - status
+      - version
     Pin:
       type: object
       properties:
@@ -6952,21 +7348,6 @@ components:
       required:
       - password
       - pin
-    PrivacyNotice:
-      type: object
-      properties:
-        version:
-          type: string
-          maxLength: 20
-        method:
-          $ref: '#/components/schemas/MethodEnum'
-        given_by:
-          allOf:
-          - $ref: '#/components/schemas/GivenByEnum'
-          default: patient
-      required:
-      - method
-      - version
     PrivacyNoticeRequest:
       type: object
       properties:
@@ -7311,37 +7692,11 @@ components:
           maxLength: 255
       required:
       - reason
-    RegistryImport:
-      type: object
-      properties:
-        type:
-          $ref: '#/components/schemas/TypeEnum'
-        number:
-          type: string
-          maxLength: 40
-        privacy_notice:
-          $ref: '#/components/schemas/PrivacyNotice'
-        contacts:
-          type: array
-          items:
-            $ref: '#/components/schemas/ContactInput'
-        next_of_kin:
-          type: array
-          items:
-            $ref: '#/components/schemas/NextOfKinInput'
-        override_reason:
-          type: string
-          default: ''
-          maxLength: 255
-      required:
-      - number
-      - privacy_notice
-      - type
     RegistryImportRequest:
       type: object
       properties:
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          $ref: '#/components/schemas/Type9c6Enum'
         number:
           type: string
           minLength: 1
@@ -7364,17 +7719,97 @@ components:
       - number
       - privacy_notice
       - type
-    RegistryQuery:
+    RegistryPerson:
+      type: object
+      description: 'What reception sees to confirm identity: names and DOB, identifiers
+        and phone masked.'
+      properties:
+        cr_id:
+          type: string
+        given_name:
+          type: string
+        middle_name:
+          type: string
+        family_name:
+          type: string
+        sex:
+          type: string
+        date_of_birth:
+          type:
+          - string
+          - 'null'
+          format: date
+        identifiers:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+      required:
+      - cr_id
+      - date_of_birth
+      - family_name
+      - given_name
+      - identifiers
+      - middle_name
+      - phone
+      - sex
+    RegistryQueryRequest:
       type: object
       properties:
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          $ref: '#/components/schemas/Type9c6Enum'
         number:
           type: string
+          minLength: 1
           maxLength: 40
       required:
       - number
       - type
+    RegistryResult:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/RegistryResultStatusEnum'
+        person:
+          oneOf:
+          - $ref: '#/components/schemas/RegistryPerson'
+          - type: 'null'
+        registered_patient:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      required:
+      - person
+      - registered_patient
+      - status
+    RegistryResultStatusEnum:
+      enum:
+      - found
+      - not_found
+      - unavailable
+      type: string
+      description: |-
+        * `found` - found
+        * `not_found` - not_found
+        * `unavailable` - unavailable
+    RegistrySearch:
+      type: object
+      properties:
+        local:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        registry:
+          $ref: '#/components/schemas/RegistryResult'
+      required:
+      - local
+      - registry
     RegulatorEnum:
       enum:
       - KMPDC
@@ -7459,7 +7894,7 @@ components:
           readOnly: true
         chart_baseline:
           allOf:
-          - $ref: '#/components/schemas/ChartBaselineEnum'
+          - $ref: '#/components/schemas/ChartCareTeamEnum'
           readOnly: true
         chart_care_team:
           allOf:
@@ -7502,6 +7937,32 @@ components:
         * `WAREHOUSE` - Warehouse Staff
         * `CASHIER` - Cashier
         * `REPORTER` - Reports Viewer
+    SearchQueryRequest:
+      type: object
+      description: |-
+        Search terms travel in the body, never the URL: names, IDs and phones would
+        otherwise land in proxy access logs (ADR-023).
+      properties:
+        q:
+          type: string
+          minLength: 1
+          maxLength: 100
+        date_of_birth:
+          type: string
+          format: date
+        sex:
+          $ref: '#/components/schemas/SexD10Enum'
+      required:
+      - q
+    SearchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+      required:
+      - results
     SearchResult:
       type: object
       properties:
@@ -7662,6 +8123,16 @@ components:
         * `male` - Male
         * `intersex` - Intersex
         * `unknown` - Unknown
+    SourceEnum:
+      enum:
+      - manual
+      - client_registry
+      - system
+      type: string
+      description: |-
+        * `manual` - Entered by staff
+        * `client_registry` - HIE Client Registry
+        * `system` - Generated by the system
     StatusCcdEnum:
       enum:
       - available
@@ -7674,6 +8145,14 @@ components:
         * `occupied` - Occupied
         * `cleaning` - Cleaning
         * `out_of_service` - Out of service
+    StatusD33Enum:
+      enum:
+      - active
+      - merged
+      type: string
+      description: |-
+        * `active` - Active
+        * `merged` - Merged into another record
     StockTransfer:
       type: object
       properties:
@@ -7935,7 +8414,7 @@ components:
         * `SUPPLIER` - Supplier Delivery
         * `CUSTOMER` - Customer Return
         * `DAMAGED` - Damaged Goods
-    TypeEnum:
+    Type9c6Enum:
       enum:
       - national_id
       - maisha_namba
@@ -7947,19 +8426,6 @@ components:
         * `maisha_namba` - maisha_namba
         * `alien_id` - alien_id
         * `refugee_id` - refugee_id
-    Unidentified:
-      type: object
-      properties:
-        sex:
-          $ref: '#/components/schemas/SexD10Enum'
-        approx_age_years:
-          type:
-          - integer
-          - 'null'
-          maximum: 130
-          minimum: 0
-      required:
-      - sex
     UnidentifiedRequest:
       type: object
       properties:

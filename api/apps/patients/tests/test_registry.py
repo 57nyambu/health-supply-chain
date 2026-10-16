@@ -135,26 +135,42 @@ def test_no_plaintext_identifiers_contacts_or_kin_in_the_database(reception):
 
 def test_search_by_identifier_phone_and_fuzzy_name(reception):
     patient_id = register(reception).json()["id"]
-    by_id = reception.get(f"{URL}search/", {"q": "00123456"}).json()["results"]
+    by_id = reception.post(f"{URL}search/", {"q": "00123456"}, format="json").json()["results"]
     assert (
         by_id[0]["id"] == patient_id
         and by_id[0]["reasons"] == ["identifier"]
         and by_id[0]["score"] == 100
     )
     assert by_id[0]["identifiers"][0]["value"].endswith("456") and "00123456" not in str(by_id[0])
-    by_phone = reception.get(f"{URL}search/", {"q": "+254 700 000111"}).json()["results"]
+    by_phone = reception.post(f"{URL}search/", {"q": "+254 700 000111"}, format="json").json()[
+        "results"
+    ]
     assert by_phone[0]["reasons"] == ["phone"]
-    fuzzy = reception.get(
-        f"{URL}search/", {"q": "amina otiano", "date_of_birth": "1990-04-12", "sex": "female"}
+    fuzzy = reception.post(
+        f"{URL}search/",
+        {"q": "amina otiano", "date_of_birth": "1990-04-12", "sex": "female"},
+        format="json",
     )
     best = fuzzy.json()["results"][0]
     assert best["id"] == patient_id and {"name", "date_of_birth", "sex"} <= set(best["reasons"])
-    assert reception.get(f"{URL}search/", {"q": "zz"}).status_code == 400
+    assert reception.post(f"{URL}search/", {"q": "zz"}, format="json").status_code == 400
+
+
+@pytest.mark.req("KE-DPA-06")
+def test_search_terms_never_travel_in_the_url(reception):
+    """Names, IDs and phones in a query string would land in proxy access logs (ADR-023)."""
+    refused = (403, 405)  # default-deny policy answers before method-not-allowed
+    assert reception.get(f"{URL}search/", {"q": "Otieno"}).status_code in refused
+    registry = reception.get(
+        f"{URL}registry-search/", {"type": "national_id", "number": "10000001"}
+    )
+    assert registry.status_code in refused
+    assert not AuditEvent.objects.filter(action__endswith=".searched").exists()
 
 
 @pytest.mark.req("KE-DPA-06")
 def test_searches_are_audited_with_an_hmac_of_the_term(reception):
-    reception.get(f"{URL}search/", {"q": "Otieno"})
+    reception.post(f"{URL}search/", {"q": "Otieno"}, format="json")
     event = AuditEvent.objects.get(action="patients.patient.searched")
     assert len(event.detail["lookup_hmac"]) == 64
     assert "Otieno" not in str(event.detail)
@@ -290,12 +306,12 @@ def test_other_facilities_cannot_see_the_record(reception, api_as):
     patient_id = register(reception).json()["id"]
     elsewhere = api_as("receptionist", facility=FacilityFactory.create())
     assert elsewhere.get(f"{URL}{patient_id}/").status_code == 404
-    assert elsewhere.get(f"{URL}search/", {"q": "00123456"}).json()["results"] == []
+    assert elsewhere.post(f"{URL}search/", {"q": "00123456"}, format="json").json()["results"] == []
 
 
 def test_roles_without_registry_rights_are_denied(api_as, facility):
     cashier = api_as("store_keeper", facility=facility)
-    assert cashier.get(f"{URL}search/", {"q": "Otieno"}).status_code == 403
+    assert cashier.post(f"{URL}search/", {"q": "Otieno"}, format="json").status_code == 403
     assert cashier.post(URL, AMINA, format="json").status_code == 403
 
 

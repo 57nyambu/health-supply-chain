@@ -158,9 +158,50 @@ class SearchResultSerializer(serializers.Serializer[Any]):
 
 
 class SearchQuerySerializer(serializers.Serializer[None]):
+    """Search terms travel in the body, never the URL: names, IDs and phones would
+    otherwise land in proxy access logs (ADR-023)."""
+
     q = serializers.CharField(max_length=100, allow_blank=False)
     date_of_birth = serializers.DateField(required=False)
     sex = serializers.ChoiceField(choices=Patient.Sex.choices, required=False)
+
+
+class SearchResponseSerializer(serializers.Serializer[Any]):
+    results = SearchResultSerializer(many=True)
+
+
+class BreakGlassAccessSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    reason = serializers.CharField()
+    expires_at = serializers.DateTimeField()
+
+
+class AccessSerializer(serializers.Serializer[Any]):
+    """The chart access decision the UI shows (selectors.access_payload)."""
+
+    level = serializers.ChoiceField(
+        choices=["none", "demographics", "summary", "full", "sensitive"]
+    )
+    care_team = serializers.BooleanField()
+    break_glass = BreakGlassAccessSerializer(allow_null=True)
+    break_glass_available = serializers.BooleanField()
+
+
+class PatientRecordSerializer(PatientSerializer):
+    access = AccessSerializer(read_only=True)
+
+    class Meta(PatientSerializer.Meta):
+        fields = [*PatientSerializer.Meta.fields, "access"]
+        read_only_fields = fields
+
+
+class ChartSerializer(serializers.Serializer[Any]):
+    """Sections are ``null`` below their level; Phase 2 fills them (selectors.chart_sections)."""
+
+    access = AccessSerializer()
+    patient = PatientSerializer()
+    summary = serializers.DictField(allow_null=True)
+    record = serializers.DictField(allow_null=True)
 
 
 class IdentifierInputSerializer(serializers.Serializer[None]):
@@ -371,6 +412,17 @@ class RegistryPersonSerializer(serializers.Serializer[Any]):
 
     def get_phone(self, obj: Any) -> str:
         return mask(obj.phone) if obj.phone else ""
+
+
+class RegistryResultSerializer(serializers.Serializer[Any]):
+    status = serializers.ChoiceField(choices=["found", "not_found", "unavailable"])
+    person = RegistryPersonSerializer(allow_null=True)
+    registered_patient = serializers.UUIDField(allow_null=True)
+
+
+class RegistrySearchSerializer(serializers.Serializer[Any]):
+    local = SearchResultSerializer(many=True)
+    registry = RegistryResultSerializer()
 
 
 class RegistryImportSerializer(RegistryQuerySerializer):

@@ -11,6 +11,8 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from django.http import HttpRequest
+
 REDACTED = "[redacted]"
 
 # Phone-like digit runs (E.164 and Kenyan local formats +2547…, 2547…, 07…, 01…),
@@ -84,6 +86,10 @@ def scrub_value(value: Any, key: str | None = None) -> Any:
     """Recursively redact sensitive keys and scrub identifiers from strings."""
     if key is not None and is_sensitive_key(key) and value not in (None, "", [], {}):
         return REDACTED
+    if isinstance(value, HttpRequest):
+        # Django passes the request to django.request records; its repr carries the query
+        # string (search terms, filters). Keep the method and path only.
+        return scrub_text(f"{value.method} {value.path}")
     if isinstance(value, str):
         return scrub_text(value)
     if isinstance(value, Mapping):

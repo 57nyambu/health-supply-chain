@@ -149,7 +149,7 @@ test("break-glass is escalated in the review queue", async ({ browser }) => {
   const clinicianPage = await other.newPage();
   await signIn(clinicianPage, clinician.email);
   await expect(clinicianPage).toHaveURL(/\/reception$/);
-  const found = await apiFromPage(clinicianPage, "/api/v1/patients/search/?q=00000001");
+  const found = await apiFromPage(clinicianPage, "/api/v1/patients/search/", { q: "00000001" });
   const patientId = found.body.results[0].id as string;
   const granted = await apiFromPage(clinicianPage, `/api/v1/patients/${patientId}/break-glass/`, {
     reason: "emergency",

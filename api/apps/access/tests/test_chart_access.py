@@ -280,7 +280,8 @@ def test_a_custom_role_without_chart_access_cannot_search(api_as, facility):
         Role.objects.get(code="receptionist").permissions.filter(code="patients.patient.search")
     )
     client = api_as("lookup_only", facility=facility)
-    assert client.get("/api/v1/patients/search/", {"q": "Synthetic"}).status_code == 403
+    response = client.post("/api/v1/patients/search/", {"q": "Synthetic"}, format="json")
+    assert response.status_code == 403
 
 
 def test_every_patient_read_endpoint_asks_the_chart_policy(api_as, facility, patient, monkeypatch):

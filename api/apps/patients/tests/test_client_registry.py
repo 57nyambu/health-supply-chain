@@ -14,7 +14,7 @@ from apps.patients.adapters.client_registry import (
     RegistryUnavailable,
     get_registry,
 )
-from apps.patients.adapters.client_registry.fake import RECORDS, FakeClientRegistry
+from apps.patients.adapters.client_registry.fake import RECORDS, FakeClientRegistry, generated
 from apps.patients.models import Patient, PatientIdentifier
 
 from .test_privacy import NOTICE
@@ -79,6 +79,19 @@ def test_contract_every_call_is_logged_with_encrypted_bodies(registry):
     assert "10000001" not in raw and "Syntheticus" not in raw
 
 
+def test_fake_generated_range_is_deterministic_synthetic_and_valid():
+    registry = FakeClientRegistry()
+    person = registry.find("national_id", "191234567")
+    assert person is not None and person == registry.find("national_id", "191234567")
+    assert person == generated("191234567") and person.cr_id == "CR-SYN-G191234567"
+    assert person.identifiers == (("national_id", "191234567"),) and not person.phone
+    ids.validate("cr_id", person.cr_id)
+    assert person.sex in Patient.Sex.values and person.date_of_birth is not None
+    other = registry.find("national_id", "191234568")
+    assert other is not None and other.family_name != person.family_name
+    assert registry.find("national_id", "19123456") is None  # eight digits: not the range
+
+
 def test_fake_records_are_synthetic_and_valid():
     for (type_, number), person in RECORDS.items():
         assert (type_, number) in person.identifiers
@@ -121,7 +134,7 @@ def reception(api_as, facility):
 
 
 def search(client, type_, number):
-    return client.get(f"{URL}registry-search/", {"type": type_, "number": number})
+    return client.post(f"{URL}registry-search/", {"type": type_, "number": number}, format="json")
 
 
 def test_search_shows_local_results_first_then_the_registry_match(reception):

@@ -10,6 +10,7 @@ from typing import Any
 from django.db.models import QuerySet
 from django.http import StreamingHttpResponse
 from django.utils import timezone
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
@@ -28,6 +29,7 @@ from apps.patients.models import DataSubjectRequest, Patient, PatientMerge
 from .serializers import (
     BreakGlassGrantSerializer,
     BreakGlassRequestSerializer,
+    ChartSerializer,
     ConsentInputSerializer,
     ConsentSerializer,
     ContactInputSerializer,
@@ -44,19 +46,28 @@ from .serializers import (
     NextOfKinInputSerializer,
     NextOfKinSerializer,
     PatientCreateSerializer,
+    PatientRecordSerializer,
     PatientSerializer,
     PatientUpdateSerializer,
     PrivacyNoticeTextSerializer,
     RegistryImportSerializer,
     RegistryPersonSerializer,
     RegistryQuerySerializer,
+    RegistrySearchSerializer,
     SearchQuerySerializer,
+    SearchResponseSerializer,
     SearchResultSerializer,
     UnidentifiedSerializer,
     UnmergeSerializer,
 )
 
 UPDATE = "patients.patient.update"
+PURPOSE = OpenApiParameter(
+    "purpose",
+    str,
+    enum=list(chart.PURPOSES),
+    description="Why the record is opened; registration and billing see demographics only.",
+)
 
 
 class PatientThrottle(ScopedRateThrottle):
@@ -107,9 +118,11 @@ class PatientViewSet(
             raise selectors.ChartAccessDenied(decision, ChartAccess.DEMOGRAPHICS)
         return patient
 
-    @action(detail=False, methods=["get"], serializer_class=SearchResultSerializer)
+    @extend_schema(request=SearchQuerySerializer, responses=SearchResponseSerializer)
+    @action(detail=False, methods=["post"], serializer_class=SearchQuerySerializer)
     def search(self, request: Request) -> Response:
-        query = SearchQuerySerializer(data=request.query_params)
+        """Search-before-create. POST, so the terms never appear in a URL or access log."""
+        query = SearchQuerySerializer(data=request.data)
         query.is_valid(raise_exception=True)
         results = services.search(
             facility=require_facility(request),
@@ -120,6 +133,7 @@ class PatientViewSet(
         )
         return Response({"results": SearchResultSerializer(results, many=True).data})
 
+    @extend_schema(request=PatientCreateSerializer, responses={201: PatientSerializer})
     def create(self, request: Request) -> Response:
         serializer = PatientCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -128,6 +142,7 @@ class PatientViewSet(
         )
         return Response(PatientSerializer(patient).data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(parameters=[PURPOSE], responses=PatientRecordSerializer)
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Demographics (name, identifiers, contacts, next of kin) with the access banner."""
         patient = self.get_object()
@@ -141,7 +156,8 @@ class PatientViewSet(
             {**PatientSerializer(patient).data, "access": selectors.access_payload(decision)}
         )
 
-    @action(detail=True, methods=["get"])
+    @extend_schema(parameters=[PURPOSE], responses=ChartSerializer)
+    @action(detail=True, methods=["get"], serializer_class=ChartSerializer)
     def chart(self, request: Request, pk: str | None = None) -> Response:
         """The clinical record, shaped by the chart access level (summary, full, sensitive)."""
         patient = self.get_object()
@@ -159,6 +175,7 @@ class PatientViewSet(
             }
         )
 
+    @extend_schema(request=BreakGlassRequestSerializer, responses={201: BreakGlassGrantSerializer})
     @action(
         detail=True,
         methods=["post"],
@@ -174,6 +191,7 @@ class PatientViewSet(
         )
         return Response(BreakGlassGrantSerializer(grant).data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(request=PatientUpdateSerializer, responses=PatientSerializer)
     def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = PatientUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -194,6 +212,7 @@ class PatientViewSet(
         """The notice reception gives at registration; its version goes with the acknowledgement."""
         return Response(privacy.notice(self.facility()))
 
+    @extend_schema(request=ConsentInputSerializer, responses={201: ConsentSerializer})
     @action(detail=True, methods=["post"], serializer_class=ConsentInputSerializer)
     def consents(self, request: Request, pk: str | None = None) -> Response:
         """Record a privacy-notice acknowledgement or a consent decision (append-only)."""
@@ -204,15 +223,17 @@ class PatientViewSet(
         )
         return Response(ConsentSerializer(row).data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(request=RegistryQuerySerializer, responses=RegistrySearchSerializer)
     @action(
         detail=False,
-        methods=["get"],
+        methods=["post"],
         url_path="registry-search",
         serializer_class=RegistryQuerySerializer,
     )
     def registry_search(self, request: Request) -> Response:
-        """Local matches first, then the national Client Registry (P1-PAT-02)."""
-        query = RegistryQuerySerializer(data=request.query_params)
+        """Local matches first, then the national Client Registry (P1-PAT-02). POST, so the
+        document number never appears in a URL."""
+        query = RegistryQuerySerializer(data=request.data)
         query.is_valid(raise_exception=True)
         found = registry.lookup(
             actor=request.user,
@@ -233,6 +254,7 @@ class PatientViewSet(
             }
         )
 
+    @extend_schema(request=RegistryImportSerializer, responses={201: PatientSerializer})
     @action(
         detail=False,
         methods=["post"],
@@ -253,6 +275,7 @@ class PatientViewSet(
         )
         return Response(PatientSerializer(patient).data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(request=UnidentifiedSerializer, responses={201: PatientSerializer})
     @action(detail=False, methods=["post"], serializer_class=UnidentifiedSerializer)
     def unidentified(self, request: Request) -> Response:
         serializer = UnidentifiedSerializer(data=request.data)
@@ -262,6 +285,7 @@ class PatientViewSet(
         )
         return Response(PatientSerializer(patient).data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(request=IdentifierInputSerializer, responses={201: IdentifierSerializer})
     @action(detail=True, methods=["post"], serializer_class=IdentifierInputSerializer)
     def identifiers(self, request: Request, pk: str | None = None) -> Response:
         serializer = IdentifierInputSerializer(data=request.data)
@@ -275,6 +299,7 @@ class PatientViewSet(
         )
         return Response(IdentifierSerializer(row).data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(request=ContactInputSerializer, responses={201: ContactSerializer})
     @action(detail=True, methods=["post"], serializer_class=ContactInputSerializer)
     def contacts(self, request: Request, pk: str | None = None) -> Response:
         serializer = ContactInputSerializer(data=request.data)
@@ -284,6 +309,7 @@ class PatientViewSet(
         )
         return Response(ContactSerializer(row).data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(request=NextOfKinInputSerializer, responses={201: NextOfKinSerializer})
     @action(
         detail=True,
         methods=["post"],
@@ -298,6 +324,7 @@ class PatientViewSet(
         )
         return Response(NextOfKinSerializer(row).data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(request=MergeRequestSerializer, responses={201: MergeSerializer})
     @action(detail=True, methods=["post"], serializer_class=MergeRequestSerializer)
     def merge(self, request: Request, pk: str | None = None) -> Response:
         """Request merging ``duplicate`` into this record (an HRIO supervisor approves)."""

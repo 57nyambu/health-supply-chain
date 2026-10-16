@@ -4,7 +4,7 @@ import logging
 
 import pytest
 from django.core.exceptions import ImproperlyConfigured
-from django.test import Client
+from django.test import Client, RequestFactory
 
 from apps.core import error_tracking, health, residency
 from apps.core.logs import JsonFormatter, PhiScrubbingFilter, RequestIdFilter
@@ -154,6 +154,18 @@ def test_log_records_are_json_with_request_id_and_no_phi():
     assert record["patient_name"] == "[redacted]"
     for secret in (NATIONAL_ID, PHONE, "Wanjiku"):
         assert secret not in line
+
+
+@pytest.mark.req("KE-DPA-01")
+def test_logged_requests_keep_method_and_path_but_never_the_query_string():
+    """django.request records carry the request; its repr includes the query string."""
+    logger, stream = _capture_logger()
+    request = RequestFactory().get("/api/v1/patients/search/", {"q": NAME, "phone": PHONE})
+    logger.warning("Forbidden: %s", request.path, extra={"status_code": 403, "request": request})
+    record = json.loads(stream.getvalue().strip())
+    assert record["request"] == "GET /api/v1/patients/search/"
+    for secret in ("Wanjiku", PHONE, "q="):
+        assert secret not in stream.getvalue()
 
 
 def test_exception_text_is_scrubbed():

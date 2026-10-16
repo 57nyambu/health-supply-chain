@@ -143,6 +143,12 @@ Context: P1-WEB-01 scaffolds `web/`. pnpm 11 refuses packages younger than its m
 Decision: Pin exact versions in `web/package.json`; never add `minimumReleaseAgeExclude` entries — choose an older release instead, except when a security release must be taken (then record it here). Next.js / eslint-config-next 16.4.1 (security floor; 16.4.2 only backports Turbopack fixes), React 19.3, TypeScript 5.9 (openapi-typescript 7 requires 5.x), ESLint 10 (9.x is out of support), Tailwind 4.3, Vitest 5.0.4, Playwright 1.64. `unrs-resolver` build scripts stay disabled (`allowBuilds`). Node 22 LTS (>= 22.12) locally and in `web/Dockerfile`.
 Consequences: Upgrades are deliberate PRs that re-run `make check`; `pnpm audit` in `make deps-audit` catches advisories between upgrades.
 
+## ADR-023 Patient search terms travel in request bodies, not URLs
+Status: accepted · Date: 2026-10-16
+Context: Reception searches by name, national ID, phone or MRN. As `GET …/search/?q=` the term sat in the URL, and URLs are written to nginx's default access log (`$request`) and to Django's `django.request` records (the request repr) — PHI in logs, against the root non-negotiable. FHIR solves the same problem with `POST [base]/Patient/_search`.
+Decision: `POST /api/v1/patients/search/` and `POST /api/v1/patients/registry-search/` take their terms as JSON; GET is refused. Logged request objects are reduced to method and path by the scrubbing filter. nginx logs with `afyasync_no_query` (`$uri`, never `$request`/`$args`). Search stays a read: audited with an HMAC of the term, rate-limited, never idempotency-keyed.
+Consequences: Search calls need the CSRF token like any POST; caches never store search responses. Other list filters that could carry PHI follow the same rule (UUIDs and codes in URLs only).
+
 ---
 
 ## Findings

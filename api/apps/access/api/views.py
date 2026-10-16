@@ -3,6 +3,7 @@
 from typing import Any, cast
 
 from django.db.models import Q, QuerySet
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
@@ -293,6 +294,7 @@ class BreakGlassViewSet(
         )
         return Response(BreakGlassSerializer(grant).data)
 
+    @extend_schema(request=None, responses=BreakGlassEndedSerializer)
     @action(detail=True, methods=["post"], serializer_class=BreakGlassEndedSerializer)
     def end(self, request: Request, pk: str | None = None) -> Response:
         """The clinician leaves emergency access early (their own grant only)."""

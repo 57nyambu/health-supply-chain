@@ -37,7 +37,8 @@ test("privileged roles enrol an authenticator, then answer the challenge", async
   const codes = await items.allTextContents();
   await expectNoSeriousA11yIssues(page);
   await page.keyboard.press("Enter"); // "I have saved them, continue" has focus
-  await expect(page).toHaveURL(/\/admin$/);
+  // The admin workspace opens on its first section (/admin forwards to /admin/users).
+  await expect(page).toHaveURL(/\/admin\/users$/);
 
   // Next sign-in asks for the second factor; a recovery code works once.
   await apiFromPage(page, "/api/v1/auth/logout", {});
@@ -47,7 +48,7 @@ test("privileged roles enrol an authenticator, then answer the challenge", async
   await page.getByRole("button", { name: "Use a recovery code instead" }).click();
   await page.getByLabel(/Recovery code/).fill(codes[0]!);
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page).toHaveURL(/\/admin\/users$/);
 });
 
 test("keyboard-only lock and unlock with a PIN", async ({ page }) => {
@@ -62,7 +63,7 @@ test("keyboard-only lock and unlock with a PIN", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Workstation locked" })).toBeVisible();
   await expectNoSeriousA11yIssues(page);
   // While locked the API refuses patient data.
-  expect((await apiFromPage(page, "/api/v1/patients/search/?q=000")).body.code).toBe("workstation_locked");
+  expect((await apiFromPage(page, "/api/v1/patients/search/", { q: "000" })).body.code).toBe("workstation_locked");
 
   await expect(page.getByLabel(/PIN/)).toBeFocused();
   await page.keyboard.type("111111");
