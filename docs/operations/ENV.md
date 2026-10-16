@@ -80,6 +80,13 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `CLIENT_REGISTRY_MODE` | `fake` | HIE Client Registry adapter for reception lookups and imports. Only `fake` exists until the HIE adapter (GAP-CR-001); other values refuse to start a lookup. |
 | `LOGIN_RATE` | `20/min` | Login attempts per client IP (DRF throttle); account lockout is separate (5 → delay, 10 → lock). |
 
+## Web (Next.js, `web/`)
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `API_ORIGIN` | `http://127.0.0.1:8000` | Where `next dev` forwards `/api/*` (compose sets `http://api:8000`). Production does not use it: nginx routes `/api/` to Django. |
+| `DESIGN_CATALOGUE` | off | `on` shows the `/design` component catalogue in a production build (it is always on in development). It contains only synthetic examples. |
+
 ## Legacy integrations (replaced by adapters in later phases)
 
 | Variable | Purpose |

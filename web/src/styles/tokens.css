@@ -3,7 +3,7 @@
    required contrast pairs from this file in CI. Propose a token change instead of a new colour. */
 @import "tailwindcss";
 
-@theme {
+@theme static {
   --color-*: initial;
   --color-canvas: #f4f6f8;
   --color-surface: #ffffff;
