@@ -3,6 +3,7 @@
 from typing import Any
 
 from django.db.models import Q, QuerySet
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -88,6 +89,7 @@ class LicenceViewSet(
             **data,
         )
 
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"])
     def verify(self, request: Request, pk: str | None = None) -> Response:
         licence = licences.verify_licence(

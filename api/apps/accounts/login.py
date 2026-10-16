@@ -162,6 +162,12 @@ def change_password(user: User, *, current: str, new: str) -> None:
 
 
 @transaction.atomic
+def temporary_password() -> str:
+    """A one-time password the administrator hands over in person; changed at first sign-in."""
+    return "-".join(secrets.token_urlsafe(4) for _ in range(4))
+
+
+@transaction.atomic
 def reset_credentials(user: User, *, by: Any, facility: Any) -> str:
     """Set a one-time temporary password (shown once to the administrator, never sent).
 
@@ -171,7 +177,7 @@ def reset_credentials(user: User, *, by: Any, facility: Any) -> str:
         raise PermissionDenied("You do not have permission to reset credentials here.")
     if by.pk == user.pk:
         raise ValidationError({"user": "Use change password for your own account."})
-    temporary = "-".join(secrets.token_urlsafe(4) for _ in range(4))
+    temporary = temporary_password()
     user = User.objects.select_for_update().get(pk=user.pk)
     user.set_password(temporary)
     user.must_change_password = True

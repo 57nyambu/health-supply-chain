@@ -41,6 +41,31 @@ def test_create_validates_password_links_profile_and_audits(api_as, facility):
     assert AuditEvent.objects.filter(action="admin.user.created", resource_id=str(user.pk)).exists()
 
 
+def test_new_accounts_get_a_one_time_password_and_show_their_status(api_as, facility, grant):
+    admin = api_as("facility_admin", facility=facility)
+    created = admin.post(
+        "/api/v1/accounts/users/",
+        {"email": "nurse.new@example.test", "first_name": "Synthetic", "last_name": "Nurse"},
+        format="json",
+    ).json()
+    temporary = created["temporary_password"]
+    user = User.objects.get(email="nurse.new@example.test")
+    assert user.check_password(temporary) and user.must_change_password
+    assert created["must_change_password"] is True and created["is_active"] is True
+    grant(user, "nurse", facility)
+    listed = {row["email"]: row for row in admin.get("/api/v1/accounts/users/").json()["results"]}
+    row = listed["nurse.new@example.test"]
+    assert "temporary_password" not in row
+    assert (
+        row["roles"] == ["nurse"]
+        and row["mfa_enrolled"] is False
+        and row["account_locked"] is False
+    )
+    assert temporary not in str(
+        AuditEvent.objects.filter(action="admin.user.created").values_list("detail")
+    )
+
+
 def test_update_is_audited_and_delete_is_refused(api_as, facility, make_user, grant):
     admin = api_as("facility_admin", facility=facility)
     clerk = make_user(first_name="Old")
@@ -85,3 +110,17 @@ def test_legacy_jwt_login_endpoint_is_gone(make_user):
         "/api/v1/accounts/auth/login/", {"email": user.email, "password": STRONG}, format="json"
     )
     assert response.status_code == 404
+
+
+@pytest.mark.django_db(transaction=True)
+def test_reset_credentials_works_outside_a_test_transaction(api_as, facility, make_user, grant):
+    """Regression: the row lock needs its own transaction in a real request (autocommit)."""
+    target = make_user()
+    grant(target, "nurse", facility)
+    admin = api_as("facility_admin", facility=facility)
+    response = admin.post(f"/api/v1/accounts/users/{target.pk}/reset-credentials/")
+    assert response.status_code == 200
+    target.refresh_from_db()
+    assert target.must_change_password and target.check_password(
+        response.json()["temporary_password"]
+    )

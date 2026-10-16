@@ -77,3 +77,15 @@ export async function expectNoSeriousA11yIssues(page: Page) {
   const blocking = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(blocking.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
 }
+
+/** Sign in a user whose role needs MFA: enrol the authenticator on first sign-in. */
+export async function signInEnrolling(page: Page, email: string): Promise<string> {
+  await signIn(page, email);
+  await expect(page).toHaveURL(/\/mfa\/setup$/);
+  const secret = (await page.getByTestId("totp-secret").textContent())!.replace(/\s/g, "");
+  await page.getByLabel(/6-digit code/).fill(totp(secret));
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("list", { name: "Recovery codes" }).getByRole("listitem")).toHaveCount(10);
+  await page.getByRole("button", { name: "I have saved them, continue" }).click();
+  return secret;
+}

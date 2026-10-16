@@ -3534,6 +3534,16 @@ export interface components {
             phone?: (string | null) | string;
             role?: components["schemas"]["RoleEnum"];
             is_approved?: boolean;
+            /**
+             * Active
+             * @description Designates whether this user should be treated as active. Unselect this instead of deleting accounts.
+             */
+            readonly is_active: boolean;
+            readonly account_locked: boolean;
+            readonly must_change_password: boolean;
+            readonly mfa_enrolled: boolean;
+            /** @description Active role codes at the request's facility (for the administration screens). */
+            readonly roles: string[];
             /** Format: date-time */
             readonly last_login: string | null;
             /** Format: date-time */
@@ -3557,7 +3567,7 @@ export interface components {
              * Format: email
              */
             email: string;
-            password: string;
+            password?: string;
             first_name?: string;
             last_name?: string;
             phone?: (string | null) | string;
@@ -4143,13 +4153,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LicenceRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["LicenceRequest"];
-                "multipart/form-data": components["schemas"]["LicenceRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -4428,13 +4432,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UserRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["UserRequest"];
-                "multipart/form-data": components["schemas"]["UserRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -4456,13 +4454,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UserRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["UserRequest"];
-                "multipart/form-data": components["schemas"]["UserRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

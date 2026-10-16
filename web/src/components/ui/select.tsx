@@ -22,7 +22,8 @@ type SelectProps = Partial<ControlProps> & {
 /** Keyboard-selectable list; coded items show code + title (DESIGN-SYSTEM §7). */
 export function Select({ value, onValueChange, options, placeholder = "Choose…", disabled, className, ...aria }: SelectProps) {
   return (
-    <RadixSelect.Root value={value} onValueChange={onValueChange} disabled={disabled}>
+    // "" (not undefined) keeps Radix controlled when a form clears the choice.
+    <RadixSelect.Root value={value ?? ""} onValueChange={onValueChange} disabled={disabled}>
       <RadixSelect.Trigger
         {...aria}
         className={cn(

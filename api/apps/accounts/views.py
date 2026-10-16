@@ -8,6 +8,7 @@ are visible. Sign-in lives in apps.accounts.api (/api/v1/auth/).
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -72,6 +73,24 @@ class UserViewSet(
         return super().get_serializer_class()
 
     @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        temporary = None
+        if not serializer.validated_data.get("password"):
+            temporary = auth.temporary_password()
+            serializer.validated_data["password"] = temporary
+        self.perform_create(serializer)
+        user = serializer.instance
+        if temporary is not None:
+            User.objects.filter(pk=user.pk).update(must_change_password=True)
+            user.refresh_from_db()
+        data = UserSerializer(user, context=self.get_serializer_context()).data
+        if temporary is not None:
+            data["temporary_password"] = temporary  # shown once; never stored or sent elsewhere
+        return Response(data, status=201)
+
+    @transaction.atomic
     def perform_create(self, serializer):
         password = serializer.validated_data.get("password")
         try:
@@ -104,14 +123,15 @@ class UserViewSet(
 
     @action(detail=False, methods=["get"])
     def me(self, request):
-        return Response(UserSerializer(request.user).data)
+        return Response(UserSerializer(request.user, context=self.get_serializer_context()).data)
 
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"])
     def unlock(self, request, pk=None):
         user = auth.unlock_account(
             self.get_object(), by=request.user, facility=request_facility(request)
         )
-        return Response(UserSerializer(user).data)
+        return Response(UserSerializer(user, context=self.get_serializer_context()).data)
 
     @action(detail=True, methods=["post"], serializer_class=ReasonSerializer)
     def deactivate(self, request, pk=None):
@@ -123,8 +143,9 @@ class UserViewSet(
             reason=serializer.validated_data["reason"],
             facility=request_facility(request),
         )
-        return Response(UserSerializer(user).data)
+        return Response(UserSerializer(user, context=self.get_serializer_context()).data)
 
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"], url_path="reset-credentials")
     def reset_credentials(self, request, pk=None):
         """Returns a one-time temporary password for the administrator to hand over in person."""

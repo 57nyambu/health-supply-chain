@@ -516,18 +516,6 @@ paths:
         required: true
       tags:
       - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LicenceRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/LicenceRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/LicenceRequest'
-        required: true
       security:
       - cookieAuth: []
       - apiKey: []
@@ -842,18 +830,6 @@ paths:
         required: true
       tags:
       - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-        required: true
       security:
       - cookieAuth: []
       - apiKey: []
@@ -876,18 +852,6 @@ paths:
         required: true
       tags:
       - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-        required: true
       security:
       - cookieAuth: []
       - apiKey: []
@@ -8056,6 +8020,28 @@ components:
           $ref: '#/components/schemas/RoleEnum'
         is_approved:
           type: boolean
+        is_active:
+          type: boolean
+          readOnly: true
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        account_locked:
+          type: boolean
+          readOnly: true
+        must_change_password:
+          type: boolean
+          readOnly: true
+        mfa_enrolled:
+          type: boolean
+          readOnly: true
+        roles:
+          type: array
+          items:
+            type: string
+          description: Active role codes at the request's facility (for the administration
+            screens).
+          readOnly: true
         last_login:
           type:
           - string
@@ -8067,10 +8053,15 @@ components:
           format: date-time
           readOnly: true
       required:
+      - account_locked
       - date_joined
       - email
       - id
+      - is_active
       - last_login
+      - mfa_enrolled
+      - must_change_password
+      - roles
     UserCreate:
       type: object
       properties:
@@ -8135,7 +8126,6 @@ components:
           type: boolean
       required:
       - email
-      - password
     UserRequest:
       type: object
       properties:
