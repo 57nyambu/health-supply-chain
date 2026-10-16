@@ -237,7 +237,9 @@ def test_idle_sessions_expire_on_the_server(staff):
     assert "auth.session.expired_idle" in actions()
 
 
-def test_absolute_expiry_even_when_active(staff):
+def test_absolute_expiry_even_when_active(staff, facility):
+    facility.workstation_lock_minutes = 30  # stay unlocked between the 20-minute steps
+    facility.save()
     start = timezone.now()
     with time_machine.travel(start, tick=False) as clock:
         client = browser()

@@ -21,6 +21,7 @@ from rest_framework.views import APIView
 from apps.access.drf import AUTHENTICATED, PUBLIC
 from apps.accounts import login as auth
 from apps.accounts import mfa
+from apps.accounts import workstation as ws
 from apps.accounts.me import choose_facility, me_payload
 from apps.accounts.models import User
 from apps.audit.services import record
@@ -213,6 +214,95 @@ class RecoveryCodesView(APIView):
 
     def post(self, request: Request) -> Response:
         return Response({"recovery_codes": mfa.issue_recovery_codes(cast(User, request.user))})
+
+
+class PinSerializer(serializers.Serializer[None]):
+    pin = serializers.CharField(max_length=6, trim_whitespace=False)
+
+
+class SwitchSerializer(PinSerializer):
+    email = serializers.EmailField()
+
+
+class PinSetSerializer(PinSerializer):
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+
+
+class LockView(APIView):
+    """Lock this workstation now ("lock and switch user")."""
+
+    policy = AUTHENTICATED
+    mfa_exempt = True
+
+    def post(self, request: Request) -> Response:
+        ws.lock(request._request, reason="manual")
+        return Response(me_payload(request))
+
+
+class UnlockView(APIView):
+    policy = AUTHENTICATED
+    mfa_exempt = True
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "pin"
+    serializer_class = PinSerializer
+
+    def post(self, request: Request) -> Response:
+        serializer = PinSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        outcome = ws.unlock(
+            request._request, cast(User, request.user), pin=serializer.validated_data["pin"]
+        )
+        if outcome == "full_login":
+            return problem_response(401, "full_login_required", "Sign in with your password.")
+        if outcome == "invalid":
+            return problem_response(401, "invalid_pin", "The PIN is not correct.")
+        return Response(me_payload(request))
+
+
+class SwitchUserView(APIView):
+    """Another user takes over the locked workstation with their PIN."""
+
+    policy = PUBLIC
+    mfa_exempt = True
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "pin"
+    serializer_class = SwitchSerializer
+
+    def post(self, request: Request) -> Response:
+        enforce_csrf(request)
+        serializer = SwitchSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        outcome, user = ws.switch_user(
+            request._request,
+            email=serializer.validated_data["email"],
+            pin=serializer.validated_data["pin"],
+        )
+        if outcome == "full_login":
+            return problem_response(
+                401, "full_login_required", "Sign in with your password on this workstation first."
+            )
+        if outcome != "ok" or user is None:
+            return problem_response(401, "invalid_pin", "The e-mail address or PIN is not correct.")
+        request.user = cast(Any, user)
+        choose_facility(request._request, None)
+        return Response(me_payload(request))
+
+
+class PinView(APIView):
+    """Set or change the workstation PIN (needs the account password)."""
+
+    policy = AUTHENTICATED
+    serializer_class = PinSetSerializer
+
+    def post(self, request: Request) -> Response:
+        serializer = PinSetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ws.set_pin(
+            cast(User, request.user),
+            pin=serializer.validated_data["pin"],
+            password=serializer.validated_data["password"],
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class LogoutView(APIView):

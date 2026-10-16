@@ -119,6 +119,9 @@ def complete_login(request: HttpRequest, user: User, *, mfa_verified: bool) -> N
     request.session["auth_at"] = timezone.now().timestamp()
     request.session["last_activity"] = request.session["auth_at"]
     request.session["mfa_verified"] = mfa_verified
+    from apps.accounts.workstation import record_full_signin
+
+    record_full_signin(request, user, mfa_verified=mfa_verified)
     record("auth.login.succeeded", user, user, detail={"mfa": mfa_verified})
 
 

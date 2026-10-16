@@ -492,6 +492,17 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/auth/lock:
+    post:
+      operationId: v1_auth_lock_create
+      description: Lock this workstation now ("lock and switch user").
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/v1/auth/login:
     post:
       operationId: v1_auth_login_create
@@ -623,6 +634,86 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/auth/pin:
+    post:
+      operationId: v1_auth_pin_create
+      description: Set or change the workstation PIN (needs the account password).
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PinSetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PinSetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PinSetRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinSet'
+          description: ''
+  /api/v1/auth/switch:
+    post:
+      operationId: v1_auth_switch_create
+      description: Another user takes over the locked workstation with their PIN.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SwitchRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SwitchRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Switch'
+          description: ''
+  /api/v1/auth/unlock:
+    post:
+      operationId: v1_auth_unlock_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PinRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PinRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PinRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pin'
+          description: ''
   /api/v1/facilities/beds/:
     get:
       operationId: v1_facilities_beds_list
@@ -4057,11 +4148,6 @@ components:
           pattern: (?:png|jpg|jpeg)$
         is_active:
           type: boolean
-        pin_code:
-          type:
-          - string
-          - 'null'
-          maxLength: 6
         branch:
           type: integer
         warehouse:
@@ -4069,6 +4155,45 @@ components:
           - integer
           - 'null'
           description: Facility assignment for Tier-2 scoped dashboards and AI endpoints.
+    Pin:
+      type: object
+      properties:
+        pin:
+          type: string
+          maxLength: 6
+      required:
+      - pin
+    PinRequest:
+      type: object
+      properties:
+        pin:
+          type: string
+          minLength: 1
+          maxLength: 6
+      required:
+      - pin
+    PinSet:
+      type: object
+      properties:
+        pin:
+          type: string
+          maxLength: 6
+      required:
+      - pin
+    PinSetRequest:
+      type: object
+      properties:
+        pin:
+          type: string
+          minLength: 1
+          maxLength: 6
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - pin
     Product:
       type: object
       properties:
@@ -4716,6 +4841,32 @@ components:
         * `RECEIVED` - Received
         * `VERIFIED` - Verified
         * `CANCELLED` - Cancelled
+    Switch:
+      type: object
+      properties:
+        pin:
+          type: string
+          maxLength: 6
+        email:
+          type: string
+          format: email
+      required:
+      - email
+      - pin
+    SwitchRequest:
+      type: object
+      properties:
+        pin:
+          type: string
+          minLength: 1
+          maxLength: 6
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+      - pin
     TransferTypeEnum:
       enum:
       - INTERNAL
@@ -5103,11 +5254,6 @@ components:
           pattern: (?:png|jpg|jpeg)$
         is_active:
           type: boolean
-        pin_code:
-          type:
-          - string
-          - 'null'
-          maxLength: 6
         branch:
           type: integer
         warehouse:
@@ -5133,11 +5279,6 @@ components:
           pattern: (?:png|jpg|jpeg)$
         is_active:
           type: boolean
-        pin_code:
-          type:
-          - string
-          - 'null'
-          maxLength: 6
         branch:
           type: integer
         warehouse:

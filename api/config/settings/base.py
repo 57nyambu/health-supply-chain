@@ -70,6 +70,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "apps.core.request_id.RequestIdMiddleware",
     "apps.audit.context.AuditContextMiddleware",
+    "apps.accounts.workstation.WorkstationMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -165,6 +166,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "public_api": env("PUBLIC_API_RATE", default="120/min"),
         "login": env("LOGIN_RATE", default="20/min"),
+        "pin": env("PIN_RATE", default="10/min"),
     },
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",

@@ -57,6 +57,10 @@ class User(AbstractUser, BaseModel):
     locked_at = models.DateTimeField(null=True, blank=True)
     must_change_password = models.BooleanField(default=False)
     password_changed_at = models.DateTimeField(null=True, blank=True)
+    # Workstation quick-switch PIN (DESIGN §7.2): 6 digits, stored as an argon2id hash.
+    pin_hash = models.CharField(max_length=200, blank=True, default="")
+    pin_set_at = models.DateTimeField(null=True, blank=True)
+    pin_failures = models.PositiveSmallIntegerField(default=0)
 
     objects = UserManager()  # type: ignore[misc, assignment]
 
@@ -98,8 +102,6 @@ class WorkerProfile(BaseModel):
         validators=[FileExtensionValidator(["png", "jpg", "jpeg"])],
     )
     is_active = models.BooleanField(default=True)
-    # Legacy plaintext POS PIN; replaced by a hashed workstation PIN in P1-UAC-06.
-    pin_code = models.CharField(max_length=6, blank=True, null=True)  # noqa: DJ001
 
     def __str__(self):
         return f"{self.user.email} profile"
@@ -166,3 +168,23 @@ class RecoveryCode(models.Model):
 
     def __str__(self):
         return f"recovery code of user {self.user_id} ({'used' if self.used_at else 'unused'})"
+
+
+class WorkstationSession(models.Model):
+    """A full (password, and MFA where required) sign-in of a user on a shared workstation.
+
+    For 12 hours afterwards the user may unlock or switch in on that workstation with
+    their PIN instead of the password (DESIGN §7.2).
+    """
+
+    workstation_id = models.CharField(max_length=64, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="workstation_sessions")
+    signed_in_at = models.DateTimeField()
+    mfa_verified = models.BooleanField(default=False)
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-signed_in_at"]
+
+    def __str__(self):
+        return f"user {self.user_id} on workstation {self.workstation_id[:8]}"
