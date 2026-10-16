@@ -6,7 +6,7 @@ The agent updates this file at the end of every session (and before context runs
 - **Active phase:** 1 (in progress)
 - **Last tag:** none
 - **`main` status:** green — `make check` passes (API tests, coverage gate, migrations, OpenAPI drift, secret scan); web gates skip until `web/` exists
-- **Next feature:** P1-PAT-02 (Client Registry port, fake, contract tests), then the web workspaces
+- **Next feature:** P1-WEB-01 (Next.js 16 scaffold), then WEB-02…06 and E2E-11/12/15
 
 ## Owner actions (external, long lead time — start now)
 - [ ] Decide production hosting for real patient data (ADR-006): Kenya-hosted, or Contabo with documented legal basis
@@ -25,6 +25,7 @@ The agent updates this file at the end of every session (and before context runs
 
 ## Spec gaps
 <!-- - [GAP-XXX-NNN] integration/operation — unknown — assumption in fake — risk — owner action -->
+- [GAP-CR-001] HIE Client Registry lookup (`GET /patients` with `identification_number`, `identification_type`; INSURANCE.md §3.2) — response schema (field names for CR ID, names, sex, DOB, other identifiers, phone), the exact `identification_type` values and error/timeout semantics are unknown. Assumption in fake (`apps/patients/adapters/client_registry/fake.py`): lookup by our identifier type returns a `RegistryPerson` (CR ID + demographics) or none; one ID simulates an outage. Risk: mapping rework in P3-SHA-01. Owner action: same HIE UAT credentials/spec request as GAP-HWR-001.
 - [GAP-HWR-001] HIE Health Worker Registry practitioner search (`/v1/practitioner-search`) — request/response fields, licence-status semantics and auth flow unknown. Assumption in fake (`apps/accounts/adapters/hwr/fake.py`): lookup by regulator + registration number returns PUID, licence valid-to and active flag. Risk: adapter/mapping rework in P3-SHA-01. Owner action: obtain the HIE UAT credentials and practitioner-search spec from DHA (same request as the HIE/SHA UAT access).
 
 ## Legacy inventory
@@ -87,13 +88,14 @@ Done this session:
 - P1-DATA-02 — privacy-notice acknowledgement required at registration (version, method, who, staff) and append-only `Consent` rows; `DataSubjectRequest` register with due dates from the gazetted regulations (DECISIONS Findings 2026-10-16), identity check, FHIR-shaped JSON bundle + ReportLab PDF (ADR-020) stored as `dsar_export` documents and downloaded through the register; `retention_until`/`legal_hold` on patients and documents; merges move consents and documents
 - P1-AUD-01 — complete: document views now audited alongside chart opens and searches
 - P1-STO-02 — `storage_migrate` (dry run, copy + checksum + flip per row, keyset batches so re-runs resume, `--verify` read-back, `--purge-source` as a separate run that re-verifies the destination first, both directions, audit per batch), `storage_verify` (missing / ciphertext / decryption / plaintext checks), `storage_init` for the dev bucket (compose runs it)
+- P1-PAT-02 — Client Registry port + deterministic synthetic fake + contract tests (`CLIENT_REGISTRY_MODE=fake`, GAP-CR-001); `GET /api/v1/patients/registry-search/` returns local matches first, then the registry match (an outage reports `unavailable` and never blocks reception); `POST /api/v1/patients/registry-import/` re-reads the registry server-side and registers the person with the CR ID stored as a verified identifier
+- P1-DATA-01 — complete: raw integration payloads are encrypted in the new `integrations.ExchangeLog` (redacted headers, correlation ID, duration, outcome, provider trace ID); a guard test requires the encrypted field types for every token/payload/body field, which covers Phase 3's payer consent tokens
 - Settings modules now pin `DJANGO_ENV` (tests ran as `dev` before); key caches reset when key settings change
 Verified:
 - `make check` ✔ (pytest, coverage 93.8 %, critical modules ≥ 95 %, migrations, OpenAPI drift, gitleaks); compose/Jenkins not runnable here (no Docker)
 Next:
-- P1-STO-02, P1-PAT-02, then the web workspaces (P1-WEB-01…06) and E2E-11/12/15
+- The web workspaces (P1-WEB-01…06), then E2E-11/12/15 and the phase-1 tag
 Blockers / risks:
-- P1-DATA-01 stays in progress until raw integration payloads use the encrypted field (ExchangeLog arrives with P1-PAT-02); consent tokens arrive with the Phase 3 payer-consent model and will use the same field type
 - P1-PAT-01 lists P1-DATA-01 as a dependency; the parts PAT-01 needs (encrypted fields, blind indexes, rotation) are done and tested, so PAT-01 was built now
 Decisions:
 - MRN format per facility (`Facility.mrn_format`), default `{MFL}-{YY}-{seq:06d}`, numbering gap-free per facility per year (DESIGN §5 default)

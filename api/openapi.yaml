@@ -2673,6 +2673,51 @@ paths:
               schema:
                 $ref: '#/components/schemas/PrivacyNoticeText'
           description: ''
+  /api/v1/patients/registry-import/:
+    post:
+      operationId: v1_patients_registry_import_create
+      description: Create a local record from a registry match; the CR ID is stored
+        verified.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistryImportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegistryImportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegistryImportRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistryImport'
+          description: ''
+  /api/v1/patients/registry-search/:
+    get:
+      operationId: v1_patients_registry_search_retrieve
+      description: Local matches first, then the national Client Registry (P1-PAT-02).
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistryQuery'
+          description: ''
   /api/v1/patients/search/:
     get:
       operationId: v1_patients_search_retrieve
@@ -6943,6 +6988,37 @@ components:
       required:
       - password
       - pin
+    PrivacyNotice:
+      type: object
+      properties:
+        version:
+          type: string
+          maxLength: 20
+        method:
+          $ref: '#/components/schemas/MethodEnum'
+        given_by:
+          allOf:
+          - $ref: '#/components/schemas/GivenByEnum'
+          default: patient
+      required:
+      - method
+      - version
+    PrivacyNoticeRequest:
+      type: object
+      properties:
+        version:
+          type: string
+          minLength: 1
+          maxLength: 20
+        method:
+          $ref: '#/components/schemas/MethodEnum'
+        given_by:
+          allOf:
+          - $ref: '#/components/schemas/GivenByEnum'
+          default: patient
+      required:
+      - method
+      - version
     PrivacyNoticeText:
       type: object
       properties:
@@ -7271,6 +7347,70 @@ components:
           maxLength: 255
       required:
       - reason
+    RegistryImport:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        number:
+          type: string
+          maxLength: 40
+        privacy_notice:
+          $ref: '#/components/schemas/PrivacyNotice'
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactInput'
+        next_of_kin:
+          type: array
+          items:
+            $ref: '#/components/schemas/NextOfKinInput'
+        override_reason:
+          type: string
+          default: ''
+          maxLength: 255
+      required:
+      - number
+      - privacy_notice
+      - type
+    RegistryImportRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        number:
+          type: string
+          minLength: 1
+          maxLength: 40
+        privacy_notice:
+          $ref: '#/components/schemas/PrivacyNoticeRequest'
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactInputRequest'
+        next_of_kin:
+          type: array
+          items:
+            $ref: '#/components/schemas/NextOfKinInputRequest'
+        override_reason:
+          type: string
+          default: ''
+          maxLength: 255
+      required:
+      - number
+      - privacy_notice
+      - type
+    RegistryQuery:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        number:
+          type: string
+          maxLength: 40
+      required:
+      - number
+      - type
     RegulatorEnum:
       enum:
       - KMPDC
@@ -7831,6 +7971,18 @@ components:
         * `SUPPLIER` - Supplier Delivery
         * `CUSTOMER` - Customer Return
         * `DAMAGED` - Damaged Goods
+    TypeEnum:
+      enum:
+      - national_id
+      - maisha_namba
+      - alien_id
+      - refugee_id
+      type: string
+      description: |-
+        * `national_id` - national_id
+        * `maisha_namba` - maisha_namba
+        * `alien_id` - alien_id
+        * `refugee_id` - refugee_id
     Unidentified:
       type: object
       properties:

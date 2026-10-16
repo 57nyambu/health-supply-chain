@@ -197,6 +197,8 @@ FACILITY_NETWORK_ALLOWLIST = env.list(
 )
 # Health Worker Registry adapter: fake until the HIE adapter (P3-SHA-01).
 HWR_MODE = env("HWR_MODE", default="fake")
+# HIE Client Registry adapter for reception lookups: fake until the HIE adapter (P3-SHA-01).
+CLIENT_REGISTRY_MODE = env("CLIENT_REGISTRY_MODE", default="fake")
 # Behind nginx, take the client IP from X-Real-IP (only when the proxy sets it).
 TRUST_PROXY_HEADERS = env.bool("TRUST_PROXY_HEADERS", default=False)
 # Production: the role the API connects as; migrations revoke UPDATE/DELETE on audit tables from it.

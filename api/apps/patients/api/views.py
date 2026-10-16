@@ -22,7 +22,7 @@ from apps.access.drf import require_facility
 from apps.access.roles import ChartAccess
 from apps.audit.services import record
 from apps.facilities.models import Facility
-from apps.patients import dsar, privacy, selectors, services
+from apps.patients import dsar, privacy, registry, selectors, services
 from apps.patients.models import DataSubjectRequest, Patient, PatientMerge
 
 from .serializers import (
@@ -47,6 +47,9 @@ from .serializers import (
     PatientSerializer,
     PatientUpdateSerializer,
     PrivacyNoticeTextSerializer,
+    RegistryImportSerializer,
+    RegistryPersonSerializer,
+    RegistryQuerySerializer,
     SearchQuerySerializer,
     SearchResultSerializer,
     UnidentifiedSerializer,
@@ -58,7 +61,7 @@ UPDATE = "patients.patient.update"
 
 class PatientThrottle(ScopedRateThrottle):
     def allow_request(self, request: Request, view: Any) -> bool:
-        if getattr(view, "action", None) != "search":
+        if getattr(view, "action", None) not in ("search", "registry_search"):
             return True
         return super().allow_request(request, view)
 
@@ -86,6 +89,8 @@ class PatientViewSet(
         "break_glass": "access.breakglass.request",
         "privacy_notice": "patients.consent.record",
         "consents": "patients.consent.record",
+        "registry_search": "patients.registry.search",
+        "registry_import": "patients.registry.import",
     }
 
     def get_queryset(self) -> QuerySet[Patient]:
@@ -198,6 +203,55 @@ class PatientViewSet(
             self.editable_object(), actor=request.user, **serializer.validated_data
         )
         return Response(ConsentSerializer(row).data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="registry-search",
+        serializer_class=RegistryQuerySerializer,
+    )
+    def registry_search(self, request: Request) -> Response:
+        """Local matches first, then the national Client Registry (P1-PAT-02)."""
+        query = RegistryQuerySerializer(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        found = registry.lookup(
+            actor=request.user,
+            facility_id=require_facility(request),
+            identifier_type=query.validated_data["type"],
+            number=query.validated_data["number"],
+        )
+        return Response(
+            {
+                "local": SearchResultSerializer(found.local, many=True).data,
+                "registry": {
+                    "status": found.status,
+                    "person": RegistryPersonSerializer(found.person).data if found.person else None,
+                    "registered_patient": (
+                        str(found.registered_patient.pk) if found.registered_patient else None
+                    ),
+                },
+            }
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="registry-import",
+        serializer_class=RegistryImportSerializer,
+    )
+    def registry_import(self, request: Request) -> Response:
+        """Create a local record from a registry match; the CR ID is stored verified."""
+        serializer = RegistryImportSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = dict(serializer.validated_data)
+        patient = registry.import_person(
+            actor=request.user,
+            facility=self.facility(),
+            identifier_type=data.pop("type"),
+            number=data.pop("number"),
+            **data,
+        )
+        return Response(PatientSerializer(patient).data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["post"], serializer_class=UnidentifiedSerializer)
     def unidentified(self, request: Request) -> Response:

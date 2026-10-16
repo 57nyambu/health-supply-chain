@@ -253,6 +253,9 @@ def _add_identifier(
                 value_index=ids.index(type_, normalised),
                 issuer=issuer,
                 source=source,
+                verified_at=(
+                    timezone.now() if source == PatientIdentifier.Source.CLIENT_REGISTRY else None
+                ),
                 created_by=actor,
                 updated_by=actor,
             )
@@ -299,6 +302,7 @@ def create_patient(
     next_of_kin: list[dict[str, Any]] | None = None,
     override_reason: str = "",
     privacy_notice: dict[str, Any] | None = None,
+    identifier_source: str = PatientIdentifier.Source.MANUAL,
 ) -> Patient:
     """Register a patient. ``privacy_notice`` ({version, method, given_by}) records that the
     notice was given (DESIGN §8.5); it is required for every identified registration."""
@@ -353,9 +357,7 @@ def create_patient(
         updated_by=actor,
     )
     for type_, normalised, issuer in pairs:
-        _add_identifier(
-            patient, actor, type_, normalised, issuer=issuer, source=PatientIdentifier.Source.MANUAL
-        )
+        _add_identifier(patient, actor, type_, normalised, issuer=issuer, source=identifier_source)
     for kind, value, value_index, primary in contact_rows:
         PatientContact.objects.create(
             patient=patient,

@@ -6,6 +6,7 @@ from rest_framework import serializers
 
 from apps.access.models import BreakGlassGrant
 from apps.patients import dsar, privacy
+from apps.patients.adapters.client_registry import SEARCHABLE_TYPES
 from apps.patients.identifiers import mask
 from apps.patients.models import (
     Consent,
@@ -346,3 +347,36 @@ class DsarCloseSerializer(serializers.Serializer[None]):
         ]
     )
     outcome = serializers.CharField(max_length=2000, required=False, allow_blank=True, default="")
+
+
+class RegistryQuerySerializer(serializers.Serializer[None]):
+    type = serializers.ChoiceField(choices=list(SEARCHABLE_TYPES))
+    number = serializers.CharField(max_length=40)
+
+
+class RegistryPersonSerializer(serializers.Serializer[Any]):
+    """What reception sees to confirm identity: names and DOB, identifiers and phone masked."""
+
+    cr_id = serializers.CharField()
+    given_name = serializers.CharField()
+    middle_name = serializers.CharField()
+    family_name = serializers.CharField()
+    sex = serializers.CharField()
+    date_of_birth = serializers.DateField(allow_null=True)
+    identifiers = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
+
+    def get_identifiers(self, obj: Any) -> list[dict[str, str]]:
+        return [{"type": t, "value": mask(v)} for t, v in obj.identifiers]
+
+    def get_phone(self, obj: Any) -> str:
+        return mask(obj.phone) if obj.phone else ""
+
+
+class RegistryImportSerializer(RegistryQuerySerializer):
+    privacy_notice = PrivacyNoticeSerializer()
+    contacts = ContactInputSerializer(many=True, required=False, default=list)
+    next_of_kin = NextOfKinInputSerializer(many=True, required=False, default=list)
+    override_reason = serializers.CharField(
+        max_length=255, required=False, allow_blank=True, default=""
+    )

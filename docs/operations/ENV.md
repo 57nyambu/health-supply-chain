@@ -77,6 +77,7 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `PATIENT_SEARCH_RATE` | `60/min` | Patient searches per signed-in user. Every search is audited with the search term stored only as an HMAC. |
 | `PIN_RATE` | `10/min` | Workstation PIN attempts (unlock, switch user) per client IP; 5 wrong PINs for a user force a full sign-in. |
 | `HWR_MODE` | `fake` | Health Worker Registry adapter for licence verification. Only `fake` exists until P3-SHA-01; other values refuse to verify. |
+| `CLIENT_REGISTRY_MODE` | `fake` | HIE Client Registry adapter for reception lookups and imports. Only `fake` exists until the HIE adapter (GAP-CR-001); other values refuse to start a lookup. |
 | `LOGIN_RATE` | `20/min` | Login attempts per client IP (DRF throttle); account lockout is separate (5 → delay, 10 → lock). |
 
 ## Legacy integrations (replaced by adapters in later phases)
