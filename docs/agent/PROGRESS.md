@@ -6,7 +6,7 @@ The agent updates this file at the end of every session (and before context runs
 - **Active phase:** 1 (in progress)
 - **Last tag:** none
 - **`main` status:** green — `make check` passes (API tests, coverage gate, migrations, OpenAPI drift, secret scan); web gates skip until `web/` exists
-- **Next feature:** P1-WEB-01 (Next.js 16 scaffold), then WEB-02…06 and E2E-11/12/15
+- **Next feature:** P1-WEB-02 (design system foundation), then WEB-03…06 and E2E-11/12/15
 
 ## Owner actions (external, long lead time — start now)
 - [ ] Decide production hosting for real patient data (ADR-006): Kenya-hosted, or Contabo with documented legal basis
@@ -90,6 +90,7 @@ Done this session:
 - P1-STO-02 — `storage_migrate` (dry run, copy + checksum + flip per row, keyset batches so re-runs resume, `--verify` read-back, `--purge-source` as a separate run that re-verifies the destination first, both directions, audit per batch), `storage_verify` (missing / ciphertext / decryption / plaintext checks), `storage_init` for the dev bucket (compose runs it)
 - P1-PAT-02 — Client Registry port + deterministic synthetic fake + contract tests (`CLIENT_REGISTRY_MODE=fake`, GAP-CR-001); `GET /api/v1/patients/registry-search/` returns local matches first, then the registry match (an outage reports `unavailable` and never blocks reception); `POST /api/v1/patients/registry-import/` re-reads the registry server-side and registers the person with the CR ID stored as a verified identifier
 - P1-DATA-01 — complete: raw integration payloads are encrypted in the new `integrations.ExchangeLog` (redacted headers, correlation ID, duration, outcome, provider trace ID); a guard test requires the encrypted field types for every token/payload/body field, which covers Phase 3's payer consent tokens
+- P1-WEB-01 — `web/`: Next.js 16.4.1 App Router, TypeScript strict, pnpm 11, ESLint 10 (no raw hex colours, no console), Vitest, Playwright; `/api/*` rewritten to Django in dev (`skipTrailingSlashRedirect` keeps Django's slashes), nginx routes `/` to the Next standalone server and `/api/` to Django; the dev API trusts the Next origin for CSRF; typed client generated from `api/openapi.yaml` (`make openapi`, stale check in `make openapi-check`); Playwright proves same-origin session + CSRF without CORS; `web/Dockerfile` (dev + standalone prod), systemd unit; ADR-022 version pins
 - Settings modules now pin `DJANGO_ENV` (tests ran as `dev` before); key caches reset when key settings change
 Verified:
 - `make check` ✔ (pytest, coverage 93.8 %, critical modules ≥ 95 %, migrations, OpenAPI drift, gitleaks); compose/Jenkins not runnable here (no Docker)

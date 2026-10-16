@@ -9,7 +9,8 @@ Loaded when you work under `web/`. The root `CLAUDE.md` still applies. Visual ru
 - Data: Server Components for initial page data where it keeps things simple; TanStack Query in client components; typed client generated from `api/openapi.yaml` (`openapi-typescript` + `openapi-fetch`) in `src/lib/api/`.
 - Forms: react-hook-form + zod (mirrors API validation; the API stays authoritative).
 - Tests: Vitest + Testing Library; Playwright for scenarios; `@axe-core/playwright` for accessibility.
-- Check version-specific APIs (request interception file naming, caching defaults, `next/font`, Tailwind 4 `@theme`) against the installed versions' docs before writing them.
+- Check version-specific APIs (request interception file naming, caching defaults, `next/font`, Tailwind 4 `@theme`) against the installed versions' docs before writing them. Next.js ships version-matched docs in `node_modules/next/dist/docs/` — read the relevant page first (v16 renamed `middleware` to `proxy`; `next build` no longer lints).
+- Versions are pinned exactly; never add pnpm `minimumReleaseAgeExclude` entries (ADR-022).
 
 ## Structure
 ```

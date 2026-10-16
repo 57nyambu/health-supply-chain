@@ -1,0 +1,115 @@
+/* Design tokens — Flat 2.0, high-contrast light (docs/agent/DESIGN-SYSTEM.md §2, §4, §10).
+   Every colour in the app comes from here; scripts/check-contrast.mjs recomputes the
+   required contrast pairs from this file in CI. Propose a token change instead of a new colour. */
+@import "tailwindcss";
+
+@theme {
+  --color-*: initial;
+  --color-canvas: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #e6eaef;
+  --color-surface-hover: #eef2f6;
+  --color-selected: #dce9f8;
+  --color-ink: #0b1220;
+  --color-ink-muted: #3a4556;
+  --color-ink-disabled: #5b6575;
+  --color-border-strong: #6b7685;
+  --color-border-subtle: #c9cfd8;
+  --color-primary: #0b4f9c;
+  --color-primary-hover: #083d7a;
+  --color-primary-tint: #e8f1fb;
+  --color-on-primary: #ffffff;
+  --color-danger: #a3121a;
+  --color-danger-tint: #fdecec;
+  --color-danger-ink: #9b1111;
+  --color-success: #086129;
+  --color-success-tint: #e7f4ec;
+  --color-success-ink: #0a5c2b;
+  --color-warning: #ffc20e;
+  --color-warning-tint: #fff4d6;
+  --color-warning-ink: #6b4500;
+  --color-focus-inner: #0b1220;
+  --color-focus-outer: #ffd400;
+  --color-link-visited: #5b2a86;
+  --color-triage-red: #b00020;
+  --color-triage-red-text: #ffffff;
+  --color-triage-orange: #f28c28;
+  --color-triage-orange-text: #0b1220;
+  --color-triage-yellow: #ffd100;
+  --color-triage-yellow-text: #0b1220;
+  --color-triage-green: #3fb86b;
+  --color-triage-green-text: #0b1220;
+  --color-triage-blue: #0050b5;
+  --color-triage-blue-text: #ffffff;
+  --color-scrim: rgb(11 18 32 / 55%);
+
+  --radius-control: 4px;
+  --radius-overlay: 8px;
+
+  --shadow-sticky: 0 1px 0 var(--color-border-subtle);
+  --shadow-menu: 0 4px 12px rgb(11 18 32 / 16%);
+  --shadow-dialog: 0 12px 32px rgb(11 18 32 / 24%);
+
+  --text-sm: 14px;
+  --text-sm--line-height: 1.35;
+  --text-base: 16px;
+  --text-base--line-height: 1.5;
+  --text-lg: 20px;
+  --text-lg--line-height: 1.25;
+  --text-xl: 25px;
+  --text-xl--line-height: 1.25;
+  --text-2xl: 31px;
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 39px;
+  --text-3xl--line-height: 1.2;
+
+  --ease-state: cubic-bezier(0, 0, 0.2, 1);
+}
+
+@theme inline {
+  --font-sans: var(--font-atkinson), system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-inner);
+  outline-offset: 0;
+  box-shadow: 0 0 0 4px var(--color-focus-outer);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+    box-shadow: none;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    border: 1px solid ButtonText;
+  }
+}

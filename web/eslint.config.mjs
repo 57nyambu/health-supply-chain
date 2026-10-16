@@ -1,0 +1,28 @@
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+export default defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  {
+    // Colours come only from design tokens (DESIGN-SYSTEM §2, §10).
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "Literal[value=/#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?(?:[0-9a-fA-F]{2})?\b/]",
+          message: "Use a design token (var(--color-…) or a Tailwind token class), not a raw hex colour.",
+        },
+        {
+          selector: "TemplateElement[value.raw=/#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?(?:[0-9a-fA-F]{2})?\b/]",
+          message: "Use a design token (var(--color-…) or a Tailwind token class), not a raw hex colour.",
+        },
+      ],
+      // No PHI in the console (web/CLAUDE.md).
+      "no-console": ["error", { allow: ["error"] }],
+    },
+  },
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "src/lib/api/schema.d.ts", "playwright-report/**", "test-results/**"]),
+]);

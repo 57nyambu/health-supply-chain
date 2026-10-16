@@ -1,0 +1,33 @@
+import { defineConfig, devices } from "@playwright/test";
+
+// Scenarios run against the real API (fake integrations, synthetic seed data).
+// Both servers are reused when already running (`make dev`).
+const API = "http://127.0.0.1:8000";
+const WEB = "http://127.0.0.1:3000";
+
+export default defineConfig({
+  testDir: "./tests/e2e",
+  fullyParallel: false,
+  workers: 1,
+  retries: process.env.CI ? 1 : 0,
+  timeout: 60_000,
+  reporter: process.env.CI ? [["junit", { outputFile: "test-results/e2e.xml" }], ["html", { open: "never" }]] : "list",
+  use: {
+    baseURL: WEB,
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    locale: "en-KE",
+    timezoneId: "Africa/Nairobi",
+  },
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } }],
+  webServer: [
+    {
+      command: "uv run --project ../api python ../api/manage.py runserver 127.0.0.1:8000 --noreload",
+      url: `${API}/healthz`,
+      reuseExistingServer: true,
+      timeout: 180_000,
+      env: { DJANGO_ENV: process.env.DJANGO_ENV ?? "dev" },
+    },
+    { command: "pnpm dev", url: WEB, reuseExistingServer: true, timeout: 180_000 },
+  ],
+});

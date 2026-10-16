@@ -25,13 +25,18 @@ from apps.accounts import workstation as ws
 from apps.accounts.me import choose_facility, me_payload
 from apps.accounts.models import User
 from apps.audit.services import record
-from apps.core.problems import problem_response
+from apps.core.problems import Forbidden, problem_response
 
 MFA_PENDING_USER = "mfa_pending_user"
 MFA_PENDING_AT = "mfa_pending_at"
 MFA_FAILURES = "mfa_failures"
 MFA_PENDING_SECONDS = 300
 MFA_MAX_FAILURES = 5
+
+
+class CsrfFailed(Forbidden):
+    default_detail = "CSRF verification failed. Reload the page and try again."
+    default_code = "csrf_failed"
 
 
 def enforce_csrf(request: Request) -> None:
@@ -44,7 +49,7 @@ def enforce_csrf(request: Request) -> None:
     check.process_request(request._request)
     reason = check.process_view(request._request, cast(Any, None), (), {})
     if reason:
-        raise PermissionDenied("CSRF verification failed. Reload the page and try again.")
+        raise CsrfFailed()
 
 
 class LoginSerializer(serializers.Serializer[None]):

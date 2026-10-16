@@ -73,6 +73,30 @@ def test_login_requires_the_csrf_token(staff):
         "/api/v1/auth/login", {"email": staff.email, "password": PASSWORD}, format="json"
     )
     assert response.status_code == 403
+    assert response.json()["code"] == "csrf_failed"
+
+
+def test_login_from_an_untrusted_origin_is_refused(staff, settings):
+    settings.CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000"]
+    client = browser()
+    token = client.get("/api/v1/auth/csrf").json()["csrf_token"]
+    body = {"email": staff.email, "password": PASSWORD}
+    foreign = client.post(
+        "/api/v1/auth/login",
+        body,
+        format="json",
+        HTTP_X_CSRFTOKEN=token,
+        HTTP_ORIGIN="http://evil.example.test",
+    )
+    assert foreign.status_code == 403 and foreign.json()["code"] == "csrf_failed"
+    trusted = client.post(
+        "/api/v1/auth/login",
+        body,
+        format="json",
+        HTTP_X_CSRFTOKEN=token,
+        HTTP_ORIGIN="http://127.0.0.1:3000",
+    )
+    assert trusted.status_code == 200
 
 
 def test_unsafe_requests_need_csrf_once_signed_in(staff, facility):

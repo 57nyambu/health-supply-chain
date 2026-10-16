@@ -1,0 +1,25 @@
+[Unit]
+Description=AfyaSync web (Next.js standalone server)
+After=network-online.target afyasync-backend.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tom
+Group=tom
+# Contents of web/.next/standalone plus .next/static, from `pnpm build`.
+WorkingDirectory=/home/afya-front/web
+Environment=NODE_ENV=production
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3000
+Environment=NEXT_TELEMETRY_DISABLED=1
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5
+UMask=0027
+PrivateTmp=true
+NoNewPrivileges=true
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

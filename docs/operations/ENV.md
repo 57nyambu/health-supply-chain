@@ -12,7 +12,7 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `DJANGO_SECRET_KEY` | dev placeholder | yes | Session/CSRF signing. Production: random, ≥ 50 characters. |
 | `DJANGO_DEBUG` | `True` in dev, `False` elsewhere | must be off | Django debug mode. |
 | `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | yes, no `*` | Host names the API answers to. |
-| `CSRF_TRUSTED_ORIGINS` | empty | — | Origins (scheme + host) allowed to send unsafe requests with the CSRF token. |
+| `CSRF_TRUSTED_ORIGINS` | empty (dev: `http://127.0.0.1:3000,http://localhost:3000`) | — | Origins (scheme + host) allowed to send unsafe requests with the CSRF token. In development the Next.js dev server proxies `/api/*` with Django's Host, so its origin must be listed; production is same-host behind nginx. |
 | `LOG_LEVEL` | `INFO` | — | Root log level. Logs are JSON on stdout with `request_id`, PHI-scrubbed. |
 | `ERROR_TRACKER_DSN` | empty | — | Sentry-compatible DSN. Enabled only when set and its host passes the residency guard (strict mode refuses to start otherwise). Request bodies, cookies, headers and local variables are never sent. |
 
