@@ -2,6 +2,8 @@
 
 from .base import *
 
+DJANGO_ENV = "test"  # also when DJANGO_SETTINGS_MODULE is set directly (pytest)
+
 DEBUG = False
 SECRET_KEY = "test-only-secret-key-not-used-anywhere-else-0123456789abcdef"
 

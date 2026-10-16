@@ -1279,6 +1279,96 @@ paths:
               schema:
                 $ref: '#/components/schemas/Pin'
           description: ''
+  /api/v1/documents/:
+    get:
+      operationId: v1_documents_list
+      description: A patient's current documents, shaped by chart access (sensitive
+        ones as placeholders).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDocumentList'
+          description: ''
+    post:
+      operationId: v1_documents_create
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+  /api/v1/documents/{id}/:
+    get:
+      operationId: v1_documents_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this document.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+  /api/v1/documents/{id}/content/:
+    get:
+      operationId: v1_documents_content_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this document.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
   /api/v1/facilities/beds/:
     get:
       operationId: v1_facilities_beds_list
@@ -4278,6 +4368,36 @@ components:
       - id
       - name
       - updated_at
+    CategoryEnum:
+      enum:
+      - lab_report
+      - imaging_report
+      - consent_form
+      - claim_attachment
+      - invoice_pdf
+      - receipt_pdf
+      - claim_form
+      - discharge_summary
+      - referral_letter
+      - id_scan
+      - dsar_export
+      - audit_anchor
+      - other
+      type: string
+      description: |-
+        * `lab_report` - Lab report
+        * `imaging_report` - Imaging report
+        * `consent_form` - Consent form
+        * `claim_attachment` - Claim attachment
+        * `invoice_pdf` - Invoice
+        * `receipt_pdf` - Receipt
+        * `claim_form` - Claim form
+        * `discharge_summary` - Discharge summary
+        * `referral_letter` - Referral letter
+        * `id_scan` - Identity document scan
+        * `dsar_export` - Data subject request export
+        * `audit_anchor` - Audit anchor
+        * `other` - Other
     CategoryRequest:
       type: object
       properties:
@@ -4504,6 +4624,78 @@ components:
       required:
       - code
       - name
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategoryEnum'
+          readOnly: true
+        sensitivity:
+          allOf:
+          - $ref: '#/components/schemas/SensitivityEnum'
+          readOnly: true
+        content_type:
+          type: string
+          readOnly: true
+        size:
+          type: integer
+          readOnly: true
+        filename:
+          type: string
+          readOnly: true
+        storage_backend:
+          allOf:
+          - $ref: '#/components/schemas/StorageBackendEnum'
+          readOnly: true
+        uploaded_by:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        superseded_by:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        retention_until:
+          type:
+          - string
+          - 'null'
+          format: date
+          readOnly: true
+        legal_hold:
+          type: boolean
+          readOnly: true
+      required:
+      - category
+      - content_type
+      - created_at
+      - filename
+      - id
+      - legal_hold
+      - patient
+      - retention_until
+      - sensitivity
+      - size
+      - storage_backend
+      - superseded_by
+      - uploaded_by
     Facility:
       type: object
       properties:
@@ -5291,6 +5483,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Department'
+    PaginatedDocumentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
     PaginatedFacilityList:
       type: object
       required:
@@ -6599,6 +6814,24 @@ components:
       - reasons
       - score
       - sex
+    SensitivityEnum:
+      enum:
+      - normal
+      - hiv
+      - mental_health
+      - sexual_reproductive
+      - gbv
+      - substance_use
+      - genetic
+      type: string
+      description: |-
+        * `normal` - Not sensitive
+        * `hiv` - HIV and PrEP
+        * `mental_health` - Mental health
+        * `sexual_reproductive` - Sexual and reproductive health
+        * `gbv` - Gender-based violence and post-rape care
+        * `substance_use` - Substance use
+        * `genetic` - Genetic results
     ServicePoint:
       type: object
       properties:
@@ -6924,6 +7157,14 @@ components:
         * `RECEIVED` - Received
         * `VERIFIED` - Verified
         * `CANCELLED` - Cancelled
+    StorageBackendEnum:
+      enum:
+      - local
+      - s3
+      type: string
+      description: |-
+        * `local` - Local (data/)
+        * `s3` - S3-compatible bucket
     Switch:
       type: object
       properties:

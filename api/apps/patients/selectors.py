@@ -86,8 +86,10 @@ def open_record(
 
 
 def chart_sections(patient: Patient, decision: chart.ChartAccessDecision) -> dict[str, Any]:
-    """Clinical sections by level. Phase 2 fills them; items flagged sensitive are replaced
-    by placeholders unless the level is ``sensitive`` (P1-UAC-09)."""
+    """Clinical sections by level. Phase 2 adds notes, diagnoses and results; items flagged
+    sensitive are placeholders unless the level is ``sensitive`` (P1-UAC-09)."""
+    from apps.documents.selectors import for_patient as documents_for
+
     summary: dict[str, Any] | None = None
     record_: dict[str, Any] | None = None
     if decision.allows(ChartAccess.SUMMARY):
@@ -99,5 +101,10 @@ def chart_sections(patient: Patient, decision: chart.ChartAccessDecision) -> dic
             "current_visit": None,
         }
     if decision.allows(ChartAccess.FULL):
-        record_ = {"notes": [], "diagnoses": [], "results": [], "documents": []}
+        record_ = {
+            "notes": [],
+            "diagnoses": [],
+            "results": [],
+            "documents": documents_for(patient, decision),
+        }
     return {"summary": summary, "record": record_}

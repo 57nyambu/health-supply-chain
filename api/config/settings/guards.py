@@ -50,6 +50,14 @@ def production_problems(settings: Mapping[str, Any]) -> list[str]:
     if not _has_keys(settings.get("STORAGE_MASTER_KEYS", "")):
         problems.append("STORAGE_MASTER_KEYS must be a non-empty JSON object of key id -> key.")
 
+    if not settings.get("STORAGE_ENCRYPTION", True):
+        problems.append("STORAGE_ENCRYPTION must be on in production.")
+    backend = settings.get("STORAGE_BACKEND", "local")
+    if backend not in ("local", "s3"):
+        problems.append("STORAGE_BACKEND must be 'local' or 's3'.")
+    if backend == "s3" and not (settings.get("S3_BUCKET") and settings.get("S3_ENDPOINT_URL")):
+        problems.append("STORAGE_BACKEND=s3 needs S3_BUCKET and S3_ENDPOINT_URL.")
+
     if settings.get("DATA_RESIDENCY_MODE") not in ("strict", "warn"):
         problems.append(
             "DATA_RESIDENCY_MODE must be 'strict' (or 'warn') in production, never 'off'."

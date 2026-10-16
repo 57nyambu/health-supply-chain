@@ -24,6 +24,7 @@ dependencies = [
     "cryptography>=44",
     "pyotp>=2.9",
     "phonenumbers>=8.13",
+    "django-storages[s3]>=1.14,<2",
 ]
 
 [dependency-groups]
@@ -35,12 +36,12 @@ dev = [
     "time-machine>=2.16",
     "respx>=0.22",
     "hypothesis>=6.130",
-    "moto[s3]>=5.1",
     "ruff>=0.11",
     "mypy>=1.15",
     "django-stubs[compatible-mypy]>=5.2",
     "djangorestframework-stubs[compatible-mypy]>=3.16",
     "pip-audit>=2.9",
+    "moto[s3,server]>=5,<6",
 ]
 
 [tool.uv]

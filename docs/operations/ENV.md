@@ -32,6 +32,17 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `FIELD_ENCRYPTION_KEYS` | empty | yes | JSON `{"<kid>": "<base64 32-byte key>"}`, newest first. AES-256-GCM field encryption (DESIGN §8.2). |
 | `FIELD_BLIND_INDEX_KEY` | empty | yes | Separate HMAC-SHA256 key for blind indexes used in exact-match search. |
 | `STORAGE_MASTER_KEYS` | empty | yes | JSON `{"<kid>": "<base64 32-byte key>"}` that wrap per-document data keys (envelope encryption). |
+| `STORAGE_BACKEND` | `local` | `local`/`s3` | Backend for new documents. Existing documents keep reading from the backend on their row (docs/integrations/STORAGE.md §6). |
+| `S3_ENDPOINT_URL` | empty | with `s3` | S3-compatible endpoint. Must be in `RESIDENCY_ALLOWED_HOSTS` (strict mode refuses to start otherwise). |
+| `S3_REGION_NAME` | empty | — | Region name the provider expects. |
+| `S3_BUCKET` | empty | with `s3` | Private bucket; no public ACLs. |
+| `S3_ACCESS_KEY_ID` | empty | with `s3` | Least-privilege key for this bucket only. |
+| `S3_SECRET_ACCESS_KEY` | empty | with `s3` | Secret for the key above (secret store, never the repo). |
+| `S3_ADDRESSING_STYLE` | `path` | — | Path-style addressing (safe for non-AWS S3). |
+| `S3_SIGNATURE_VERSION` | `s3v4` | — | Request signing version. |
+| `STORAGE_ENCRYPTION` | `on` | `on` | Envelope encryption of every object; production refuses `off`. |
+| `DOCUMENT_MAX_BYTES` | `26214400` | — | Upload size limit (25 MB). |
+| `DOCUMENT_ALLOWED_TYPES` | `application/pdf,image/jpeg,image/png,image/webp` | — | Allowed types, checked by magic bytes. |
 | `DATA_RESIDENCY_MODE` | `warn` (`strict` in prod) | `strict`/`warn` | Residency guard (DESIGN §8.3). `off` is refused in production. |
 | `RESIDENCY_ALLOWED_HOSTS` | empty | — | Hosts allowed to receive PHI (S3 endpoint, backup target, error tracker, log shipper). Adding a non-Kenyan host needs an ADR. |
 | `SEED_PASSWORD` | empty | — | Password for the synthetic users created by `make seed` (dev/CI only; seeding refuses to run without it and in production). |

@@ -11,7 +11,13 @@ x-api-env: &api-env
   EMAIL_PORT: "1025"
   EMAIL_USE_TLS: "False"
   DATA_DIR: /data
+  # MinIO stands in for the S3-compatible bucket in dev/CI (synthetic data only).
   S3_ENDPOINT_URL: http://minio:9000
+  S3_REGION_NAME: us-east-1
+  S3_BUCKET: ${S3_BUCKET:-afyasync-dev}
+  S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-afyasync}
+  S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-afyasync-dev-only}
+  RESIDENCY_ALLOWED_HOSTS: minio,localhost,127.0.0.1
 
 x-api: &api
   build:

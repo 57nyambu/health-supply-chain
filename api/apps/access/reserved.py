@@ -17,15 +17,6 @@ PERMISSIONS = [
         "Record and manage privacy incidents and notifications",
         S.SENSITIVE,
     ),
-    # --- documents (P1-STO-01) ---------------------------------------------------------------------
-    P("documents.document.read", "View patient documents through the audited stream", S.PHI),
-    P("documents.document.upload", "Upload patient documents", S.PHI),
-    P(
-        "documents.storage.manage",
-        "Run storage migration and verification",
-        S.ADMIN,
-        privileged=True,
-    ),
     # --- visits (Phase 2) --------------------------------------------------------------------------
     P("visits.visit.read", "View visits and their status", S.PHI),
     P("visits.visit.create", "Open a visit", S.PHI),

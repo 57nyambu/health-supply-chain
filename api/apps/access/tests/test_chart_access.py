@@ -8,7 +8,6 @@ from django.utils import timezone
 from apps.access import breakglass, care_team, chart
 from apps.access.models import BreakGlassGrant, CareTeamMember, Role
 from apps.access.roles import ChartAccess as C
-from apps.accounts.models import ProfessionalLicence
 from apps.audit.models import AuditEvent
 from apps.integrations.models import Notification
 from apps.patients import selectors
@@ -16,42 +15,12 @@ from apps.patients.tests.factories import PatientFactory
 
 pytestmark = [pytest.mark.django_db, pytest.mark.req("KE-DPA-06")]
 
-REGULATOR = {
-    "clinical_officer": "COC",
-    "medical_officer": "KMPDC",
-    "medical_superintendent": "KMPDC",
-    "nurse": "NCK",
-    "triage_nurse": "NCK",
-    "pharmacist": "PPB",
-}
 REASON = "Patient collapsed in the corridor"
 
 
 @pytest.fixture
 def patient(facility):
     return PatientFactory.create(facility=facility)
-
-
-@pytest.fixture
-def staff(make_user, grant, facility):
-    """staff("clinical_officer") → a user with that role and, for clinicians, a valid licence."""
-
-    def make(*roles: str, licensed: bool = True):
-        user = make_user()
-        for role in roles:
-            grant(user, role, facility)
-            if licensed and role in REGULATOR:
-                ProfessionalLicence.objects.get_or_create(
-                    user=user,
-                    regulator=REGULATOR[role],
-                    defaults={
-                        "registration_number": f"TEST-{user.pk}-{role}",
-                        "valid_to": timezone.localdate() + timedelta(days=365),
-                    },
-                )
-        return user
-
-    return make
 
 
 def on_team(patient, user, source_id="visit-1"):

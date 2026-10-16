@@ -1,13 +1,14 @@
 """Shared pytest fixtures: synthetic users, facilities and role assignments."""
 
 import itertools
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 import pytest
 from django.utils import timezone
 
 from apps.access.models import Role, RoleAssignment
+from apps.accounts.models import ProfessionalLicence
 from apps.facilities.models import Facility
 from apps.facilities.tests.factories import FacilityFactory
 
@@ -87,5 +88,38 @@ def grant(db):
             valid_from=valid_from or timezone.now(),
             **fields,
         )
+
+    return make
+
+
+# Regulator whose licence each seeded clinical role needs (KE-PRF-01).
+REGULATOR = {
+    "clinical_officer": "COC",
+    "medical_officer": "KMPDC",
+    "medical_superintendent": "KMPDC",
+    "nurse": "NCK",
+    "triage_nurse": "NCK",
+    "pharmacist": "PPB",
+}
+
+
+@pytest.fixture
+def staff(make_user, grant, facility):
+    """staff("clinical_officer") → a user with that role and, for clinicians, a valid licence."""
+
+    def make(*roles: str, licensed: bool = True) -> Any:
+        user = make_user()
+        for role in roles:
+            grant(user, role, facility)
+            if licensed and role in REGULATOR:
+                ProfessionalLicence.objects.get_or_create(
+                    user=user,
+                    regulator=REGULATOR[role],
+                    defaults={
+                        "registration_number": f"TEST-{user.pk}-{role}",
+                        "valid_to": timezone.localdate() + timedelta(days=365),
+                    },
+                )
+        return user
 
     return make

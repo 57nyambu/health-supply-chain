@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "apps.audit",
     "apps.facilities",
     "apps.patients",
+    "apps.documents",
     "apps.products",
     "apps.suppliers",
     "apps.warehouses",
@@ -143,6 +144,51 @@ STORAGE_MASTER_KEYS = env("STORAGE_MASTER_KEYS", default="")
 # Residency guard (DESIGN §8.3): strict | warn | off.
 DATA_RESIDENCY_MODE = env("DATA_RESIDENCY_MODE", default="warn")
 RESIDENCY_ALLOWED_HOSTS = env.list("RESIDENCY_ALLOWED_HOSTS", default=[])
+
+# --- Documents and object storage (docs/integrations/STORAGE.md) -----------------
+# Backend for new files: local (DATA_DIR/objects) or s3. Each Document row records
+# where its bytes are, so both backends can be live at once.
+STORAGE_BACKEND = env("STORAGE_BACKEND", default="local")
+S3_ENDPOINT_URL = env("S3_ENDPOINT_URL", default="")
+S3_REGION_NAME = env("S3_REGION_NAME", default="")
+S3_BUCKET = env("S3_BUCKET", default="")
+S3_ACCESS_KEY_ID = env("S3_ACCESS_KEY_ID", default="")
+S3_SECRET_ACCESS_KEY = env("S3_SECRET_ACCESS_KEY", default="")
+S3_ADDRESSING_STYLE = env("S3_ADDRESSING_STYLE", default="path")
+S3_SIGNATURE_VERSION = env("S3_SIGNATURE_VERSION", default="s3v4")
+# Envelope encryption of every stored object (production refuses off).
+STORAGE_ENCRYPTION = env.bool("STORAGE_ENCRYPTION", default=True)
+DOCUMENT_MAX_BYTES = env.int("DOCUMENT_MAX_BYTES", default=25 * 1024 * 1024)
+DOCUMENT_ALLOWED_TYPES = env.list(
+    "DOCUMENT_ALLOWED_TYPES",
+    default=["application/pdf", "image/jpeg", "image/png", "image/webp"],
+)
+# Uploads stay in memory (never in the system temp directory); larger requests carry no file.
+FILE_UPLOAD_HANDLERS = ["django.core.files.uploadhandler.MemoryFileUploadHandler"]
+FILE_UPLOAD_MAX_MEMORY_SIZE = DOCUMENT_MAX_BYTES + 1024 * 1024
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    "local": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {"location": DATA_DIR / "objects", "base_url": None},
+    },
+    "s3": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": S3_BUCKET,
+            "endpoint_url": S3_ENDPOINT_URL or None,
+            "region_name": S3_REGION_NAME or None,
+            "access_key": S3_ACCESS_KEY_ID,
+            "secret_key": S3_SECRET_ACCESS_KEY,
+            "addressing_style": S3_ADDRESSING_STYLE,
+            "signature_version": S3_SIGNATURE_VERSION,
+            "default_acl": None,
+            "querystring_auth": False,
+            "file_overwrite": False,
+        },
+    },
+}
 # Password for synthetic seed users (make seed); never a real person's password.
 SEED_PASSWORD = env("SEED_PASSWORD", default="")
 # Networks treated as inside the facility; sign-ins from elsewhere need MFA (DESIGN §7.2).

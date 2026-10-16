@@ -19,10 +19,13 @@ import json
 import os
 from dataclasses import dataclass
 from functools import cache
+from typing import Any
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.core.signals import setting_changed
+from django.dispatch import receiver
 
 TOKEN_VERSION = "v1"  # noqa: S105 - format version, not a secret
 NONCE_BYTES = 12
@@ -85,6 +88,20 @@ def reset_key_cache() -> None:
     """Forget cached keys (tests and key rotation)."""
     keyring.cache_clear()
     _blind_index_key.cache_clear()
+
+
+KEY_SETTINGS = {
+    "FIELD_ENCRYPTION_KEYS",
+    "FIELD_BLIND_INDEX_KEY",
+    "STORAGE_MASTER_KEYS",
+    "SECRET_KEY",
+}
+
+
+@receiver(setting_changed)
+def _keys_changed(*, setting: str, **kwargs: Any) -> None:
+    if setting in KEY_SETTINGS:
+        reset_key_cache()
 
 
 def encrypt(plaintext: str | bytes, *, aad: bytes = b"") -> str:

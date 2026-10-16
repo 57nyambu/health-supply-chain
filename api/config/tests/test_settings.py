@@ -51,6 +51,9 @@ def test_safe_production_settings_pass():
         ({"STORAGE_MASTER_KEYS": ""}, "STORAGE_MASTER_KEYS"),
         ({"DATA_RESIDENCY_MODE": "off"}, "DATA_RESIDENCY_MODE"),
         ({"ALLOWED_HOSTS": ["*"]}, "DJANGO_ALLOWED_HOSTS"),
+        ({"STORAGE_ENCRYPTION": False}, "STORAGE_ENCRYPTION"),
+        ({"STORAGE_BACKEND": "ftp"}, "STORAGE_BACKEND"),
+        ({"STORAGE_BACKEND": "s3", "S3_BUCKET": ""}, "S3_BUCKET"),
     ],
 )
 def test_each_production_guard_fires(override, message):

@@ -6,7 +6,7 @@ The agent updates this file at the end of every session (and before context runs
 - **Active phase:** 1 (in progress)
 - **Last tag:** none
 - **`main` status:** green — `make check` passes (API tests, coverage gate, migrations, OpenAPI drift, secret scan); web gates skip until `web/` exists
-- **Next feature:** P1-UAC-09 (sensitive-category restriction)
+- **Next feature:** P1-DATA-02 (privacy notice, DSAR register and export), then P1-STO-02, P1-PAT-02
 
 ## Owner actions (external, long lead time — start now)
 - [ ] Decide production hosting for real patient data (ADR-006): Kenya-hosted, or Contabo with documented legal basis
@@ -82,6 +82,9 @@ Done this session:
 - P1-PAT-01 — patient registry: encrypted identifiers/contacts/next of kin with blind-index search, gap-free MRN per facility per year (`core.sequences`), search-before-create with fuzzy name + DOB scoring and override reason, estimated DOB, unidentified emergency registration (ER-YYYY-NNNN), maker-checker merge and reversal; access admin API (roles, assignments, approvals inbox)
 - P1-UAC-08 (in progress) — `access.chart.check_chart_access` (none/demographics/summary/full/sensitive from role levels, care team, break-glass, capped by permissions, licence and purpose); care-team membership with 72 h expiry after the episode closes (`Facility.care_team_expiry_hours`); break-glass for `Facility.break_glass_minutes` (60) with high-severity audit, PHI-free notices to the medical superintendent and DPO, review queue API; patient reads go through `patients.selectors`. Open: the on-screen banner (the API returns its data) is built with the web chart view
 - Revoking a still-pending privileged grant now withdraws its approval request; the 95 % coverage gate also covers the access decision modules
+- P1-STO-01 — `apps/documents`: `STORAGES["local"]` (DATA_DIR/objects, default) and `STORAGES["s3"]` (django-storages), envelope encryption (per-object AES-256-GCM data key in 1 MiB chunks, wrapped by `STORAGE_MASTER_KEYS`), magic-byte type checks, image metadata stripped, PHI-free object keys, uploads kept in memory (never the system temp dir), audited `GET /api/v1/documents/{id}/content/` with `Cache-Control: no-store`, residency guard on the S3 endpoint (strict refuses to start). Tests run on both backends: moto in-process and moto's HTTP server via `S3_ENDPOINT_URL`; the MinIO run in compose/CI is pending Docker (same blocker as P1-OPS-01/QA-01). Not built yet: ClamAV hook, orphan sweep, data-key re-wrap command
+- P1-UAC-09 (in progress) — `core.sensitivity` (`SensitiveRecord`, categories from DESIGN §7.7, `redact` placeholders); documents carry the flag; chart timeline and document lists show `hidden: sensitive` below level `sensitive`, break-glass included; a registry test makes every Note/Diagnosis/Result/Document model inherit the flag. Remaining: exports (the DSAR export in P1-DATA-02)
+- Settings modules now pin `DJANGO_ENV` (tests ran as `dev` before); key caches reset when key settings change
 Verified:
 - `make check` ✔ (pytest, coverage 93.8 %, critical modules ≥ 95 %, migrations, OpenAPI drift, gitleaks); compose/Jenkins not runnable here (no Docker)
 Next:

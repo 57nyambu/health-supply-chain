@@ -3,6 +3,8 @@
 from .base import *
 from .guards import check_production_settings
 
+DJANGO_ENV = "prod"
+
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 DATA_RESIDENCY_MODE = env("DATA_RESIDENCY_MODE", default="strict")
 TRUST_PROXY_HEADERS = env.bool("TRUST_PROXY_HEADERS", default=True)
