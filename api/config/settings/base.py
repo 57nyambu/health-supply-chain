@@ -6,6 +6,7 @@ deployment or is secret comes from the environment; each variable is
 documented in .env.example and docs/operations/ENV.md.
 """
 
+import os
 from pathlib import Path
 
 import environ
@@ -18,13 +19,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 REPO_ROOT = BASE_DIR.parent
 
 env = environ.Env()
-if (REPO_ROOT / ".env").exists():
+# The repository .env is for development and CI only. Production takes its environment
+# from the service manager (infra/systemd EnvironmentFile, compose), so a stray .env on a
+# server can never weaken production settings.
+_PRODUCTION = os.environ.get("DJANGO_ENV") == "prod" or os.environ.get(
+    "DJANGO_SETTINGS_MODULE", ""
+).endswith(".prod")
+if not _PRODUCTION and (REPO_ROOT / ".env").exists():
     environ.Env.read_env(REPO_ROOT / ".env")
 
 DJANGO_ENV = env("DJANGO_ENV", default="dev")
 
+
+def env_or(name: str, default: str) -> str:
+    """The variable, or ``default`` when it is unset *or empty* — `.env.example` (copied to
+    `.env` by `make setup`) ships empty values, which must not replace a default."""
+    return str(env(name, default="")) or default
+
+
 # --- Core security ---------------------------------------------------------
-SECRET_KEY = env("DJANGO_SECRET_KEY", default="unsafe-dev-secret")
+SECRET_KEY = env_or("DJANGO_SECRET_KEY", "unsafe-dev-secret")  # prod guards reject this
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
@@ -135,7 +149,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # --- Data protection ------------------------------------------------------------
 # Local object store root (DESIGN §13). Production holds real patient files here.
-DATA_DIR = Path(env("DATA_DIR", default=str(REPO_ROOT / "data")))
+DATA_DIR = Path(env_or("DATA_DIR", str(REPO_ROOT / "data")))
 # Field encryption keys (P1-DATA-01) and storage master keys (P1-STO-01):
 # JSON objects {"<key id>": "<base64 32-byte key>"}, newest first.
 FIELD_ENCRYPTION_KEYS = env("FIELD_ENCRYPTION_KEYS", default="")
@@ -268,6 +282,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.accounts.tasks.warn_expiring_licences",
         "schedule": crontab(hour=6, minute=0),
     },
+    "deliver-notifications": {
+        "task": "apps.integrations.tasks.deliver_notifications",
+        "schedule": crontab(minute="*"),
+    },
     "anchor-audit-chains": {
         "task": "apps.audit.tasks.anchor_audit_chains",
         "schedule": crontab(hour=0, minute=10),
@@ -286,6 +304,8 @@ EMAIL_PORT = env.int("EMAIL_PORT", default=587)
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+# Seconds before an SMTP attempt gives up; the outbox job retries later (integrations.notify).
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=10)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="alerts@afyasync.local")
 SITE_NAME = env("SITE_NAME", default="AfyaSync")
 

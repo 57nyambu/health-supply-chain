@@ -6,7 +6,7 @@ from pathlib import Path
 API_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = API_DIR.parent
 ENV_READ = re.compile(
-    r"""\benv(?:\.(?:bool|int|list|db|str|float|json))?\(\s*["']([A-Z][A-Z0-9_]+)["']"""
+    r"""\benv(?:_or|\.(?:bool|int|list|db|str|float|json))?\(\s*["']([A-Z][A-Z0-9_]+)["']"""
 )
 
 

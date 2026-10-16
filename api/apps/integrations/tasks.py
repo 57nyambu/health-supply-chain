@@ -8,6 +8,15 @@ from .models import Notification
 from .services import NotificationService
 
 
+@shared_task
+def deliver_notifications():
+    """Outbox: e-mail stored staff notifications (apps.integrations.notify)."""
+    from .notify import deliver_pending
+
+    sent, failed = deliver_pending()
+    return {"sent": sent, "failed": failed}
+
+
 @shared_task(bind=True, max_retries=3)
 def send_notification_task(self, notification_id):
     try:

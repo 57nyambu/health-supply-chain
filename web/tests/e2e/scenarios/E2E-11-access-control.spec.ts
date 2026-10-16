@@ -77,14 +77,22 @@ test("off the care team: summary only; break-glass opens the full record for 60 
   expect(minutes).toBeGreaterThan(58);
   expect(minutes).toBeLessThanOrEqual(60);
 
-  // PHI-free notices to the medical superintendent and the DPO, stored and e-mailed.
+  // Notices to the medical superintendent and the DPO: stored for each, then e-mailed
+  // (delivery needs the mail server — mailpit in compose/CI — and is covered by the API
+  // tests); they name the grant, never the patient.
   const notified = djangoShell(
     "from apps.integrations.models import Notification; " +
       `rows = Notification.objects.filter(message__contains='${grantId}'); ` +
-      "print(sorted({r.user.email.split('@')[0] for r in rows if r.sent_at}))",
+      "print(sorted({r.user.email.split('@')[0] for r in rows}))",
   );
   expect(notified).toContain("medical_superintendent");
   expect(notified).toContain("dpo");
+  const leaks = djangoShell(
+    "from apps.integrations.models import Notification; " +
+      `rows = Notification.objects.filter(message__contains='${grantId}'); ` +
+      `print(sum(any(v in (r.subject + r.message) for v in ${JSON.stringify([before.body.patient.display_name, before.body.patient.mrn])}) for r in rows))`,
+  );
+  expect(leaks).toBe("0");
 
   // Sixty minutes pass (the grant's clock is moved to now — test-only DB access).
   djangoShell(

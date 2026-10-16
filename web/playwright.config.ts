@@ -12,6 +12,8 @@ const MANAGE = "uv run --project ../api python ../api/manage.py";
 // E2E-12 needs an S3 endpoint and a second API server writing to it; `make smoke` skips
 // them (E2E_STORAGE=off) to keep the commit gate quick.
 const STORAGE = process.env.E2E_STORAGE !== "off";
+// The browser posts from the web origin; Django must trust it whatever a local .env says.
+const CSRF_TRUSTED_ORIGINS = [process.env.CSRF_TRUSTED_ORIGINS, WEB].filter(Boolean).join(",");
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -45,7 +47,7 @@ export default defineConfig({
       url: `${API}/healthz`,
       reuseExistingServer: true,
       timeout: 180_000,
-      env: { DJANGO_ENV, ...(STORAGE ? S3_ENV : {}) },
+      env: { DJANGO_ENV, CSRF_TRUSTED_ORIGINS, ...(STORAGE ? S3_ENV : {}) },
     },
     ...(STORAGE
       ? [
@@ -54,7 +56,7 @@ export default defineConfig({
             url: `${S3_API}/healthz`,
             reuseExistingServer: true,
             timeout: 180_000,
-            env: { DJANGO_ENV, ...S3_ENV, STORAGE_BACKEND: "s3" },
+            env: { DJANGO_ENV, CSRF_TRUSTED_ORIGINS, ...S3_ENV, STORAGE_BACKEND: "s3" },
           },
         ]
       : []),

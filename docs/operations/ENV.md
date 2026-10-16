@@ -1,6 +1,6 @@
 # Environment variables
 
-All configuration that differs per deployment, and every secret, comes from environment variables. `make setup` copies `.env.example` to `.env` for development. In production, set them through the host's secret store or a root-only `.env`; never commit real values. `api/tests/test_env_documented.py` fails when a variable read by the settings is missing from this page or from `.env.example`.
+All configuration that differs per deployment, and every secret, comes from environment variables. `make setup` copies `.env.example` to `.env` for development. In production, set them through the service manager (the systemd `EnvironmentFile`, compose `env_file`) or the host's secret store; with `DJANGO_ENV=prod` the API ignores a `.env` in the repository, so a stray development file can never weaken production. Never commit real values. An empty value in `.env` counts as unset (`DJANGO_SECRET_KEY` and `DATA_DIR` keep their defaults). `api/tests/test_env_documented.py` fails when a variable read by the settings is missing from this page or from `.env.example`.
 
 Legend: **Req (prod)** — the API refuses to start in production without a safe value.
 
@@ -67,6 +67,7 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS` | `localhost`, `587`, `True` | SMTP server (Mailpit on 1025 in dev). |
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | empty | SMTP credentials (secret). |
 | `DEFAULT_FROM_EMAIL` | `alerts@afyasync.local` | Sender address. |
+| `EMAIL_TIMEOUT` | `10` | Seconds before one SMTP attempt gives up. Staff notifications are stored first and e-mailed by the `deliver_notifications` beat job every minute (retried for 48 h), so no request waits on the mail server. |
 | `SITE_NAME` | `AfyaSync` | Product name used in messages. |
 
 ## Authentication

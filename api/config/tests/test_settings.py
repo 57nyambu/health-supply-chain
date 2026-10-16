@@ -94,6 +94,8 @@ def test_prod_module_starts_with_safe_env_and_sets_security_headers():
     result = _import_prod(
         {
             "DJANGO_SECRET_KEY": "s" * 64,
+            # Explicit, as a deployment sets it: a developer's .env says DJANGO_DEBUG=True.
+            "DJANGO_DEBUG": "False",
             "DJANGO_ALLOWED_HOSTS": "hmis.example.ke",
             "FIELD_ENCRYPTION_KEYS": KEYS,
             "FIELD_BLIND_INDEX_KEY": "blind-index-key",
@@ -102,6 +104,28 @@ def test_prod_module_starts_with_safe_env_and_sets_security_headers():
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout.split() == ["31536000", "True", "True", "no-referrer", "strict"]
+
+
+def test_empty_values_from_env_example_keep_the_defaults():
+    """`make setup` copies .env.example (empty values) to .env; dev must still start with a
+    secret key and keep files under <repo>/data, not the working directory."""
+    env = {k: v for k, v in os.environ.items() if k not in ("DJANGO_SETTINGS_MODULE",)}
+    env.update({"DJANGO_ENV": "dev", "DJANGO_SECRET_KEY": "", "DATA_DIR": ""})
+    env["DJANGO_SETTINGS_MODULE"] = "config.settings.dev"
+    code = (
+        "import django; django.setup(); from django.conf import settings as s; "
+        "print(bool(s.SECRET_KEY), s.DATA_DIR.name, s.DATA_DIR.is_absolute())"
+    )
+    result = subprocess.run(  # noqa: S603 - fixed interpreter and arguments
+        [sys.executable, "-c", code],
+        cwd=API_DIR,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.split() == ["True", "data", "True"]
 
 
 def test_locale_is_nairobi_with_timezone_support():

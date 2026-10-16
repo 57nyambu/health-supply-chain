@@ -14,6 +14,7 @@ from apps.accounts.adapters.hwr.fake import FakeHealthWorkerRegistry
 from apps.accounts.models import ProfessionalLicence
 from apps.audit.models import AuditEvent
 from apps.integrations.models import Notification
+from apps.integrations.notify import deliver_pending
 
 pytestmark = [pytest.mark.django_db, pytest.mark.req("KE-PRF-01")]
 
@@ -142,6 +143,7 @@ def test_nightly_job_warns_holder_and_facility_admins_once(make_user, facility, 
     assert licences.notify_expiring(TODAY) == 1
     recipients = sorted(Notification.objects.values_list("user_id", flat=True))
     assert recipients == sorted([admin.pk, nurse.pk])
+    assert deliver_pending() == (2, 0)  # the outbox job sends them
     assert len(mail.outbox) == 2
     assert "expires on" in mail.outbox[0].body
     assert licences.notify_expiring(TODAY) == 0  # not twice

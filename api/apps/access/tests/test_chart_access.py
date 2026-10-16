@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import pytest
 import time_machine
+from django.core import mail
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils import timezone
 
@@ -10,6 +11,7 @@ from apps.access.models import BreakGlassGrant, CareTeamMember, Role
 from apps.access.roles import ChartAccess as C
 from apps.audit.models import AuditEvent
 from apps.integrations.models import Notification
+from apps.integrations.notify import deliver_pending
 from apps.patients import selectors
 from apps.patients.tests.factories import PatientFactory
 
@@ -164,6 +166,12 @@ def test_break_glass_grants_full_access_for_60_minutes(
     assert {n.user_id for n in notified} == {supt.pk, dpo.pk}
     for notice in notified:
         assert patient.family_name not in notice.message and patient.mrn not in notice.message
+    # Stored with the grant; the outbox job e-mails them (no request waits on SMTP).
+    assert not any(n.sent_at for n in notified) and not mail.outbox
+    assert deliver_pending() == (2, 0)
+    assert all(n.sent_at for n in notified.all())
+    sent = [m for m in mail.outbox if m.subject == "Break-glass access needs review"]
+    assert sorted(m.to[0] for m in sent) == sorted([supt.email, dpo.email])
 
 
 def test_break_glass_never_reveals_sensitive_items_without_the_permission(staff, patient):
