@@ -1,8 +1,5 @@
-import secrets
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 
 from .emails import EmailService
@@ -59,28 +56,6 @@ class NotificationService:
             template_name="integrations/emails/generic_notification.html",
             context={"message": message},
         )
-
-    def send_welcome_credentials(self, user, temp_password=None):
-        if not temp_password:
-            temp_password = secrets.token_urlsafe(8)
-            user.password = make_password(temp_password)
-            user.save()
-
-        preferred = self._preferred_notification_type()
-
-        if user.email:
-            self.email_service.send_welcome_email(user, temp_password)
-
-        if preferred == "sms" and user.phone:
-            sms_message = (
-                f"{settings.SITE_NAME} credentials:\n"
-                f"User: {user.email}\n"
-                f"Pass: {temp_password}\n"
-                f"Role: {user.get_role_display()}"
-            )
-            self._send_sms_notification(user=user, message=sms_message[:160])
-
-        return True
 
     def send_inventory_alert(self, product, alert_type, message):
         staff_users = _get_user_model().objects.filter(is_staff=True)

@@ -40,17 +40,3 @@ class WorkerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkerProfile
         fields = "__all__"
-
-
-class PasswordResetSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-
-
-class PasswordChangeSerializer(serializers.Serializer):
-    old_password = serializers.CharField(required=True)
-    new_password = serializers.CharField(required=True)
-
-
-class AuthSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)

@@ -29,18 +29,6 @@ def send_notification_task(self, notification_id):
 
 
 @shared_task(bind=True, max_retries=3)
-def send_welcome_credentials_task(self, user_id, temp_password=None):
-    try:
-        from apps.accounts.models import User
-
-        user = User.objects.get(id=user_id)
-        service = NotificationService()
-        return service.send_welcome_credentials(user, temp_password)
-    except Exception as e:
-        self.retry(exc=e, countdown=60)
-
-
-@shared_task(bind=True, max_retries=3)
 def check_low_stock_items(self):
     try:
         low_stock_threshold = getattr(settings, "LOW_STOCK_THRESHOLD", 10)

@@ -1,19 +1,24 @@
 import { apiRequest, clearSession, getUser, setSession } from './api.js';
 
 export async function login(email, password) {
-  const payload = await apiRequest('/accounts/auth/login/', {
+  await apiRequest('/auth/csrf');
+  const me = await apiRequest('/auth/login', {
     method: 'POST',
     body: { email, password },
-    auth: false,
   });
 
-  setSession(payload);
-  return payload.user;
+  const user = { ...me.legacy, email: me.email, first_name: me.first_name, last_name: me.last_name };
+  setSession(user);
+  return user;
 }
 
-export function logout() {
-  clearSession();
-  window.location.href = '/login.html';
+export async function logout() {
+  try {
+    await apiRequest('/auth/logout', { method: 'POST' });
+  } finally {
+    clearSession();
+    window.location.href = '/login.html';
+  }
 }
 
 export function routeByRole(user) {

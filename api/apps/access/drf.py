@@ -16,6 +16,7 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from django.db.models import Model
+from rest_framework.exceptions import APIException
 from rest_framework.permissions import BasePermission
 
 from apps.access import policies
@@ -81,6 +82,12 @@ def object_facility(view: "APIView", obj: Any) -> int | None:
     return int(value) if value is not None else None
 
 
+class PasswordChangeRequired(APIException):
+    status_code = 403
+    default_detail = "Change your temporary password before continuing."
+    default_code = "password_change_required"
+
+
 class PolicyPermission(BasePermission):
     message = "You do not have permission to perform this action."
 
@@ -98,6 +105,8 @@ class PolicyPermission(BasePermission):
             return False
         if code == AUTHENTICATED:
             return True
+        if getattr(user, "must_change_password", False):
+            raise PasswordChangeRequired()
         if not is_known(code):
             logger.error("Denied: %s references unknown permission %s", type(view).__name__, code)
             return False

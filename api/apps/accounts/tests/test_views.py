@@ -78,25 +78,10 @@ def test_me_is_available_to_any_signed_in_user(api_as, facility):
     assert client.get("/api/v1/accounts/users/").status_code == 403
 
 
-def test_legacy_login_and_logout_are_audited(make_user, facility, grant):
-    user = make_user(password=STRONG, role="CASHIER")
-    WorkerProfile.objects.create(user=user, branch=facility.branch)
-    WarehouseFactory.create(branch=facility.branch)
-    client = APIClient()
-    bad = client.post(
-        "/api/v1/accounts/auth/login/", {"email": user.email, "password": "nope"}, format="json"
-    )
-    assert bad.status_code == 401
-    good = client.post(
+def test_legacy_jwt_login_endpoint_is_gone(make_user):
+    """Browsers sign in at /api/v1/auth/login (session); the token endpoint was removed (P1-UAC-04)."""
+    user = make_user(password=STRONG)
+    response = APIClient().post(
         "/api/v1/accounts/auth/login/", {"email": user.email, "password": STRONG}, format="json"
     )
-    assert good.status_code == 200
-    body = good.json()["user"]
-    assert (body["tier"], body["warehouse_id"] is not None) == (2, True)
-    assert client.post("/api/v1/accounts/auth/logout/").status_code == 200
-    actions = list(AuditEvent.objects.order_by("ts").values_list("action", "outcome"))
-    assert actions == [
-        ("auth.login.failed", "denied"),
-        ("auth.login.succeeded", "success"),
-        ("auth.logout", "success"),
-    ]
+    assert response.status_code == 404

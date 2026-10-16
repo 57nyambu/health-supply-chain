@@ -57,13 +57,12 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `DEFAULT_FROM_EMAIL` | `alerts@afyasync.local` | Sender address. |
 | `SITE_NAME` | `AfyaSync` | Product name used in messages. |
 
-## Legacy browser authentication (removed in P1-UAC-04)
+## Authentication
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `CORS_ALLOWED_ORIGINS` | empty | Cross-origin SPA origins (legacy only; the new web app is same-origin). |
-| `JWT_ACCESS_LIFETIME_MIN` | `15` | SimpleJWT access token lifetime. |
-| `JWT_REFRESH_LIFETIME_DAYS` | `7` | SimpleJWT refresh token lifetime. |
+| `BREACHED_PASSWORDS_FILE` | empty | Extra offline breached-password list (one per line, optionally gzipped) checked in addition to the bundled list. |
+| `LOGIN_RATE` | `20/min` | Login attempts per client IP (DRF throttle); account lockout is separate (5 → delay, 10 → lock). |
 
 ## Legacy integrations (replaced by adapters in later phases)
 

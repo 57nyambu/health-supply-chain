@@ -22,8 +22,9 @@ NON_DRF_ALLOWLIST = {
 }
 # DRF view/action pairs allowed to be PUBLIC (no authentication).
 PUBLIC_ALLOWLIST = {
-    ("AuthViewSet", "login"),
-    ("AuthViewSet", "logout"),
+    ("CsrfView", None),
+    ("LoginView", None),
+    ("LogoutView", None),
 }
 
 

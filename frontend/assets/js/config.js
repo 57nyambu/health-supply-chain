@@ -1,8 +1,10 @@
 window.AFYASYNC_CONFIG = {
-  API_BASE_URL: 'http://localhost:8000/api/v1',
+  // Same origin: nginx serves these pages and routes /api/ to Django (session cookie + CSRF).
+  API_BASE_URL: '/api/v1',
+  // Demo shortcuts fill the e-mail only; passwords are never shipped in the page.
   DEMO_LOGINS: [
-    { label: 'Admin', email: 'admin@afyasync.dima.co.ke', password: 'AfyaSync@123' },
-    { label: 'Facility', email: 'facility@afyasync.dima.co.ke', password: 'AfyaSync@123' },
-    { label: 'Reporter', email: 'reporter@afyasync.dima.co.ke', password: 'AfyaSync@123' },
+    { label: 'Admin', email: 'admin@afyasync.dima.co.ke' },
+    { label: 'Facility', email: 'facility@afyasync.dima.co.ke' },
+    { label: 'Reporter', email: 'reporter@afyasync.dima.co.ke' },
   ],
 };

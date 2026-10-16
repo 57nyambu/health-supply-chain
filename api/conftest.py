@@ -24,6 +24,14 @@ def _isolated_audit_context():
     context._context.reset(token)
 
 
+@pytest.fixture(autouse=True)
+def _fresh_throttles():
+    """Rate limits are per client IP; every test starts with a clean budget."""
+    from django.core.cache import cache
+
+    cache.clear()
+
+
 @pytest.fixture
 def make_user(django_user_model):
     def make(email: str | None = None, **fields: Any):

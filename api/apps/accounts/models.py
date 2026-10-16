@@ -1,12 +1,9 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import FileExtensionValidator, RegexValidator
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.models import AuditLog, BaseModel
-from apps.integrations.tasks import send_welcome_credentials_task
+from apps.core.models import BaseModel
 
 
 class UserManager(BaseUserManager):
@@ -55,6 +52,10 @@ class User(AbstractUser, BaseModel):
     last_login_ip = models.GenericIPAddressField(blank=True, null=True)
     failed_login_attempts = models.PositiveIntegerField(default=0)
     account_locked = models.BooleanField(default=False)
+    last_failed_login_at = models.DateTimeField(null=True, blank=True)
+    locked_at = models.DateTimeField(null=True, blank=True)
+    must_change_password = models.BooleanField(default=False)
+    password_changed_at = models.DateTimeField(null=True, blank=True)
 
     objects = UserManager()  # type: ignore[misc, assignment]
 
@@ -74,19 +75,6 @@ class User(AbstractUser, BaseModel):
 
     def __str__(self):
         return f"{self.get_full_name() or self.email} ({self.get_role_display()})"
-
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-
-        if is_new:
-            AuditLog.objects.create(
-                user=self.created_by if hasattr(self, "created_by") else None,
-                action="CREATE",
-                model="User",
-                object_id=self.pk,
-                details={"email": self.email, "role": self.role, "approved": self.is_approved},
-            )
 
 
 class WorkerProfile(BaseModel):
@@ -118,14 +106,6 @@ class WorkerProfile(BaseModel):
     class Meta:
         verbose_name = _("worker profile")
         verbose_name_plural = _("worker profiles")
-
-
-# Signals
-@receiver(post_save, sender=User)
-def handle_new_user(sender, instance, created, **kwargs):
-    if created and not instance.is_superuser:
-        # Send credentials to new workers
-        send_welcome_credentials_task.delay(instance.id)
 
 
 class UserSession(models.Model):

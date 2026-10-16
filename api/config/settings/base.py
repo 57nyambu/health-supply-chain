@@ -6,7 +6,6 @@ deployment or is secret comes from the environment; each variable is
 documented in .env.example and docs/operations/ENV.md.
 """
 
-from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -50,7 +49,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
-    "corsheaders",
     "drf_spectacular",
     "apps.core",
     "apps.accounts",
@@ -73,10 +71,10 @@ MIDDLEWARE = [
     "apps.core.request_id.RequestIdMiddleware",
     "apps.audit.context.AuditContextMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.accounts.session_timeout.SessionTimeoutMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.core.idempotency.IdempotencyMiddleware",
@@ -104,12 +102,22 @@ TEMPLATES = [
     },
 ]
 
+# DESIGN §7.2: argon2id; existing PBKDF2 hashes are upgraded at the next sign-in.
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+]
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 12},
+    },
+    {"NAME": "apps.accounts.passwords.BreachedPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+# Optional larger offline breached-password list (one per line, may be .gz).
+BREACHED_PASSWORDS_FILE = env("BREACHED_PASSWORDS_FILE", default="")
 
 # --- Locale: Kenya -------------------------------------------------------------
 LANGUAGE_CODE = "en-us"
@@ -145,13 +153,15 @@ AI_FEATURES_ENABLED = env.bool("AI_FEATURES_ENABLED", default=False)
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
         "apps.access.authentication.ApiKeyAuthentication",
     ],
     # Default deny: every view declares a policy (apps.access.drf, P1-UAC-03).
     "DEFAULT_PERMISSION_CLASSES": ["apps.access.drf.PolicyPermission"],
-    "DEFAULT_THROTTLE_RATES": {"public_api": env("PUBLIC_API_RATE", default="120/min")},
+    "DEFAULT_THROTTLE_RATES": {
+        "public_api": env("PUBLIC_API_RATE", default="120/min"),
+        "login": env("LOGIN_RATE", default="20/min"),
+    },
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.FormParser",
@@ -172,22 +182,8 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
 }
 
-# Legacy browser auth (SimpleJWT + CORS), removed in P1-UAC-04 (ADR-005).
-CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
-CORS_ALLOW_CREDENTIALS = True
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env.int("JWT_ACCESS_LIFETIME_MIN", default=15)),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=env.int("JWT_REFRESH_LIFETIME_DAYS", default=7)),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "USER_ID_FIELD": "id",
-    "USER_ID_CLAIM": "user_id",
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-    "TOKEN_TYPE_CLAIM": "token_type",
-}
+# Browser auth is a same-origin Django session + CSRF (ADR-005). The token_blacklist
+# app stays installed only to keep the record of revoked legacy JWTs.
 
 # --- Celery ------------------------------------------------------------------------
 REDIS_URL = env("REDIS_URL", default="redis://127.0.0.1:6379/0")
@@ -246,6 +242,10 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "no-referrer"
 SESSION_COOKIE_HTTPONLY = True
+# Absolute backstop; idle and absolute limits are enforced per request
+# (apps.accounts.session_timeout) from the facility's settings.
+SESSION_COOKIE_AGE = 24 * 3600
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 

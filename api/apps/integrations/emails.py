@@ -28,19 +28,6 @@ class EmailService:
         except Exception:
             return False
 
-    def send_welcome_email(self, user, temp_password):
-        context = {
-            "user": user,
-            "temp_password": temp_password,
-            "site_name": getattr(settings, "SITE_NAME", "Our System"),
-        }
-        return self.send_email(
-            subject=f"Your {context['site_name']} Work Credentials",
-            recipient=user.email,
-            template_name="welcome_credentials.html",
-            context=context,
-        )
-
     def send_password_reset(self, user, reset_link):
         context = {"user": user, "reset_link": reset_link, "site_url": settings.SITE_URL}
         return self.send_email(

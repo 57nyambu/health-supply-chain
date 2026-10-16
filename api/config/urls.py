@@ -7,6 +7,7 @@ unauthenticated legacy POS pages (`api/v1/mgt/`, `api/v1/sales/`), the duplicate
 
 from django.urls import include, path
 
+from apps.accounts.api.urls import auth_urlpatterns, me_urlpatterns
 from apps.core import api_docs, health
 
 urlpatterns = [
@@ -15,6 +16,8 @@ urlpatterns = [
     path("api/schema/", api_docs.SchemaView.as_view(), name="schema"),
     path("api/docs/swagger/", api_docs.SwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/docs/redoc/", api_docs.RedocView.as_view(url_name="schema"), name="redoc"),
+    path("api/v1/auth/", include(auth_urlpatterns)),
+    path("api/v1/", include(me_urlpatterns)),
     path("api/v1/accounts/", include("apps.accounts.urls")),
     path("api/v1/facilities/", include("apps.facilities.api.urls")),
     path("api/v1/audit/", include("apps.audit.api.urls")),

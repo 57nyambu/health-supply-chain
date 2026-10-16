@@ -12,12 +12,7 @@ if (Test-Path $envFile) {
 
 $apiBaseUrl = $env:API_BASE_URL
 if ([string]::IsNullOrWhiteSpace($apiBaseUrl)) {
-  $apiBaseUrl = "http://localhost:8000/api/v1"
-}
-
-$demoPassword = $env:DEMO_PASSWORD
-if ([string]::IsNullOrWhiteSpace($demoPassword)) {
-  $demoPassword = "AfyaSync@123"
+  $apiBaseUrl = "/api/v1"
 }
 
 $demoAdminEmail = $env:DEMO_ADMIN_EMAIL
@@ -40,9 +35,9 @@ $configPath = Join-Path $PSScriptRoot "..\assets\js\config.js"
 window.AFYASYNC_CONFIG = {
   API_BASE_URL: "$apiBaseUrl",
   DEMO_LOGINS: [
-    { label: "Admin", email: "$demoAdminEmail", password: "$demoPassword" },
-    { label: "Facility", email: "$demoFacilityEmail", password: "$demoPassword" },
-    { label: "Reporter", email: "$demoReporterEmail", password: "$demoPassword" },
+    { label: "Admin", email: "$demoAdminEmail" },
+    { label: "Facility", email: "$demoFacilityEmail" },
+    { label: "Reporter", email: "$demoReporterEmail" },
   ],
 };
 "@ | Set-Content -Path $configPath -Encoding UTF8

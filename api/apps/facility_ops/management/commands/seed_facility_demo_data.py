@@ -5,10 +5,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.db.models.signals import post_save
 from django.utils import timezone
 
-from apps.accounts.models import WorkerProfile, handle_new_user
+from apps.accounts.models import WorkerProfile
 from apps.facility_ops.models import FacilityAlert, FacilityDailyStats
 from apps.products.models import Category, Inventory, Product
 from apps.warehouses.models import Branch, Warehouse
@@ -161,17 +160,13 @@ class Command(BaseCommand):
         ]
 
         created_users = {}
-        post_save.disconnect(handle_new_user, sender=User)
-        try:
-            for spec in demo_users:
-                user, _ = User.objects.get_or_create(email=spec["email"])
-                for field, value in spec["defaults"].items():
-                    setattr(user, field, value)
-                user.set_password(spec["password"])
-                user.save()
-                created_users[spec["email"]] = user
-        finally:
-            post_save.connect(handle_new_user, sender=User)
+        for spec in demo_users:
+            user, _ = User.objects.get_or_create(email=spec["email"])
+            for field, value in spec["defaults"].items():
+                setattr(user, field, value)
+            user.set_password(spec["password"])
+            user.save()
+            created_users[spec["email"]] = user
 
         facility_user = created_users["facility@afyasync.dima.co.ke"]
         WorkerProfile.objects.update_or_create(

@@ -2,30 +2,28 @@
 
 Users are never deleted (deactivation is a separate, audited action) and only users
 linked to the request's facility — by a role assignment or a profile in its branch —
-are visible. The legacy login keeps its response shape until P1-UAC-04 replaces it.
+are visible. Sign-in lives in apps.accounts.api (/api/v1/auth/).
 """
 
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from django.db.models import Q
-from rest_framework import mixins, serializers, status, viewsets
+from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.access.drf import AUTHENTICATED, PUBLIC, request_facility
-from apps.accounts.legacy import legacy_tier, legacy_warehouse_id
+from apps.access.drf import AUTHENTICATED, request_facility
+from apps.accounts import login as auth
+from apps.accounts.services import deactivate_user
 from apps.audit.services import record
 from apps.facilities.models import Facility
 
 from .models import User, WorkerProfile
-from .serializers import (
-    AuthSerializer,
-    UserCreateSerializer,
-    UserSerializer,
-    WorkerProfileSerializer,
-)
+from .serializers import UserCreateSerializer, UserSerializer, WorkerProfileSerializer
+
+
+class ReasonSerializer(serializers.Serializer):
+    reason = serializers.CharField(max_length=255)
 
 
 def _facility_users(facility_id: int | None):
@@ -57,6 +55,9 @@ class UserViewSet(
         "update": "admin.user.update",
         "partial_update": "admin.user.update",
         "me": AUTHENTICATED,
+        "unlock": "admin.user.unlock",
+        "deactivate": "admin.user.deactivate",
+        "reset_credentials": "admin.user.reset_credentials",
     }
 
     def get_queryset(self):
@@ -105,6 +106,33 @@ class UserViewSet(
     def me(self, request):
         return Response(UserSerializer(request.user).data)
 
+    @action(detail=True, methods=["post"])
+    def unlock(self, request, pk=None):
+        user = auth.unlock_account(
+            self.get_object(), by=request.user, facility=request_facility(request)
+        )
+        return Response(UserSerializer(user).data)
+
+    @action(detail=True, methods=["post"], serializer_class=ReasonSerializer)
+    def deactivate(self, request, pk=None):
+        serializer = ReasonSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = deactivate_user(
+            self.get_object(),
+            by=request.user,
+            reason=serializer.validated_data["reason"],
+            facility=request_facility(request),
+        )
+        return Response(UserSerializer(user).data)
+
+    @action(detail=True, methods=["post"], url_path="reset-credentials")
+    def reset_credentials(self, request, pk=None):
+        """Returns a one-time temporary password for the administrator to hand over in person."""
+        temporary = auth.reset_credentials(
+            self.get_object(), by=request.user, facility=request_facility(request)
+        )
+        return Response({"temporary_password": temporary, "must_change_password": True})
+
 
 class WorkerProfileViewSet(
     mixins.ListModelMixin,
@@ -139,50 +167,3 @@ class WorkerProfileViewSet(
             facility=request_facility(self.request),
             detail={"fields": sorted(serializer.validated_data)},
         )
-
-
-class AuthViewSet(viewsets.ViewSet):
-    """Legacy login/logout (session + JWT). Replaced by the P1-UAC-04 auth API."""
-
-    serializer_class = AuthSerializer
-    policy = {"login": PUBLIC, "logout": PUBLIC}
-
-    @action(detail=False, methods=["post"])
-    def login(self, request):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = authenticate(
-            request,
-            email=serializer.validated_data["email"],
-            password=serializer.validated_data["password"],
-        )
-        if user is None or not user.is_active:
-            record("auth.login.failed", None, outcome="denied")
-            return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
-        login(request, user)
-        record("auth.login.succeeded", user, user)
-        refresh = RefreshToken.for_user(user)
-        return Response(
-            {
-                "status": "logged in",
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-                "user": {
-                    "id": user.id,
-                    "email": user.email,
-                    "role": user.role,
-                    "role_display": user.get_role_display(),
-                    "tier": legacy_tier(user),
-                    "warehouse_id": legacy_warehouse_id(user),
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                },
-            }
-        )
-
-    @action(detail=False, methods=["post"])
-    def logout(self, request):
-        if request.user.is_authenticated:
-            record("auth.logout", request.user, request.user)
-        logout(request)
-        return Response({"status": "logged out"})
