@@ -7,6 +7,7 @@ are merged (maker-checker, reversible) and contacts/identifiers are deactivated.
 
 from typing import Any
 
+from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from django.db.models import Q
@@ -44,6 +45,10 @@ class Patient(PhiModel):
     merged_into = models.ForeignKey(
         "self", on_delete=models.PROTECT, null=True, blank=True, related_name="merged_records"
     )
+
+    # Retention (DESIGN §8.4): set from the last encounter (Phase 2); legal hold blocks purges.
+    retention_until = models.DateField(null=True, blank=True)
+    legal_hold = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["family_name", "given_name"]
@@ -163,3 +168,115 @@ class PatientMerge(PhiModel):
 
     def __str__(self) -> str:
         return f"merge {self.duplicate_id} -> {self.survivor_id} ({self.status})"
+
+
+class Consent(PhiModel):
+    """Privacy-notice acknowledgements and consents (DESIGN §8.5). Append-only: the latest
+    row per kind is the current decision; withdrawing adds a row."""
+
+    class Kind(models.TextChoices):
+        PRIVACY_NOTICE = "privacy_notice", "Privacy notice acknowledged"
+        SMS_REMINDERS = "sms_reminders", "SMS reminders"
+        RESEARCH = "research", "Research use"
+
+    class Decision(models.TextChoices):
+        GIVEN = "given", "Given"
+        DECLINED = "declined", "Declined"
+        WITHDRAWN = "withdrawn", "Withdrawn"
+
+    class Method(models.TextChoices):
+        VERBAL = "verbal", "Read out / explained"
+        PRINTED = "printed", "Printed notice given"
+        ELECTRONIC = "electronic", "Shown on screen or sent electronically"
+
+    class GivenBy(models.TextChoices):
+        PATIENT = "patient", "The patient"
+        GUARDIAN = "guardian", "Parent or guardian"
+        REPRESENTATIVE = "representative", "Next of kin or representative"
+
+    patient = models.ForeignKey(Patient, on_delete=models.PROTECT, related_name="consents")
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    decision = models.CharField(max_length=10, choices=Decision.choices)
+    notice_version = models.CharField(max_length=20, blank=True)
+    method = models.CharField(max_length=12, choices=Method.choices)
+    given_by = models.CharField(max_length=15, choices=GivenBy.choices, default=GivenBy.PATIENT)
+    document = models.ForeignKey(
+        "documents.Document", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["patient", "kind", "created_at"])]
+
+    def __str__(self) -> str:
+        return f"{self.kind} {self.decision} for patient {self.patient_id}"
+
+
+class DataSubjectRequest(PhiModel):
+    """DSAR register (DESIGN §8.6, KE-DPA-05). Due dates follow the Data Protection
+    (General) Regulations 2021 — see ``apps.patients.dsar.DUE_DAYS``."""
+
+    class Kind(models.TextChoices):
+        ACCESS = "access", "Access"
+        CORRECTION = "correction", "Correction"
+        DELETION = "deletion", "Deletion"
+        OBJECTION = "objection", "Objection"
+        RESTRICTION = "restriction", "Restriction"
+        PORTABILITY = "portability", "Portability"
+
+    class Status(models.TextChoices):
+        RECEIVED = "received", "Received"
+        VERIFIED = "verified", "Identity verified"
+        COMPLETED = "completed", "Completed"
+        REFUSED = "refused", "Refused with reasons"
+        WITHDRAWN = "withdrawn", "Withdrawn"
+
+    class Channel(models.TextChoices):
+        IN_PERSON = "in_person", "In person"
+        EMAIL = "email", "E-mail"
+        LETTER = "letter", "Letter"
+        PHONE = "phone", "Phone"
+
+    class Requester(models.TextChoices):
+        PATIENT = "patient", "The patient"
+        GUARDIAN = "guardian", "Parent or guardian"
+        REPRESENTATIVE = "representative", "Authorised representative"
+
+    reference = models.CharField(max_length=30)
+    patient = models.ForeignKey(Patient, on_delete=models.PROTECT, related_name="data_requests")
+    kind = models.CharField(max_length=12, choices=Kind.choices)
+    channel = models.CharField(max_length=10, choices=Channel.choices)
+    requester = models.CharField(
+        max_length=15, choices=Requester.choices, default=Requester.PATIENT
+    )
+    details = EncryptedTextField(blank=True)
+    received_at = models.DateTimeField()
+    due_at = models.DateTimeField()
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.RECEIVED)
+    identity_verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    identity_verified_at = models.DateTimeField(null=True, blank=True)
+    identity_evidence = models.CharField(max_length=30, blank=True)
+    export_json = models.ForeignKey(
+        "documents.Document", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    export_pdf = models.ForeignKey(
+        "documents.Document", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    outcome = EncryptedTextField(blank=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+    closed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["due_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["facility", "reference"], name="patients_dsar_reference"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"Data subject request {self.reference}"

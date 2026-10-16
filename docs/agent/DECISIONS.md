@@ -125,8 +125,21 @@ Context: Existing staff hold one of six legacy roles (`User.role`). Default deny
 Decision: A data migration assigns, in the facility of each user's WorkerProfile branch: ADMIN → system administrator + facility administrator; BRANCH_MANAGER → store keeper + report viewer; PROCUREMENT and WAREHOUSE → store keeper; CASHIER → cashier; REPORTER → report viewer. Privileged grants made by this migration skip the second approver once, because no approver exists before the first administrator; every later privileged grant uses maker-checker. Users without a profile get nothing. `User.role` stays for the legacy dashboards until P1-WEB-06 and no longer grants anything.
 Consequences: Branch managers lose user management until a facility administrator grants it explicitly; the owner should review migrated administrators after deployment (listed in the access review report).
 
+## ADR-020 Generated PDFs with ReportLab
+Status: accepted · Date: 2026-10-16
+Context: DSAR summaries now, and receipts, invoices, discharge summaries and referral letters later, need server-side PDFs. WeasyPrint needs Pango/GTK native libraries (heavy in the slim image, awkward on Windows dev machines); headless browsers are heavier still.
+Decision: ReportLab (BSD) platypus layouts in `apps/<app>` code; generated files are stored through `documents.services.store_generated` like any other document (encrypted, audited, never public). Dynamic text placed in `Paragraph` markup is XML-escaped.
+Consequences: Layout is code, not HTML templates; the design-system font can be embedded later (Atkinson Hyperlegible Next, P1-WEB-02) with a TTF registration.
+
+## ADR-021 Sensitive categories in exports and DSAR copies
+Status: accepted · Date: 2026-10-16
+Context: DESIGN §8.1 excludes sensitive PHI from exports by default; KE-DPA-05 gives the data subject a right of access to all their data. The DPO, who runs DSARs, has no chart access (DESIGN §7.4).
+Decision: DSAR exports and every other export show sensitive items as `hidden: sensitive` placeholders unless the person producing the export holds `clinical.record.read_sensitive` and asks for them (`include_sensitive`); the choice is audited. A complete copy for the data subject is therefore produced jointly (e.g. DPO with the medical superintendent), and the PDF tells the reader that protected items exist and how to receive them. DSAR copies are `dsar_export` documents readable only with `patients.dsar.read`, through the register.
+Consequences: No silent omission — placeholders show that something was withheld; facilities must assign a sensitive-access holder to complete such requests within the deadline.
+
 ---
 
 ## Findings
 <!-- Format: YYYY-MM-DD — fact — source URL — impact -->
 - 2026-10-15 — MinIO no longer publishes server images on Docker Hub (`minio/minio` returns "object not found"); `pgsty/minio` publishes maintained rebuilds (latest `RELEASE.2026-08-04T00-00-00Z`) — https://hub.docker.com/v2/repositories/minio/minio , https://hub.docker.com/r/pgsty/minio — dev/CI compose uses `pgsty/minio` for the S3-compatible test backend; production S3 is whatever Kenyan endpoint ADR-006 selects, never this image.
+- 2026-10-16 — Data Protection (General) Regulations 2021 (Legal Notice 263) deadlines, read from the gazetted text: access within 7 days (reg. 9(4)); rectification within 14 days, refusal notified within 7 days (reg. 10(4)–(5)); portability within 30 days on payment of the prescribed fee, refusal notified within 7 days (reg. 11(3), (6)); erasure answered within 14 days (reg. 12(3)); objection and restriction within 14 days; indirect collection notified within 14 days — https://www.odpc.go.ke/wp-content/uploads/2024/03/THE-DATA-PROTECTION-GENERAL-REGULATIONS-2021-1.pdf — `apps/patients/dsar.py` `DUE_DAYS` uses calendar days from receipt; the register flags overdue requests. Whether "days" excludes public holidays is not stated; calendar days are the conservative reading.

@@ -5,8 +5,17 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from apps.access.models import BreakGlassGrant
+from apps.patients import dsar, privacy
 from apps.patients.identifiers import mask
-from apps.patients.models import NextOfKin, Patient, PatientContact, PatientIdentifier, PatientMerge
+from apps.patients.models import (
+    Consent,
+    DataSubjectRequest,
+    NextOfKin,
+    Patient,
+    PatientContact,
+    PatientIdentifier,
+    PatientMerge,
+)
 
 
 def age_text(dob: date | None) -> str | None:
@@ -51,12 +60,35 @@ class NextOfKinSerializer(serializers.ModelSerializer[NextOfKin]):
         read_only_fields = ["id", "active"]
 
 
+class ConsentSerializer(serializers.ModelSerializer[Consent]):
+    recorded_at = serializers.DateTimeField(source="created_at", read_only=True)
+    recorded_by: serializers.PrimaryKeyRelatedField[Any] = serializers.PrimaryKeyRelatedField(
+        source="created_by", read_only=True
+    )
+    version = serializers.CharField(source="notice_version", read_only=True)
+
+    class Meta:
+        model = Consent
+        fields = [
+            "id",
+            "kind",
+            "decision",
+            "version",
+            "method",
+            "given_by",
+            "recorded_at",
+            "recorded_by",
+        ]
+        read_only_fields = fields
+
+
 class PatientSerializer(serializers.ModelSerializer[Patient]):
     display_name = serializers.CharField(read_only=True)
     age = serializers.SerializerMethodField()
     identifiers = serializers.SerializerMethodField()
     contacts = serializers.SerializerMethodField()
     next_of_kin = serializers.SerializerMethodField()
+    consents = serializers.SerializerMethodField()
 
     class Meta:
         model = Patient
@@ -79,6 +111,9 @@ class PatientSerializer(serializers.ModelSerializer[Patient]):
             "identifiers",
             "contacts",
             "next_of_kin",
+            "consents",
+            "retention_until",
+            "legal_hold",
         ]
         read_only_fields = fields
 
@@ -93,6 +128,10 @@ class PatientSerializer(serializers.ModelSerializer[Patient]):
 
     def get_next_of_kin(self, obj: Patient) -> Any:
         return NextOfKinSerializer(obj.next_of_kin.filter(active=True), many=True).data
+
+    def get_consents(self, obj: Patient) -> Any:
+        """The current decision per kind (privacy notice, SMS reminders, research)."""
+        return ConsentSerializer(list(privacy.current(obj).values()), many=True).data
 
 
 class SearchResultSerializer(serializers.Serializer[Any]):
@@ -141,6 +180,20 @@ class NextOfKinInputSerializer(serializers.Serializer[None]):
     phone = serializers.CharField(max_length=20, required=False, allow_blank=True, default="")
 
 
+class PrivacyNoticeSerializer(serializers.Serializer[None]):
+    version = serializers.CharField(max_length=20)
+    method = serializers.ChoiceField(choices=Consent.Method.choices)
+    given_by = serializers.ChoiceField(
+        choices=Consent.GivenBy.choices, required=False, default=Consent.GivenBy.PATIENT
+    )
+
+
+class ConsentInputSerializer(PrivacyNoticeSerializer):
+    kind = serializers.ChoiceField(choices=Consent.Kind.choices)
+    decision = serializers.ChoiceField(choices=Consent.Decision.choices)
+    version = serializers.CharField(max_length=20, required=False, allow_blank=True, default="")
+
+
 class PatientCreateSerializer(serializers.Serializer[None]):
     given_name = serializers.CharField(max_length=80)
     middle_name = serializers.CharField(max_length=80, required=False, allow_blank=True, default="")
@@ -159,6 +212,7 @@ class PatientCreateSerializer(serializers.Serializer[None]):
     override_reason = serializers.CharField(
         max_length=255, required=False, allow_blank=True, default=""
     )
+    privacy_notice = PrivacyNoticeSerializer()
 
 
 class PatientUpdateSerializer(serializers.Serializer[None]):
@@ -222,3 +276,73 @@ class BreakGlassGrantSerializer(serializers.ModelSerializer[BreakGlassGrant]):
             "review_status",
         ]
         read_only_fields = fields
+
+
+class PrivacyNoticeTextSerializer(serializers.Serializer[None]):
+    version = serializers.CharField()
+    text = serializers.CharField()
+
+
+class DsarSerializer(serializers.ModelSerializer[DataSubjectRequest]):
+    overdue = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DataSubjectRequest
+        fields = [
+            "id",
+            "reference",
+            "patient",
+            "kind",
+            "channel",
+            "requester",
+            "details",
+            "received_at",
+            "due_at",
+            "overdue",
+            "status",
+            "identity_verified_by",
+            "identity_verified_at",
+            "identity_evidence",
+            "export_json",
+            "export_pdf",
+            "outcome",
+            "closed_at",
+            "closed_by",
+            "version",
+        ]
+        read_only_fields = fields
+
+    def get_overdue(self, obj: DataSubjectRequest) -> bool:
+        return dsar.is_overdue(obj)
+
+
+class DsarCreateSerializer(serializers.Serializer[None]):
+    patient = serializers.UUIDField()
+    kind = serializers.ChoiceField(choices=DataSubjectRequest.Kind.choices)
+    channel = serializers.ChoiceField(choices=DataSubjectRequest.Channel.choices)
+    requester = serializers.ChoiceField(
+        choices=DataSubjectRequest.Requester.choices,
+        required=False,
+        default=DataSubjectRequest.Requester.PATIENT,
+    )
+    details = serializers.CharField(max_length=2000, required=False, allow_blank=True, default="")
+    received_at = serializers.DateTimeField(required=False, allow_null=True, default=None)
+
+
+class DsarVerifySerializer(serializers.Serializer[None]):
+    evidence = serializers.ChoiceField(choices=sorted(dsar.EVIDENCE))
+
+
+class DsarExportSerializer(serializers.Serializer[None]):
+    include_sensitive = serializers.BooleanField(required=False, default=False)
+
+
+class DsarCloseSerializer(serializers.Serializer[None]):
+    status = serializers.ChoiceField(
+        choices=[
+            DataSubjectRequest.Status.COMPLETED,
+            DataSubjectRequest.Status.REFUSED,
+            DataSubjectRequest.Status.WITHDRAWN,
+        ]
+    )
+    outcome = serializers.CharField(max_length=2000, required=False, allow_blank=True, default="")

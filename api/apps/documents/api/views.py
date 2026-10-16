@@ -32,6 +32,7 @@ from .serializers import DocumentSerializer, PatientDocumentsQuerySerializer, Up
 logger = logging.getLogger(__name__)
 EXTENSIONS = {
     "application/pdf": "pdf",
+    "application/json": "json",
     "image/jpeg": "jpg",
     "image/png": "png",
     "image/webp": "webp",
@@ -122,21 +123,27 @@ class DocumentViewSet(viewsets.GenericViewSet[Document]):
 
     @action(detail=True, methods=["get"])
     def content(self, request: Request, pk: str | None = None) -> StreamingHttpResponse:
-        document = self.get_object()
-        try:
-            stream = services.open_content(
-                document, user=request.user, purpose=request.query_params.get("purpose", "care")
-            )
-        except EnvelopeError as exc:
-            logger.error(
-                "Document failed decryption or integrity check",
-                extra={"document_id": str(document.pk)},
-            )
-            raise DocumentUnreadable() from exc
-        response = StreamingHttpResponse(stream, content_type=document.content_type)
-        extension = EXTENSIONS.get(document.content_type, "bin")
-        response["Content-Disposition"] = f'inline; filename="document-{document.pk}.{extension}"'
-        response["Content-Length"] = str(document.size)
-        response["Cache-Control"] = "no-store"
-        response["X-Content-Type-Options"] = "nosniff"
-        return response
+        return stream_response(
+            self.get_object(),
+            user=request.user,
+            purpose=request.query_params.get("purpose", "care"),
+        )
+
+
+def stream_response(document: Document, *, user: Any, purpose: str) -> StreamingHttpResponse:
+    """Authorise, audit and stream one document (also used by the DSAR register)."""
+    try:
+        stream = services.open_content(document, user=user, purpose=purpose)
+    except EnvelopeError as exc:
+        logger.error(
+            "Document failed decryption or integrity check",
+            extra={"document_id": str(document.pk)},
+        )
+        raise DocumentUnreadable() from exc
+    response = StreamingHttpResponse(stream, content_type=document.content_type)
+    extension = EXTENSIONS.get(document.content_type, "bin")
+    response["Content-Disposition"] = f'inline; filename="document-{document.pk}.{extension}"'
+    response["Content-Length"] = str(document.size)
+    response["Cache-Control"] = "no-store"
+    response["X-Content-Type-Options"] = "nosniff"
+    return response

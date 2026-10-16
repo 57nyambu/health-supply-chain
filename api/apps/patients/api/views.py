@@ -8,8 +8,11 @@ stored only as an HMAC (api/CLAUDE.md).
 from typing import Any
 
 from django.db.models import QuerySet
+from django.http import StreamingHttpResponse
+from django.utils import timezone
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
@@ -17,15 +20,23 @@ from rest_framework.throttling import ScopedRateThrottle
 from apps.access import breakglass, chart
 from apps.access.drf import require_facility
 from apps.access.roles import ChartAccess
+from apps.audit.services import record
 from apps.facilities.models import Facility
-from apps.patients import selectors, services
-from apps.patients.models import Patient, PatientMerge
+from apps.patients import dsar, privacy, selectors, services
+from apps.patients.models import DataSubjectRequest, Patient, PatientMerge
 
 from .serializers import (
     BreakGlassGrantSerializer,
     BreakGlassRequestSerializer,
+    ConsentInputSerializer,
+    ConsentSerializer,
     ContactInputSerializer,
     ContactSerializer,
+    DsarCloseSerializer,
+    DsarCreateSerializer,
+    DsarExportSerializer,
+    DsarSerializer,
+    DsarVerifySerializer,
     IdentifierInputSerializer,
     IdentifierSerializer,
     MergeRequestSerializer,
@@ -35,6 +46,7 @@ from .serializers import (
     PatientCreateSerializer,
     PatientSerializer,
     PatientUpdateSerializer,
+    PrivacyNoticeTextSerializer,
     SearchQuerySerializer,
     SearchResultSerializer,
     UnidentifiedSerializer,
@@ -72,6 +84,8 @@ class PatientViewSet(
         "merge": "patients.merge.request",
         "chart": "clinical.record.read_summary",
         "break_glass": "access.breakglass.request",
+        "privacy_notice": "patients.consent.record",
+        "consents": "patients.consent.record",
     }
 
     def get_queryset(self) -> QuerySet[Patient]:
@@ -165,6 +179,26 @@ class PatientViewSet(
         )
         return Response(PatientSerializer(patient).data)
 
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="privacy-notice",
+        serializer_class=PrivacyNoticeTextSerializer,
+    )
+    def privacy_notice(self, request: Request) -> Response:
+        """The notice reception gives at registration; its version goes with the acknowledgement."""
+        return Response(privacy.notice(self.facility()))
+
+    @action(detail=True, methods=["post"], serializer_class=ConsentInputSerializer)
+    def consents(self, request: Request, pk: str | None = None) -> Response:
+        """Record a privacy-notice acknowledgement or a consent decision (append-only)."""
+        serializer = ConsentInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        row = privacy.record_consent(
+            self.editable_object(), actor=request.user, **serializer.validated_data
+        )
+        return Response(ConsentSerializer(row).data, status=status.HTTP_201_CREATED)
+
     @action(detail=False, methods=["post"], serializer_class=UnidentifiedSerializer)
     def unidentified(self, request: Request) -> Response:
         serializer = UnidentifiedSerializer(data=request.data)
@@ -217,8 +251,6 @@ class PatientViewSet(
         serializer.is_valid(raise_exception=True)
         duplicate = self.get_queryset().filter(pk=serializer.validated_data["duplicate"]).first()
         if duplicate is None:
-            from rest_framework.exceptions import ValidationError
-
             raise ValidationError({"duplicate": "Choose a record of this facility."})
         merge = services.request_merge(
             survivor=self.get_object(),
@@ -253,3 +285,103 @@ class PatientMergeViewSet(
             self.get_object(), actor=request.user, reason=serializer.validated_data["reason"]
         )
         return Response(MergeSerializer(merge).data)
+
+
+class DataSubjectRequestViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet[DataSubjectRequest]
+):
+    """The DSAR register (DPO, HRIO): due dates, identity checks, exports and outcomes."""
+
+    serializer_class = DsarSerializer
+    queryset = DataSubjectRequest.objects.none()
+    policy = {
+        "list": "patients.dsar.read",
+        "retrieve": "patients.dsar.read",
+        "create": "patients.dsar.process",
+        "verify_identity": "patients.dsar.process",
+        "export": "patients.dsar.process",
+        "close": "patients.dsar.process",
+        "download": "patients.dsar.read",
+    }
+
+    def get_queryset(self) -> QuerySet[DataSubjectRequest]:
+        queryset = DataSubjectRequest.objects.filter(facility_id=require_facility(self.request))
+        wanted = self.request.query_params.get("status")
+        if wanted:
+            queryset = queryset.filter(status=wanted)
+        if self.request.query_params.get("overdue") == "true":
+            queryset = queryset.filter(status__in=dsar.OPEN, due_at__lt=timezone.now())
+        return queryset.order_by("due_at")
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        response = super().list(request, *args, **kwargs)
+        record(
+            "patients.dsar.register_viewed",
+            request.user,
+            facility=require_facility(request),
+            purpose="records",
+        )
+        return response
+
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        item = self.get_object()
+        record(
+            "patients.dsar.viewed", request.user, item, patient=item.patient_id, purpose="records"
+        )
+        return Response(DsarSerializer(item).data)
+
+    def create(self, request: Request) -> Response:
+        serializer = DsarCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = dict(serializer.validated_data)
+        patient = Patient.objects.filter(
+            pk=data.pop("patient"), facility_id=require_facility(request)
+        ).first()
+        if patient is None:
+            raise ValidationError({"patient": "Choose a patient of this facility."})
+        item = dsar.receive(actor=request.user, patient=patient, **data)
+        return Response(DsarSerializer(item).data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="verify-identity",
+        serializer_class=DsarVerifySerializer,
+    )
+    def verify_identity(self, request: Request, pk: str | None = None) -> Response:
+        serializer = DsarVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        item = dsar.verify_identity(
+            self.get_object(), actor=request.user, **serializer.validated_data
+        )
+        return Response(DsarSerializer(item).data)
+
+    @action(detail=True, methods=["post"], serializer_class=DsarExportSerializer)
+    def export(self, request: Request, pk: str | None = None) -> Response:
+        """Produce the JSON (FHIR-shaped) and PDF copies for an access or portability request."""
+        serializer = DsarExportSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        item = dsar.export(self.get_object(), actor=request.user, **serializer.validated_data)
+        return Response(DsarSerializer(item).data)
+
+    @action(detail=True, methods=["get"], url_path=r"download/(?P<copy>[a-z0-9]+)")
+    def download(
+        self, request: Request, pk: str | None = None, copy: str = "pdf"
+    ) -> StreamingHttpResponse:
+        """Stream the JSON or PDF copy produced for this request (audited as a document view)."""
+        from apps.documents.api.views import stream_response
+
+        item = self.get_object()
+        if copy not in ("json", "pdf"):
+            raise NotFound("Choose the json or pdf copy.")
+        document = item.export_json if copy == "json" else item.export_pdf
+        if document is None:
+            raise NotFound("No export has been produced for this request yet.")
+        return stream_response(document, user=request.user, purpose="records")
+
+    @action(detail=True, methods=["post"], serializer_class=DsarCloseSerializer)
+    def close(self, request: Request, pk: str | None = None) -> Response:
+        serializer = DsarCloseSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        item = dsar.close(self.get_object(), actor=request.user, **serializer.validated_data)
+        return Response(DsarSerializer(item).data)

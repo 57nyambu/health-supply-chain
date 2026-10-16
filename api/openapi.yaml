@@ -2180,6 +2180,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/Patient'
           description: ''
+  /api/v1/patients/{id}/consents/:
+    post:
+      operationId: v1_patients_consents_create
+      description: Record a privacy-notice acknowledgement or a consent decision (append-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsentInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConsentInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConsentInputRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentInput'
+          description: ''
   /api/v1/patients/{id}/contacts/:
     post:
       operationId: v1_patients_contacts_create
@@ -2322,6 +2358,218 @@ paths:
               schema:
                 $ref: '#/components/schemas/NextOfKinInput'
           description: ''
+  /api/v1/patients/dsar/:
+    get:
+      operationId: v1_patients_dsar_list
+      description: 'The DSAR register (DPO, HRIO): due dates, identity checks, exports
+        and outcomes.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDsarList'
+          description: ''
+    post:
+      operationId: v1_patients_dsar_create
+      description: 'The DSAR register (DPO, HRIO): due dates, identity checks, exports
+        and outcomes.'
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dsar'
+          description: ''
+  /api/v1/patients/dsar/{id}/:
+    get:
+      operationId: v1_patients_dsar_retrieve
+      description: 'The DSAR register (DPO, HRIO): due dates, identity checks, exports
+        and outcomes.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this data subject request.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dsar'
+          description: ''
+  /api/v1/patients/dsar/{id}/close/:
+    post:
+      operationId: v1_patients_dsar_close_create
+      description: 'The DSAR register (DPO, HRIO): due dates, identity checks, exports
+        and outcomes.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this data subject request.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DsarCloseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DsarCloseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DsarCloseRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DsarClose'
+          description: ''
+  /api/v1/patients/dsar/{id}/download/{copy}/:
+    get:
+      operationId: v1_patients_dsar_download_retrieve
+      description: Stream the JSON or PDF copy produced for this request (audited
+        as a document view).
+      parameters:
+      - in: path
+        name: copy
+        schema:
+          type: string
+          pattern: ^[a-z0-9]+$
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this data subject request.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dsar'
+          description: ''
+  /api/v1/patients/dsar/{id}/export/:
+    post:
+      operationId: v1_patients_dsar_export_create
+      description: Produce the JSON (FHIR-shaped) and PDF copies for an access or
+        portability request.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this data subject request.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DsarExportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DsarExportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DsarExportRequest'
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DsarExport'
+          description: ''
+  /api/v1/patients/dsar/{id}/verify-identity/:
+    post:
+      operationId: v1_patients_dsar_verify_identity_create
+      description: 'The DSAR register (DPO, HRIO): due dates, identity checks, exports
+        and outcomes.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this data subject request.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DsarVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DsarVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DsarVerifyRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DsarVerify'
+          description: ''
   /api/v1/patients/merges/:
     get:
       operationId: v1_patients_merges_list
@@ -2407,6 +2655,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Unmerge'
+          description: ''
+  /api/v1/patients/privacy-notice/:
+    get:
+      operationId: v1_patients_privacy_notice_retrieve
+      description: The notice reception gives at registration; its version goes with
+        the acknowledgement.
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivacyNoticeText'
           description: ''
   /api/v1/patients/search/:
     get:
@@ -4413,6 +4678,18 @@ components:
           $ref: '#/components/schemas/VatCategoryEnum'
       required:
       - name
+    ChannelEnum:
+      enum:
+      - in_person
+      - email
+      - letter
+      - phone
+      type: string
+      description: |-
+        * `in_person` - In person
+        * `email` - E-mail
+        * `letter` - Letter
+        * `phone` - Phone
     ChartBaselineEnum:
       enum:
       - none
@@ -4441,6 +4718,58 @@ components:
         * `summary` - summary
         * `full` - full
         * `sensitive` - sensitive
+    ConsentInput:
+      type: object
+      properties:
+        version:
+          type: string
+          default: ''
+          maxLength: 20
+        method:
+          $ref: '#/components/schemas/MethodEnum'
+        given_by:
+          allOf:
+          - $ref: '#/components/schemas/GivenByEnum'
+          default: patient
+        kind:
+          $ref: '#/components/schemas/ConsentInputKindEnum'
+        decision:
+          $ref: '#/components/schemas/DecisionEnum'
+      required:
+      - decision
+      - kind
+      - method
+    ConsentInputKindEnum:
+      enum:
+      - privacy_notice
+      - sms_reminders
+      - research
+      type: string
+      description: |-
+        * `privacy_notice` - Privacy notice acknowledged
+        * `sms_reminders` - SMS reminders
+        * `research` - Research use
+    ConsentInputRequest:
+      type: object
+      properties:
+        version:
+          type: string
+          default: ''
+          maxLength: 20
+        method:
+          $ref: '#/components/schemas/MethodEnum'
+        given_by:
+          allOf:
+          - $ref: '#/components/schemas/GivenByEnum'
+          default: patient
+        kind:
+          $ref: '#/components/schemas/ConsentInputKindEnum'
+        decision:
+          $ref: '#/components/schemas/DecisionEnum'
+      required:
+      - decision
+      - kind
+      - method
     ContactInput:
       type: object
       properties:
@@ -4583,6 +4912,16 @@ components:
           type: string
           default: ''
           maxLength: 255
+    DecisionEnum:
+      enum:
+      - given
+      - declined
+      - withdrawn
+      type: string
+      description: |-
+        * `given` - Given
+        * `declined` - Declined
+        * `withdrawn` - Withdrawn
     DecisionRequest:
       type: object
       properties:
@@ -4696,6 +5035,216 @@ components:
       - storage_backend
       - superseded_by
       - uploaded_by
+    Dsar:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/DsarKindEnum'
+          readOnly: true
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/ChannelEnum'
+          readOnly: true
+        requester:
+          allOf:
+          - $ref: '#/components/schemas/RequesterEnum'
+          readOnly: true
+        details:
+          type: string
+          readOnly: true
+        received_at:
+          type: string
+          format: date-time
+          readOnly: true
+        due_at:
+          type: string
+          format: date-time
+          readOnly: true
+        overdue:
+          type: boolean
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DsarStatusEnum'
+          readOnly: true
+        identity_verified_by:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        identity_verified_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        identity_evidence:
+          type: string
+          readOnly: true
+        export_json:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        export_pdf:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        outcome:
+          type: string
+          readOnly: true
+        closed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        closed_by:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+      required:
+      - channel
+      - closed_at
+      - closed_by
+      - details
+      - due_at
+      - export_json
+      - export_pdf
+      - id
+      - identity_evidence
+      - identity_verified_at
+      - identity_verified_by
+      - kind
+      - outcome
+      - overdue
+      - patient
+      - received_at
+      - reference
+      - requester
+      - status
+      - version
+    DsarClose:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/DsarCloseStatusEnum'
+        outcome:
+          type: string
+          default: ''
+          maxLength: 2000
+      required:
+      - status
+    DsarCloseRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/DsarCloseStatusEnum'
+        outcome:
+          type: string
+          default: ''
+          maxLength: 2000
+      required:
+      - status
+    DsarCloseStatusEnum:
+      enum:
+      - completed
+      - refused
+      - withdrawn
+      type: string
+      description: |-
+        * `completed` - completed
+        * `refused` - refused
+        * `withdrawn` - withdrawn
+    DsarExport:
+      type: object
+      properties:
+        include_sensitive:
+          type: boolean
+          default: false
+    DsarExportRequest:
+      type: object
+      properties:
+        include_sensitive:
+          type: boolean
+          default: false
+    DsarKindEnum:
+      enum:
+      - access
+      - correction
+      - deletion
+      - objection
+      - restriction
+      - portability
+      type: string
+      description: |-
+        * `access` - Access
+        * `correction` - Correction
+        * `deletion` - Deletion
+        * `objection` - Objection
+        * `restriction` - Restriction
+        * `portability` - Portability
+    DsarStatusEnum:
+      enum:
+      - received
+      - verified
+      - completed
+      - refused
+      - withdrawn
+      type: string
+      description: |-
+        * `received` - Received
+        * `verified` - Identity verified
+        * `completed` - Completed
+        * `refused` - Refused with reasons
+        * `withdrawn` - Withdrawn
+    DsarVerify:
+      type: object
+      properties:
+        evidence:
+          $ref: '#/components/schemas/EvidenceEnum'
+      required:
+      - evidence
+    DsarVerifyRequest:
+      type: object
+      properties:
+        evidence:
+          $ref: '#/components/schemas/EvidenceEnum'
+      required:
+      - evidence
+    EvidenceEnum:
+      enum:
+      - birth_certificate_seen
+      - known_to_staff
+      - national_id_seen
+      - other_document_seen
+      - passport_seen
+      type: string
+      description: |-
+        * `birth_certificate_seen` - birth_certificate_seen
+        * `known_to_staff` - known_to_staff
+        * `national_id_seen` - national_id_seen
+        * `other_document_seen` - other_document_seen
+        * `passport_seen` - passport_seen
     Facility:
       type: object
       properties:
@@ -4919,6 +5468,16 @@ components:
       required:
       - date
       - warehouse
+    GivenByEnum:
+      enum:
+      - patient
+      - guardian
+      - representative
+      type: string
+      description: |-
+        * `patient` - The patient
+        * `guardian` - Parent or guardian
+        * `representative` - Next of kin or representative
     IdentifierInput:
       type: object
       properties:
@@ -5226,6 +5785,16 @@ components:
         * `requested` - Waiting for approval
         * `merged` - Merged
         * `reversed` - Reversed
+    MethodEnum:
+      enum:
+      - verbal
+      - printed
+      - electronic
+      type: string
+      description: |-
+        * `verbal` - Read out / explained
+        * `printed` - Printed notice given
+        * `electronic` - Shown on screen or sent electronically
     MfaCode:
       type: object
       properties:
@@ -5506,6 +6075,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Document'
+    PaginatedDsarList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Dsar'
     PaginatedFacilityList:
       type: object
       required:
@@ -6269,8 +6861,22 @@ components:
           readOnly: true
         next_of_kin:
           readOnly: true
+        consents:
+          description: The current decision per kind (privacy notice, SMS reminders,
+            research).
+          readOnly: true
+        retention_until:
+          type:
+          - string
+          - 'null'
+          format: date
+          readOnly: true
+        legal_hold:
+          type: boolean
+          readOnly: true
       required:
       - age
+      - consents
       - contacts
       - date_of_birth
       - description
@@ -6281,10 +6887,12 @@ components:
       - id
       - identifiers
       - is_unidentified
+      - legal_hold
       - merged_into
       - middle_name
       - mrn
       - next_of_kin
+      - retention_until
       - sex
       - status
       - version
@@ -6335,6 +6943,16 @@ components:
       required:
       - password
       - pin
+    PrivacyNoticeText:
+      type: object
+      properties:
+        version:
+          type: string
+        text:
+          type: string
+      required:
+      - text
+      - version
     Product:
       type: object
       properties:
@@ -6669,6 +7287,16 @@ components:
         * `PPB` - Pharmacy and Poisons Board
         * `KMLTTB` - Kenya Medical Laboratory Technicians and Technologists Board
         * `OTHER` - Other regulator
+    RequesterEnum:
+      enum:
+      - patient
+      - guardian
+      - representative
+      type: string
+      description: |-
+        * `patient` - The patient
+        * `guardian` - Parent or guardian
+        * `representative` - Authorised representative
     ReviewStatusEnum:
       enum:
       - pending

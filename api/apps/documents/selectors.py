@@ -22,6 +22,10 @@ def summary(document: Document) -> dict[str, Any]:
     }
 
 
+def ids_for_patient(patient: Any) -> list[str]:
+    return [str(pk) for pk in Document.objects.filter(patient=patient).values_list("pk", flat=True)]
+
+
 def for_patient(patient: Any, decision: chart.ChartAccessDecision) -> list[dict[str, Any]]:
     documents = (
         Document.objects.filter(patient=patient, superseded_by__isnull=True)

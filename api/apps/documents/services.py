@@ -128,7 +128,62 @@ def upload(
         raise ValidationError({"file": "Upload a PDF, JPEG, PNG or WebP file."})
     if content_type in PIL_FORMAT:
         data = _strip_image_metadata(data, content_type)
+    return _store(
+        actor=actor,
+        facility_id=facility_id,
+        data=data,
+        content_type=content_type,
+        filename=filename,
+        category=category,
+        patient=patient,
+        sensitivity=sensitivity,
+        supersedes=supersedes,
+    )
 
+
+GENERATED_TYPES = {"application/pdf", "application/json"}
+
+
+@transaction.atomic
+def store_generated(
+    *,
+    actor: Any,
+    facility_id: int,
+    data: bytes,
+    content_type: str,
+    filename: str,
+    category: str,
+    patient: Any = None,
+    sensitivity: str = SensitiveCategory.NORMAL,
+) -> Document:
+    """Store a file the system produced (exports, generated PDFs) — never a user upload."""
+    if content_type not in GENERATED_TYPES:
+        raise ValueError(f"Unsupported generated content type {content_type}")
+    return _store(
+        actor=actor,
+        facility_id=facility_id,
+        data=data,
+        content_type=content_type,
+        filename=filename,
+        category=category,
+        patient=patient,
+        sensitivity=sensitivity,
+        supersedes=None,
+    )
+
+
+def _store(
+    *,
+    actor: Any,
+    facility_id: int,
+    data: bytes,
+    content_type: str,
+    filename: str,
+    category: str,
+    patient: Any,
+    sensitivity: str,
+    supersedes: Document | None,
+) -> Document:
     document_id = uuid7()
     now = timezone.now()
     backend = storage.default_backend_name()
@@ -186,6 +241,12 @@ def upload(
     return document
 
 
+def reassign(document_ids: list[str], patient: Any) -> None:
+    """Move documents to another record during a registry merge or its reversal (the merge
+    itself is audited by the patients app)."""
+    Document.objects.filter(pk__in=document_ids).update(patient=patient)
+
+
 def plaintext(document: Document) -> Iterator[bytes]:
     """Decrypted content; raises EnvelopeError when the object or key is wrong."""
     stored = storage.read(document.storage_backend, document.storage_key)
@@ -226,10 +287,12 @@ def authorise_read(
 ) -> chart.ChartAccessDecision | None:
     """Raise unless ``user`` may read the document; return the chart decision for audit."""
     needed_permission = CATEGORY_PERMISSION.get(Document.Category(document.category))
-    if needed_permission and not policies.has_permission(
-        user, needed_permission, facility=document.facility_id
-    ):
-        raise PermissionDenied("This document is available only through its own process.")
+    if needed_permission is not None:
+        # Exports and anchors are reached through their own process (e.g. the DPO's DSAR
+        # work), gated by that process's permission rather than by chart access.
+        if not policies.has_permission(user, needed_permission, facility=document.facility_id):
+            raise PermissionDenied("This document is available only through its own process.")
+        return None
     if document.patient_id is None:
         return None
     from apps.patients.selectors import ChartAccessDenied

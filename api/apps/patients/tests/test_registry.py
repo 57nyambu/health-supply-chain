@@ -1,5 +1,6 @@
 import threading
 from datetime import date
+from typing import Any
 
 import pytest
 from django.db import connection, transaction
@@ -16,7 +17,7 @@ pytestmark = pytest.mark.django_db
 URL = "/api/v1/patients/"
 YY = f"{timezone.localdate().year % 100:02d}"
 
-AMINA = {
+AMINA: dict[str, Any] = {
     "given_name": "Amina",
     "family_name": "Otieno",
     "sex": "female",
@@ -27,6 +28,7 @@ AMINA = {
     ],
     "contacts": [{"kind": "phone", "value": "0700 000 111", "is_primary": True}],
     "next_of_kin": [{"name": "Baraka Otieno", "relationship": "brother", "phone": "0700000222"}],
+    "privacy_notice": {"version": "2026-10", "method": "verbal"},
 }
 
 

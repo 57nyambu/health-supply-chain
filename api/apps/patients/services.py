@@ -19,7 +19,14 @@ from apps.core.problems import ApiProblem, Conflict
 from apps.core.sequences import next_value
 from apps.facilities.models import Facility
 from apps.patients import identifiers as ids
-from apps.patients.models import NextOfKin, Patient, PatientContact, PatientIdentifier, PatientMerge
+from apps.patients.models import (
+    Consent,
+    NextOfKin,
+    Patient,
+    PatientContact,
+    PatientIdentifier,
+    PatientMerge,
+)
 
 MIN_QUERY = 3
 NAME_MATCH = 0.3
@@ -291,8 +298,13 @@ def create_patient(
     contacts: list[dict[str, Any]] | None = None,
     next_of_kin: list[dict[str, Any]] | None = None,
     override_reason: str = "",
+    privacy_notice: dict[str, Any] | None = None,
 ) -> Patient:
+    """Register a patient. ``privacy_notice`` ({version, method, given_by}) records that the
+    notice was given (DESIGN §8.5); it is required for every identified registration."""
     _ensure(actor, "patients.patient.create", facility)
+    if not privacy_notice:
+        raise ValidationError({"privacy_notice": "Give the privacy notice and record how."})
     if not given_name.strip() or not family_name.strip():
         raise ValidationError({"given_name": "Enter the given and family names."})
     if sex not in Patient.Sex.values:
@@ -357,6 +369,17 @@ def create_patient(
         )
     for kin in next_of_kin or []:
         _add_kin(patient, actor, kin)
+    from apps.patients.privacy import record_consent
+
+    record_consent(
+        patient,
+        actor=actor,
+        kind="privacy_notice",
+        decision="given",
+        version=str(privacy_notice.get("version", "")),
+        method=str(privacy_notice.get("method", "")),
+        given_by=str(privacy_notice.get("given_by", "patient")),
+    )
     record(
         "patients.patient.created",
         actor,
@@ -574,6 +597,8 @@ def _execute_merge(request: ApprovalRequest, approver: Any) -> None:
         "identifiers_deactivated": [],
         "contacts": [],
         "next_of_kin": [],
+        "consents": [],
+        "documents": [],
     }
     existing = set(
         PatientIdentifier.objects.filter(patient=survivor, active=True).values_list(
@@ -596,6 +621,16 @@ def _execute_merge(request: ApprovalRequest, approver: Any) -> None:
         ]
         model.objects.filter(pk__in=pks).update(patient=survivor)
         moved[key] = pks
+    # Consents and documents follow the person; unmerge moves them back.
+    from apps.documents import selectors as documents
+    from apps.documents import services as document_services
+
+    moved["consents"] = [
+        str(pk) for pk in Consent.objects.filter(patient=duplicate).values_list("pk", flat=True)
+    ]
+    Consent.objects.filter(pk__in=moved["consents"]).update(patient=survivor)
+    moved["documents"] = documents.ids_for_patient(duplicate)
+    document_services.reassign(moved["documents"], survivor)
     duplicate.status = Patient.Status.MERGED
     duplicate.merged_into = survivor
     duplicate.version += 1
@@ -648,6 +683,10 @@ def _execute_unmerge(request: ApprovalRequest, approver: Any) -> None:
     )
     PatientContact.objects.filter(pk__in=moved.get("contacts", [])).update(patient=duplicate)
     NextOfKin.objects.filter(pk__in=moved.get("next_of_kin", [])).update(patient=duplicate)
+    from apps.documents import services as document_services
+
+    Consent.objects.filter(pk__in=moved.get("consents", [])).update(patient=duplicate)
+    document_services.reassign(moved.get("documents", []), duplicate)
     duplicate.status = Patient.Status.ACTIVE
     duplicate.merged_into = None
     duplicate.version += 1
