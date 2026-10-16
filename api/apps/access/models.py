@@ -51,6 +51,9 @@ class Role(models.Model):
     )
     requires_cosign = models.BooleanField(default=False)
     service_account = models.BooleanField(default=False)
+    licence_regulators = models.JSONField(
+        default=list, blank=True, help_text="Regulators whose licence covers licensed permissions"
+    )
     is_system = models.BooleanField(default=True, help_text="Seeded from apps/access/roles.py")
     active = models.BooleanField(default=True)
 

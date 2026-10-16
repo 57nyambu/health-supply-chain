@@ -64,6 +64,7 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | `BREACHED_PASSWORDS_FILE` | empty | Extra offline breached-password list (one per line, optionally gzipped) checked in addition to the bundled list. |
 | `FACILITY_NETWORK_ALLOWLIST` | `127.0.0.0/8,::1/128` | CIDRs of the facility networks. Sign-ins from any other address need MFA, for every user. Set the facility LAN ranges in production (with `TRUST_PROXY_HEADERS` behind nginx). |
 | `PIN_RATE` | `10/min` | Workstation PIN attempts (unlock, switch user) per client IP; 5 wrong PINs for a user force a full sign-in. |
+| `HWR_MODE` | `fake` | Health Worker Registry adapter for licence verification. Only `fake` exists until P3-SHA-01; other values refuse to verify. |
 | `LOGIN_RATE` | `20/min` | Login attempts per client IP (DRF throttle); account lockout is separate (5 → delay, 10 → lock). |
 
 ## Legacy integrations (replaced by adapters in later phases)

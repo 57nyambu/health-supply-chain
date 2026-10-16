@@ -25,6 +25,7 @@ The agent updates this file at the end of every session (and before context runs
 
 ## Spec gaps
 <!-- - [GAP-XXX-NNN] integration/operation — unknown — assumption in fake — risk — owner action -->
+- [GAP-HWR-001] HIE Health Worker Registry practitioner search (`/v1/practitioner-search`) — request/response fields, licence-status semantics and auth flow unknown. Assumption in fake (`apps/accounts/adapters/hwr/fake.py`): lookup by regulator + registration number returns PUID, licence valid-to and active flag. Risk: adapter/mapping rework in P3-SHA-01. Owner action: obtain the HIE UAT credentials and practitioner-search spec from DHA (same request as the HIE/SHA UAT access).
 
 ## Legacy inventory
 Taken 2026-10-15 at `1789300` (before P1-REPO-01).

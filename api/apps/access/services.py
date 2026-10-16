@@ -57,6 +57,7 @@ def sync_access() -> SyncResult:
                 "addon": role_def.addon,
                 "requires_cosign": role_def.requires_cosign,
                 "service_account": role_def.service_account,
+                "licence_regulators": list(role_def.licence_regulators),
                 "is_system": True,
                 "active": True,
             },

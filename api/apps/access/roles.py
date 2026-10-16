@@ -35,6 +35,8 @@ class RoleDef:
     addon: bool = False
     requires_cosign: bool = False
     service_account: bool = False
+    # Regulators whose licence covers this role's licensed permissions (KE-PRF-01).
+    licence_regulators: tuple[str, ...] = ()
 
     def permission_codes(self) -> set[str]:
         codes: set[str] = set()
@@ -156,6 +158,7 @@ ROLES: list[RoleDef] = [
         chart_care_team=C.SENSITIVE,
         privileged=True,
         mfa_required=True,
+        licence_regulators=("KMPDC",),
     ),
     RoleDef(
         "hrio",
@@ -205,6 +208,7 @@ ROLES: list[RoleDef] = [
         (*WORKLIST, "clinical.vitals.record", "clinical.triage.record", "clinical.allergy.write"),
         chart_baseline=C.SUMMARY,
         chart_care_team=C.SUMMARY,
+        licence_regulators=("NCK",),
     ),
     RoleDef(
         "nurse",
@@ -224,6 +228,7 @@ ROLES: list[RoleDef] = [
         ),
         chart_baseline=C.SUMMARY,
         chart_care_team=C.FULL,
+        licence_regulators=("NCK",),
     ),
     RoleDef(
         "clinical_officer",
@@ -232,6 +237,7 @@ ROLES: list[RoleDef] = [
         CLINICIAN,
         chart_baseline=C.SUMMARY,
         chart_care_team=C.FULL,
+        licence_regulators=("COC",),
     ),
     RoleDef(
         "medical_officer",
@@ -240,6 +246,7 @@ ROLES: list[RoleDef] = [
         MEDICAL_OFFICER,
         chart_baseline=C.SUMMARY,
         chart_care_team=C.FULL,
+        licence_regulators=("KMPDC",),
     ),
     RoleDef(
         "specialist",
@@ -248,6 +255,7 @@ ROLES: list[RoleDef] = [
         (*MEDICAL_OFFICER, "insurance.preauth.clinical_signoff"),
         chart_baseline=C.SUMMARY,
         chart_care_team=C.FULL,
+        licence_regulators=("KMPDC",),
     ),
     RoleDef(
         "intern",
@@ -257,6 +265,7 @@ ROLES: list[RoleDef] = [
         chart_baseline=C.SUMMARY,
         chart_care_team=C.FULL,
         requires_cosign=True,
+        licence_regulators=("KMPDC", "COC", "NCK", "PPB"),
     ),
     RoleDef(
         "lab_technologist",
@@ -265,6 +274,7 @@ ROLES: list[RoleDef] = [
         LAB,
         chart_baseline=C.SUMMARY,
         chart_care_team=C.SUMMARY,
+        licence_regulators=("KMLTTB",),
     ),
     RoleDef(
         "lab_supervisor",
@@ -273,6 +283,7 @@ ROLES: list[RoleDef] = [
         (*LAB, "laboratory.result.validate", "laboratory.result.release"),
         chart_baseline=C.SUMMARY,
         chart_care_team=C.SUMMARY,
+        licence_regulators=("KMLTTB",),
     ),
     RoleDef(
         "radiographer",
@@ -281,6 +292,7 @@ ROLES: list[RoleDef] = [
         (*WORKLIST, "imaging.study.perform"),
         chart_baseline=C.SUMMARY,
         chart_care_team=C.SUMMARY,
+        licence_regulators=("OTHER",),
     ),
     RoleDef(
         "radiologist",
@@ -289,6 +301,7 @@ ROLES: list[RoleDef] = [
         (*WORKLIST, "imaging.study.perform", "imaging.report.sign"),
         chart_baseline=C.SUMMARY,
         chart_care_team=C.SUMMARY,
+        licence_regulators=("KMPDC",),
     ),
     RoleDef(
         "pharmacist",
@@ -297,6 +310,7 @@ ROLES: list[RoleDef] = [
         (*DISPENSARY, "pharmacy.prescription.verify", "pharmacy.controlled.dispense"),
         chart_baseline=C.SUMMARY,
         chart_care_team=C.SUMMARY,
+        licence_regulators=("PPB",),
     ),
     RoleDef(
         "pharm_tech",
@@ -305,6 +319,7 @@ ROLES: list[RoleDef] = [
         DISPENSARY,
         chart_baseline=C.SUMMARY,
         chart_care_team=C.SUMMARY,
+        licence_regulators=("PPB",),
     ),
     RoleDef(
         "cashier",

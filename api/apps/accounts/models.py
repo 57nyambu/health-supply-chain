@@ -188,3 +188,48 @@ class WorkstationSession(models.Model):
 
     def __str__(self):
         return f"user {self.user_id} on workstation {self.workstation_id[:8]}"
+
+
+class ProfessionalLicence(models.Model):
+    """A practising licence from a Kenyan regulator (DESIGN §7.10, KE-PRF-01).
+
+    Clinical permissions (``requires_licence``) need a licence that is valid on the day
+    and issued by a regulator the granting role accepts.
+    """
+
+    class Regulator(models.TextChoices):
+        KMPDC = "KMPDC", "Kenya Medical Practitioners and Dentists Council"
+        COC = "COC", "Clinical Officers Council"
+        NCK = "NCK", "Nursing Council of Kenya"
+        PPB = "PPB", "Pharmacy and Poisons Board"
+        KMLTTB = "KMLTTB", "Kenya Medical Laboratory Technicians and Technologists Board"
+        OTHER = "OTHER", "Other regulator"
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="licences")
+    regulator = models.CharField(max_length=10, choices=Regulator.choices)
+    registration_number = models.CharField(max_length=50)
+    licence_number = models.CharField(max_length=50, blank=True)
+    valid_from = models.DateField(null=True, blank=True)
+    valid_to = models.DateField()
+    puid = models.CharField("Health Worker Registry PUID", max_length=40, blank=True)
+    slade_code = models.CharField(max_length=50, blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verification_source = models.CharField(max_length=40, blank=True)
+    expiry_notified_for = models.DateField(
+        null=True, blank=True, help_text="valid_to date the 30-day warning was sent for"
+    )
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["user", "regulator", "-valid_to"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["regulator", "registration_number", "valid_to"],
+                name="accounts_licence_unique_period",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.regulator} licence of user {self.user_id} (to {self.valid_to})"
