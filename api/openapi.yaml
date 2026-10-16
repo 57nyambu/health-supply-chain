@@ -5591,10 +5591,16 @@ components:
           maximum: 2147483647
           minimum: 0
         bed_occupancy_rate:
-          type: string
+          type:
+          - number
+          - 'null'
+          format: double
           readOnly: true
         attendance_rate:
-          type: string
+          type:
+          - number
+          - 'null'
+          format: double
           readOnly: true
       required:
       - attendance_rate

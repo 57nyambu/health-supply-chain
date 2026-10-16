@@ -2391,8 +2391,10 @@ export interface components {
             beds_occupied?: number;
             doctors_scheduled?: number;
             doctors_present?: number;
-            readonly bed_occupancy_rate: string;
-            readonly attendance_rate: string;
+            /** Format: double */
+            readonly bed_occupancy_rate: number | null;
+            /** Format: double */
+            readonly attendance_rate: number | null;
         };
         FacilityDailyStatsRequest: {
             /** Health Facility */

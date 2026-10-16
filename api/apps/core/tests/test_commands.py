@@ -37,6 +37,17 @@ def test_seed_loads_synthetic_data_idempotently(settings, monkeypatch):
     identifiers = PatientIdentifier.objects.filter(patient__facility=site, type="national_id")
     assert all(row.value.startswith("000") for row in identifiers)
 
+    # Operations data for the reports and inventory workspaces (P1-WEB-06), once.
+    from apps.analytics.models import RTInventoryAlert
+    from apps.facility_ops.models import FacilityAlert, FacilityDailyStats
+    from apps.warehouses.selectors import facility_warehouses
+
+    stores = facility_warehouses(site.pk)
+    assert list(stores.values_list("code", flat=True)) == ["SYN-MAIN"]
+    assert FacilityDailyStats.objects.filter(warehouse__in=stores).count() == 7
+    assert FacilityAlert.objects.filter(warehouse__in=stores).count() == 1
+    assert RTInventoryAlert.objects.filter(warehouse__in=stores).count() == 1
+
 
 @pytest.mark.django_db
 def test_seed_refuses_in_production(settings):

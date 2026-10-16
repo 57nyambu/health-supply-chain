@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand, CommandError
 SEED_STEPS = [
     "apps.facility_ops.seed",
     "apps.facilities.seed",
+    "apps.facility_ops.synthetic",
     "apps.accounts.seed",
     "apps.patients.seed",
 ]

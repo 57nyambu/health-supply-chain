@@ -5,8 +5,9 @@ from .models import FacilityAlert, FacilityDailyStats
 
 class FacilityDailyStatsSerializer(serializers.ModelSerializer):
     warehouse_name = serializers.CharField(source="warehouse.name", read_only=True)
-    bed_occupancy_rate = serializers.ReadOnlyField()
-    attendance_rate = serializers.ReadOnlyField()
+    # Percentages (one decimal), null when the total is zero; not money, so a float is fine.
+    bed_occupancy_rate = serializers.FloatField(read_only=True, allow_null=True)
+    attendance_rate = serializers.FloatField(read_only=True, allow_null=True)
 
     class Meta:
         model = FacilityDailyStats
@@ -48,8 +49,9 @@ class PublicFacilityStatsSerializer(serializers.ModelSerializer):
     """Curated subset for the open /api/v1/public/ API — no raw inventory figures."""
 
     facility_name = serializers.CharField(source="warehouse.name", read_only=True)
-    bed_occupancy_rate = serializers.ReadOnlyField()
-    attendance_rate = serializers.ReadOnlyField()
+    # Percentages (one decimal), null when the total is zero; not money, so a float is fine.
+    bed_occupancy_rate = serializers.FloatField(read_only=True, allow_null=True)
+    attendance_rate = serializers.FloatField(read_only=True, allow_null=True)
 
     class Meta:
         model = FacilityDailyStats
