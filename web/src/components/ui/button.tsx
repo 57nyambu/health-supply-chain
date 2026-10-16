@@ -1,6 +1,6 @@
 import { Slot } from "@radix-ui/react-slot";
 import { LoaderCircle } from "lucide-react";
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, Ref } from "react";
 
 import { cn } from "@/lib/cn";
 
@@ -15,6 +15,8 @@ const VARIANTS: Record<ButtonVariant, string> = {
 };
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  /** React 19 passes `ref` as a prop; it reaches the <button> through the spread. */
+  ref?: Ref<HTMLButtonElement>;
   variant?: ButtonVariant;
   density?: "comfortable" | "compact";
   /** Keeps the button's width and shows a spinner with "Saving…" (or `loadingLabel`). */

@@ -50,6 +50,8 @@ export function Shell({ children }: { children: ReactNode }) {
 
   useIdleLock(me?.session.lock_minutes, lock);
 
+  const canSearch = me?.permissions.includes("patients.patient.search") ?? false;
+
   useEffect(() => {
     if (me && nextStep(me) !== "workspace") router.replace(destination(me, pathname));
   }, [me, pathname, router]);
@@ -63,11 +65,22 @@ export function Shell({ children }: { children: ReactNode }) {
       } else if (event.key === "?" && !typing(event.target)) {
         event.preventDefault();
         setHelp(true);
+      } else if (event.key === "/" && !typing(event.target) && !event.altKey && !event.ctrlKey && !event.metaKey) {
+        // Patient search: the box on this page, or reception's (DESIGN-SYSTEM §8).
+        const box = document.querySelector<HTMLInputElement>("[data-patient-search]");
+        if (box) {
+          event.preventDefault();
+          box.focus();
+          box.select();
+        } else if (canSearch) {
+          event.preventDefault();
+          router.push("/reception");
+        }
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [lock]);
+  }, [lock, router, canSearch]);
 
   if (isPending || !me || nextStep(me) !== "workspace") {
     return (
@@ -78,7 +91,12 @@ export function Shell({ children }: { children: ReactNode }) {
   }
 
   const workspaces = workspacesFor(me.permissions);
-  const current = workspaces.find((w) => pathname === `/${w.key}` || pathname.startsWith(`/${w.key}/`));
+  // A patient's record (/patients/<uuid>) opens from reception's search for now; later
+  // phases open it from their own worklists.
+  const patientRoute = pathname.startsWith("/patients/") && me.permissions.includes("patients.patient.read");
+  const current =
+    workspaces.find((w) => pathname === `/${w.key}` || pathname.startsWith(`/${w.key}/`)) ??
+    (patientRoute ? workspaces.find((w) => w.key === "reception") : undefined);
 
   async function signOut() {
     await send("/api/v1/auth/logout", { method: "POST" }).catch(() => undefined);
@@ -158,7 +176,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </ul>
         </nav>
         <main id="main" tabIndex={-1} className="min-w-0 flex-1 outline-none">
-          {current || pathname === "/" ? (
+          {current || patientRoute || pathname === "/" ? (
             children
           ) : (
             <div className="p-8">

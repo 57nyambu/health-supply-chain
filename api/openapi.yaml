@@ -5653,7 +5653,7 @@ components:
           format: uuid
           readOnly: true
         type:
-          $ref: '#/components/schemas/IdentifierTypeEnum'
+          $ref: '#/components/schemas/Type7a8Enum'
         value:
           type: string
         issuer:
@@ -5698,30 +5698,6 @@ components:
       required:
       - type
       - value
-    IdentifierTypeEnum:
-      enum:
-      - cr_id
-      - sha_number
-      - national_id
-      - maisha_namba
-      - alien_id
-      - refugee_id
-      - passport
-      - birth_certificate
-      - birth_notification
-      - temporary
-      type: string
-      description: |-
-        * `cr_id` - HIE Client Registry ID
-        * `sha_number` - SHA number
-        * `national_id` - National ID
-        * `maisha_namba` - Maisha Namba
-        * `alien_id` - Alien ID
-        * `refugee_id` - Refugee ID
-        * `passport` - Passport
-        * `birth_certificate` - Birth certificate
-        * `birth_notification` - Birth notification
-        * `temporary` - Temporary ID (unidentified patient)
     Inventory:
       type: object
       properties:
@@ -5922,6 +5898,17 @@ components:
       required:
       - email
       - password
+    MaskedIdentifier:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/Type7a8Enum'
+        value:
+          type: string
+          readOnly: true
+      required:
+      - type
+      - value
     Merge:
       type: object
       properties:
@@ -7104,14 +7091,24 @@ components:
           type: integer
           readOnly: true
         identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Identifier'
           readOnly: true
         contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
           readOnly: true
         next_of_kin:
+          type: array
+          items:
+            $ref: '#/components/schemas/NextOfKin'
           readOnly: true
         consents:
-          description: The current decision per kind (privacy notice, SMS reminders,
-            research).
+          type: array
+          items:
+            $ref: '#/components/schemas/Consent'
           readOnly: true
         retention_until:
           type:
@@ -7264,14 +7261,24 @@ components:
           type: integer
           readOnly: true
         identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Identifier'
           readOnly: true
         contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
           readOnly: true
         next_of_kin:
+          type: array
+          items:
+            $ref: '#/components/schemas/NextOfKin'
           readOnly: true
         consents:
-          description: The current decision per kind (privacy notice, SMS reminders,
-            research).
+          type: array
+          items:
+            $ref: '#/components/schemas/Consent'
           readOnly: true
         retention_until:
           type:
@@ -7742,9 +7749,7 @@ components:
         identifiers:
           type: array
           items:
-            type: object
-            additionalProperties:
-              type: string
+            $ref: '#/components/schemas/MaskedIdentifier'
           readOnly: true
         phone:
           type: string
@@ -7988,6 +7993,9 @@ components:
         is_unidentified:
           type: boolean
         identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaskedIdentifier'
           readOnly: true
         score:
           type: integer
@@ -8414,6 +8422,30 @@ components:
         * `SUPPLIER` - Supplier Delivery
         * `CUSTOMER` - Customer Return
         * `DAMAGED` - Damaged Goods
+    Type7a8Enum:
+      enum:
+      - cr_id
+      - sha_number
+      - national_id
+      - maisha_namba
+      - alien_id
+      - refugee_id
+      - passport
+      - birth_certificate
+      - birth_notification
+      - temporary
+      type: string
+      description: |-
+        * `cr_id` - HIE Client Registry ID
+        * `sha_number` - SHA number
+        * `national_id` - National ID
+        * `maisha_namba` - Maisha Namba
+        * `alien_id` - Alien ID
+        * `refugee_id` - Refugee ID
+        * `passport` - Passport
+        * `birth_certificate` - Birth certificate
+        * `birth_notification` - Birth notification
+        * `temporary` - Temporary ID (unidentified patient)
     Type9c6Enum:
       enum:
       - national_id

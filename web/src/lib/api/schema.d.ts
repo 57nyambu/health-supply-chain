@@ -2415,7 +2415,7 @@ export interface components {
         Identifier: {
             /** Format: uuid */
             readonly id: string;
-            type: components["schemas"]["IdentifierTypeEnum"];
+            type: components["schemas"]["Type7a8Enum"];
             value: string;
             /** @description Issuing country for passports */
             issuer?: string;
@@ -2430,20 +2430,6 @@ export interface components {
             /** @default  */
             issuer: string;
         };
-        /**
-         * @description * `cr_id` - HIE Client Registry ID
-         *     * `sha_number` - SHA number
-         *     * `national_id` - National ID
-         *     * `maisha_namba` - Maisha Namba
-         *     * `alien_id` - Alien ID
-         *     * `refugee_id` - Refugee ID
-         *     * `passport` - Passport
-         *     * `birth_certificate` - Birth certificate
-         *     * `birth_notification` - Birth notification
-         *     * `temporary` - Temporary ID (unidentified patient)
-         * @enum {string}
-         */
-        IdentifierTypeEnum: "cr_id" | "sha_number" | "national_id" | "maisha_namba" | "alien_id" | "refugee_id" | "passport" | "birth_certificate" | "birth_notification" | "temporary";
         Inventory: {
             readonly id: number;
             readonly product_name: string;
@@ -2526,6 +2512,10 @@ export interface components {
             /** Format: email */
             email: string;
             password: string;
+        };
+        MaskedIdentifier: {
+            type: components["schemas"]["Type7a8Enum"];
+            readonly value: string;
         };
         Merge: {
             /** Format: uuid */
@@ -3120,11 +3110,10 @@ export interface components {
             /** Format: uuid */
             readonly merged_into: string | null;
             readonly version: number;
-            readonly identifiers: unknown;
-            readonly contacts: unknown;
-            readonly next_of_kin: unknown;
-            /** @description The current decision per kind (privacy notice, SMS reminders, research). */
-            readonly consents: unknown;
+            readonly identifiers: components["schemas"]["Identifier"][];
+            readonly contacts: components["schemas"]["Contact"][];
+            readonly next_of_kin: components["schemas"]["NextOfKin"][];
+            readonly consents: components["schemas"]["Consent"][];
             /** Format: date */
             readonly retention_until: string | null;
             readonly legal_hold: boolean;
@@ -3167,11 +3156,10 @@ export interface components {
             /** Format: uuid */
             readonly merged_into: string | null;
             readonly version: number;
-            readonly identifiers: unknown;
-            readonly contacts: unknown;
-            readonly next_of_kin: unknown;
-            /** @description The current decision per kind (privacy notice, SMS reminders, research). */
-            readonly consents: unknown;
+            readonly identifiers: components["schemas"]["Identifier"][];
+            readonly contacts: components["schemas"]["Contact"][];
+            readonly next_of_kin: components["schemas"]["NextOfKin"][];
+            readonly consents: components["schemas"]["Consent"][];
             /** Format: date */
             readonly retention_until: string | null;
             readonly legal_hold: boolean;
@@ -3358,9 +3346,7 @@ export interface components {
             sex: string;
             /** Format: date */
             date_of_birth: string | null;
-            readonly identifiers: {
-                [key: string]: string;
-            }[];
+            readonly identifiers: components["schemas"]["MaskedIdentifier"][];
             readonly phone: string;
         };
         RegistryQueryRequest: {
@@ -3465,7 +3451,7 @@ export interface components {
             dob_estimated: boolean;
             readonly age: string | null;
             is_unidentified: boolean;
-            readonly identifiers: unknown;
+            readonly identifiers: components["schemas"]["MaskedIdentifier"][];
             score: number;
             reasons: string[];
         };
@@ -3646,6 +3632,20 @@ export interface components {
          * @enum {string}
          */
         TransferTypeEnum: "INTERNAL" | "SUPPLIER" | "CUSTOMER" | "DAMAGED";
+        /**
+         * @description * `cr_id` - HIE Client Registry ID
+         *     * `sha_number` - SHA number
+         *     * `national_id` - National ID
+         *     * `maisha_namba` - Maisha Namba
+         *     * `alien_id` - Alien ID
+         *     * `refugee_id` - Refugee ID
+         *     * `passport` - Passport
+         *     * `birth_certificate` - Birth certificate
+         *     * `birth_notification` - Birth notification
+         *     * `temporary` - Temporary ID (unidentified patient)
+         * @enum {string}
+         */
+        Type7a8Enum: "cr_id" | "sha_number" | "national_id" | "maisha_namba" | "alien_id" | "refugee_id" | "passport" | "birth_certificate" | "birth_notification" | "temporary";
         /**
          * @description * `national_id` - national_id
          *     * `maisha_namba` - maisha_namba

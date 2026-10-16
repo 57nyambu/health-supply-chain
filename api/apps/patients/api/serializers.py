@@ -2,6 +2,7 @@ from datetime import date
 from typing import Any
 
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.access.models import BreakGlassGrant
@@ -121,15 +122,19 @@ class PatientSerializer(serializers.ModelSerializer[Patient]):
     def get_age(self, obj: Patient) -> str | None:
         return age_text(obj.date_of_birth)
 
+    @extend_schema_field(IdentifierSerializer(many=True))
     def get_identifiers(self, obj: Patient) -> Any:
         return IdentifierSerializer(obj.identifiers.filter(active=True), many=True).data
 
+    @extend_schema_field(ContactSerializer(many=True))
     def get_contacts(self, obj: Patient) -> Any:
         return ContactSerializer(obj.contacts.filter(active=True), many=True).data
 
+    @extend_schema_field(NextOfKinSerializer(many=True))
     def get_next_of_kin(self, obj: Patient) -> Any:
         return NextOfKinSerializer(obj.next_of_kin.filter(active=True), many=True).data
 
+    @extend_schema_field(ConsentSerializer(many=True))
     def get_consents(self, obj: Patient) -> Any:
         """The current decision per kind (privacy notice, SMS reminders, research)."""
         return ConsentSerializer(list(privacy.current(obj).values()), many=True).data
@@ -151,6 +156,7 @@ class SearchResultSerializer(serializers.Serializer[Any]):
     def get_age(self, obj: Any) -> str | None:
         return age_text(obj.patient.date_of_birth)
 
+    @extend_schema_field(MaskedIdentifierSerializer(many=True))
     def get_identifiers(self, obj: Any) -> Any:
         return MaskedIdentifierSerializer(
             obj.patient.identifiers.filter(active=True), many=True
@@ -407,6 +413,7 @@ class RegistryPersonSerializer(serializers.Serializer[Any]):
     identifiers = serializers.SerializerMethodField()
     phone = serializers.SerializerMethodField()
 
+    @extend_schema_field(MaskedIdentifierSerializer(many=True))
     def get_identifiers(self, obj: Any) -> list[dict[str, str]]:
         return [{"type": t, "value": mask(v)} for t, v in obj.identifiers]
 

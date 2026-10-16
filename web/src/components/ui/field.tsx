@@ -56,9 +56,11 @@ export function Field({ label, hint, error, required, className, children }: Fie
 
 export const controlClass = (invalid?: boolean, extra?: string) =>
   cn(
-    "h-10 rounded-control border bg-surface px-3 text-base text-ink",
-    // Full width unless the caller sets a width (cn does not resolve conflicting utilities).
+    "rounded-control border bg-surface px-3 text-base text-ink",
+    // Full width and control height unless the caller sets them (cn does not resolve
+    // conflicting utilities; text areas set their own height).
     !/(^|\s)w-/.test(extra ?? "") && "w-full",
+    !/(^|\s)h-/.test(extra ?? "") && "h-10",
     "disabled:border-border-strong disabled:bg-surface-sunken disabled:text-ink-disabled",
     // :read-only also matches <select>; only text fields that are read-only look sunken.
     "[&:is(input,textarea):read-only]:bg-surface-sunken",
