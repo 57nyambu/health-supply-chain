@@ -60,6 +60,9 @@ class Facility(models.Model):
     care_team_expiry_hours = models.PositiveSmallIntegerField(
         default=72, validators=[MinValueValidator(1), MaxValueValidator(720)]
     )
+    break_glass_minutes = models.PositiveSmallIntegerField(
+        default=60, validators=[MinValueValidator(15), MaxValueValidator(240)]
+    )
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

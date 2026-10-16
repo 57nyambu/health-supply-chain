@@ -4,6 +4,7 @@ from typing import Any
 from django.utils import timezone
 from rest_framework import serializers
 
+from apps.access.models import BreakGlassGrant
 from apps.patients.identifiers import mask
 from apps.patients.models import NextOfKin, Patient, PatientContact, PatientIdentifier, PatientMerge
 
@@ -199,5 +200,25 @@ class MergeSerializer(serializers.ModelSerializer[PatientMerge]):
             "reversal_approval",
             "merged_at",
             "reversed_at",
+        ]
+        read_only_fields = fields
+
+
+class BreakGlassRequestSerializer(serializers.Serializer[None]):
+    reason = serializers.ChoiceField(choices=BreakGlassGrant.Reason.choices)
+    justification = serializers.CharField(max_length=500)
+
+
+class BreakGlassGrantSerializer(serializers.ModelSerializer[BreakGlassGrant]):
+    class Meta:
+        model = BreakGlassGrant
+        fields = [
+            "id",
+            "patient",
+            "reason",
+            "granted_at",
+            "expires_at",
+            "ended_at",
+            "review_status",
         ]
         read_only_fields = fields

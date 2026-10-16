@@ -1,18 +1,20 @@
 """Access administration API: roles, role assignments and the approvals inbox."""
 
-from typing import Any
+from typing import Any, cast
 
 from django.db.models import Q, QuerySet
 from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.access import approvals, policies
+from apps.access import approvals, breakglass, policies
 from apps.access.assignments import grant_role, revoke_assignment
 from apps.access.drf import AUTHENTICATED, request_facility, require_facility
-from apps.access.models import ApprovalRequest, Role, RoleAssignment
+from apps.access.models import ApprovalRequest, BreakGlassGrant, Role, RoleAssignment
 from apps.accounts.models import User
+from apps.audit.services import record
 from apps.facilities.models import Department, Ward
 
 
@@ -198,3 +200,106 @@ class ApprovalViewSet(
             self.get_object(), approver=request.user, comment=serializer.validated_data["comment"]
         )
         return Response(ApprovalSerializer(decided).data, status=status.HTTP_200_OK)
+
+
+class BreakGlassSerializer(serializers.ModelSerializer[BreakGlassGrant]):
+    user_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BreakGlassGrant
+        fields = [
+            "id",
+            "user",
+            "user_name",
+            "patient",
+            "reason",
+            "justification",
+            "granted_at",
+            "expires_at",
+            "ended_at",
+            "review_status",
+            "reviewed_by",
+            "reviewed_at",
+            "review_note",
+        ]
+        read_only_fields = fields
+
+    def get_user_name(self, obj: BreakGlassGrant) -> str:
+        return obj.user.get_full_name() or obj.user.email
+
+
+class BreakGlassEndedSerializer(serializers.ModelSerializer[BreakGlassGrant]):
+    class Meta:
+        model = BreakGlassGrant
+        fields = ["id", "ended_at"]
+        read_only_fields = fields
+
+
+class BreakGlassReviewSerializer(serializers.Serializer[None]):
+    outcome = serializers.ChoiceField(
+        choices=[BreakGlassGrant.Review.JUSTIFIED, BreakGlassGrant.Review.ESCALATED]
+    )
+    note = serializers.CharField(max_length=500, required=False, allow_blank=True, default="")
+
+
+class BreakGlassViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet[BreakGlassGrant]
+):
+    """The break-glass review queue (medical superintendent, DPO); viewing it is audited."""
+
+    serializer_class = BreakGlassSerializer
+    queryset = BreakGlassGrant.objects.none()
+    policy = {
+        "list": "access.breakglass.review",
+        "retrieve": "access.breakglass.review",
+        "review": "access.breakglass.review",
+        "end": "access.breakglass.request",
+    }
+
+    def get_queryset(self) -> QuerySet[BreakGlassGrant]:
+        queryset = BreakGlassGrant.objects.filter(
+            facility_id=require_facility(self.request)
+        ).select_related("user")
+        wanted = self.request.query_params.get("review_status")
+        return queryset.filter(review_status=wanted) if wanted else queryset
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        response = super().list(request, *args, **kwargs)
+        record(
+            "access.breakglass.queue_viewed",
+            request.user,
+            facility=require_facility(request),
+            purpose="audit",
+        )
+        return response
+
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        grant = self.get_object()
+        record(
+            "access.breakglass.viewed",
+            request.user,
+            grant,
+            patient=grant.patient_id,
+            purpose="audit",
+        )
+        return Response(BreakGlassSerializer(grant).data)
+
+    @action(detail=True, methods=["post"], serializer_class=BreakGlassReviewSerializer)
+    def review(self, request: Request, pk: str | None = None) -> Response:
+        serializer = BreakGlassReviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        grant = breakglass.review(
+            self.get_object(), reviewer=request.user, **serializer.validated_data
+        )
+        return Response(BreakGlassSerializer(grant).data)
+
+    @action(detail=True, methods=["post"], serializer_class=BreakGlassEndedSerializer)
+    def end(self, request: Request, pk: str | None = None) -> Response:
+        """The clinician leaves emergency access early (their own grant only)."""
+        grant = BreakGlassGrant.objects.filter(
+            pk=str(pk), facility_id=require_facility(request), user=cast(Any, request.user)
+        ).first()
+        if grant is None:
+            raise NotFound()
+        grant = breakglass.end_access(grant, user=request.user)
+        return Response(BreakGlassEndedSerializer(grant).data)

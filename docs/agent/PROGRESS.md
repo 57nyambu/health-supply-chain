@@ -6,7 +6,7 @@ The agent updates this file at the end of every session (and before context runs
 - **Active phase:** 1 (in progress)
 - **Last tag:** none
 - **`main` status:** green — `make check` passes (API tests, coverage gate, migrations, OpenAPI drift, secret scan); web gates skip until `web/` exists
-- **Next feature:** P1-UAC-08 (care-team chart access and break-glass)
+- **Next feature:** P1-UAC-09 (sensitive-category restriction)
 
 ## Owner actions (external, long lead time — start now)
 - [ ] Decide production hosting for real patient data (ADR-006): Kenya-hosted, or Contabo with documented legal basis
@@ -80,6 +80,8 @@ Done this session:
 - P1-UAC-07 — professional licences gate licensed permissions; HWR port + fake (`a1cd948`, GAP-HWR-001)
 - P1-FAC-01 admin API and P1-AUD-01 viewer API (`14f54f3`)
 - P1-PAT-01 — patient registry: encrypted identifiers/contacts/next of kin with blind-index search, gap-free MRN per facility per year (`core.sequences`), search-before-create with fuzzy name + DOB scoring and override reason, estimated DOB, unidentified emergency registration (ER-YYYY-NNNN), maker-checker merge and reversal; access admin API (roles, assignments, approvals inbox)
+- P1-UAC-08 (in progress) — `access.chart.check_chart_access` (none/demographics/summary/full/sensitive from role levels, care team, break-glass, capped by permissions, licence and purpose); care-team membership with 72 h expiry after the episode closes (`Facility.care_team_expiry_hours`); break-glass for `Facility.break_glass_minutes` (60) with high-severity audit, PHI-free notices to the medical superintendent and DPO, review queue API; patient reads go through `patients.selectors`. Open: the on-screen banner (the API returns its data) is built with the web chart view
+- Revoking a still-pending privileged grant now withdraws its approval request; the 95 % coverage gate also covers the access decision modules
 Verified:
 - `make check` ✔ (pytest, coverage 93.8 %, critical modules ≥ 95 %, migrations, OpenAPI drift, gitleaks); compose/Jenkins not runnable here (no Docker)
 Next:

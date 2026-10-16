@@ -8,6 +8,8 @@ from django.db.models import Q
 
 from apps.access.catalogue import Sensitivity
 from apps.access.roles import ChartAccess
+from apps.core.fields import EncryptedTextField
+from apps.core.ids import uuid7
 
 
 class Permission(models.Model):
@@ -220,3 +222,89 @@ class ApiClient(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class CareTeamMember(models.Model):
+    """A user's care relationship with a patient (DESIGN §7.7).
+
+    Visits, admissions, queues and allocations add members; closing the episode starts the
+    expiry clock (``Facility.care_team_expiry_hours``, default 72 h).
+    """
+
+    class Source(models.TextChoices):
+        VISIT = "visit", "Visit"
+        ADMISSION = "admission", "Admission"
+        QUEUE = "queue", "Queue"
+        ALLOCATION = "allocation", "Allocation"
+
+    id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    facility = models.ForeignKey("facilities.Facility", on_delete=models.PROTECT, related_name="+")
+    patient = models.ForeignKey("patients.Patient", on_delete=models.PROTECT, related_name="+")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="care_team_memberships"
+    )
+    source = models.CharField(max_length=20, choices=Source.choices)
+    source_id = models.CharField(max_length=64)
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    started_at = models.DateTimeField()
+    episode_closed_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    removed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["patient", "user", "source", "source_id"], name="access_care_team_unique"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["user", "patient"]),
+            models.Index(fields=["source", "source_id"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"Care-team membership {self.pk}"
+
+
+class BreakGlassGrant(models.Model):
+    """Emergency full-chart access for a limited time, reviewed afterwards (DESIGN §7.8)."""
+
+    class Reason(models.TextChoices):
+        EMERGENCY = "emergency", "Emergency"
+        CONTINUITY = "continuity_of_care", "Continuity of care"
+        CLINICAL_REVIEW = "clinical_review", "Clinical review"
+
+    class Review(models.TextChoices):
+        PENDING = "pending", "Awaiting review"
+        JUSTIFIED = "justified", "Justified"
+        ESCALATED = "escalated", "Escalated"
+
+    id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    facility = models.ForeignKey("facilities.Facility", on_delete=models.PROTECT, related_name="+")
+    patient = models.ForeignKey("patients.Patient", on_delete=models.PROTECT, related_name="+")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="break_glass_grants"
+    )
+    reason = models.CharField(max_length=30, choices=Reason.choices)
+    justification = EncryptedTextField()
+    granted_at = models.DateTimeField()
+    expires_at = models.DateTimeField()
+    ended_at = models.DateTimeField(null=True, blank=True)
+    review_status = models.CharField(max_length=20, choices=Review.choices, default=Review.PENDING)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_note = EncryptedTextField(blank=True, default="")
+
+    class Meta:
+        ordering = ["-granted_at"]
+        indexes = [
+            models.Index(fields=["user", "patient", "expires_at"]),
+            models.Index(fields=["facility", "review_status"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"Break-glass grant {self.pk}"

@@ -241,6 +241,122 @@ paths:
               schema:
                 $ref: '#/components/schemas/Revoke'
           description: ''
+  /api/v1/access/break-glass/:
+    get:
+      operationId: v1_access_break_glass_list
+      description: The break-glass review queue (medical superintendent, DPO); viewing
+        it is audited.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBreakGlassList'
+          description: ''
+  /api/v1/access/break-glass/{id}/:
+    get:
+      operationId: v1_access_break_glass_retrieve
+      description: The break-glass review queue (medical superintendent, DPO); viewing
+        it is audited.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this break glass grant.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreakGlass'
+          description: ''
+  /api/v1/access/break-glass/{id}/end/:
+    post:
+      operationId: v1_access_break_glass_end_create
+      description: The clinician leaves emergency access early (their own grant only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this break glass grant.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreakGlassEnded'
+          description: ''
+  /api/v1/access/break-glass/{id}/review/:
+    post:
+      operationId: v1_access_break_glass_review_create
+      description: The break-glass review queue (medical superintendent, DPO); viewing
+        it is audited.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this break glass grant.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BreakGlassReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BreakGlassReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BreakGlassReviewRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreakGlassReview'
+          description: ''
   /api/v1/access/roles/:
     get:
       operationId: v1_access_roles_list
@@ -1868,6 +1984,8 @@ paths:
   /api/v1/patients/{id}/:
     get:
       operationId: v1_patients_retrieve
+      description: Demographics (name, identifiers, contacts, next of kin) with the
+        access banner.
       parameters:
       - in: path
         name: id
@@ -1890,6 +2008,68 @@ paths:
           description: ''
     patch:
       operationId: v1_patients_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /api/v1/patients/{id}/break-glass/:
+    post:
+      operationId: v1_patients_break_glass_create
+      description: Emergency full access for a limited time; reviewed afterwards (DESIGN
+        §7.8).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this patient.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BreakGlassRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BreakGlassRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BreakGlassRequestRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreakGlassRequest'
+          description: ''
+  /api/v1/patients/{id}/chart/:
+    get:
+      operationId: v1_patients_chart_retrieve
+      description: The clinical record, shaped by the chart access level (summary,
+        full, sensitive).
       parameters:
       - in: path
         name: id
@@ -3616,7 +3796,7 @@ components:
           readOnly: true
         outcome:
           allOf:
-          - $ref: '#/components/schemas/OutcomeEnum'
+          - $ref: '#/components/schemas/AuditEventOutcomeEnum'
           readOnly: true
         severity:
           type: string
@@ -3645,6 +3825,16 @@ components:
       - severity
       - ts
       - workstation_id
+    AuditEventOutcomeEnum:
+      enum:
+      - success
+      - denied
+      - failure
+      type: string
+      description: |-
+        * `success` - Success
+        * `denied` - Denied
+        * `failure` - Failure
     Bed:
       type: object
       properties:
@@ -3921,6 +4111,145 @@ components:
       - kra_pin
       - name
       - physical_address
+    BreakGlass:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        user_name:
+          type: string
+          readOnly: true
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+        reason:
+          allOf:
+          - $ref: '#/components/schemas/ReasonEnum'
+          readOnly: true
+        justification:
+          type: string
+          readOnly: true
+        granted_at:
+          type: string
+          format: date-time
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+        ended_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        review_status:
+          allOf:
+          - $ref: '#/components/schemas/ReviewStatusEnum'
+          readOnly: true
+        reviewed_by:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        reviewed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        review_note:
+          type: string
+          readOnly: true
+      required:
+      - ended_at
+      - expires_at
+      - granted_at
+      - id
+      - justification
+      - patient
+      - reason
+      - review_note
+      - review_status
+      - reviewed_at
+      - reviewed_by
+      - user
+      - user_name
+    BreakGlassEnded:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        ended_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+      required:
+      - ended_at
+      - id
+    BreakGlassRequest:
+      type: object
+      properties:
+        reason:
+          $ref: '#/components/schemas/ReasonEnum'
+        justification:
+          type: string
+          maxLength: 500
+      required:
+      - justification
+      - reason
+    BreakGlassRequestRequest:
+      type: object
+      properties:
+        reason:
+          $ref: '#/components/schemas/ReasonEnum'
+        justification:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+      - justification
+      - reason
+    BreakGlassReview:
+      type: object
+      properties:
+        outcome:
+          $ref: '#/components/schemas/BreakGlassReviewOutcomeEnum'
+        note:
+          type: string
+          default: ''
+          maxLength: 500
+      required:
+      - outcome
+    BreakGlassReviewOutcomeEnum:
+      enum:
+      - justified
+      - escalated
+      type: string
+      description: |-
+        * `justified` - justified
+        * `escalated` - escalated
+    BreakGlassReviewRequest:
+      type: object
+      properties:
+        outcome:
+          $ref: '#/components/schemas/BreakGlassReviewOutcomeEnum'
+        note:
+          type: string
+          default: ''
+          maxLength: 500
+      required:
+      - outcome
     Category:
       type: object
       properties:
@@ -4254,6 +4583,10 @@ components:
           type: integer
           maximum: 720
           minimum: 1
+        break_glass_minutes:
+          type: integer
+          maximum: 240
+          minimum: 15
         active:
           type: boolean
           readOnly: true
@@ -4755,16 +5088,6 @@ components:
       - relationship
     NullEnum:
       type: 'null'
-    OutcomeEnum:
-      enum:
-      - success
-      - denied
-      - failure
-      type: string
-      description: |-
-        * `success` - Success
-        * `denied` - Denied
-        * `failure` - Failure
     PaginatedApprovalList:
       type: object
       required:
@@ -4899,6 +5222,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Branch'
+    PaginatedBreakGlassList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BreakGlass'
     PaginatedCategoryList:
       type: object
       required:
@@ -5429,6 +5775,10 @@ components:
           type: integer
           maximum: 720
           minimum: 1
+        break_glass_minutes:
+          type: integer
+          maximum: 240
+          minimum: 15
     PatchedInventoryRequest:
       type: object
       properties:
@@ -6069,6 +6419,16 @@ components:
           maxLength: 255
       required:
       - reason
+    ReasonEnum:
+      enum:
+      - emergency
+      - continuity_of_care
+      - clinical_review
+      type: string
+      description: |-
+        * `emergency` - Emergency
+        * `continuity_of_care` - Continuity of care
+        * `clinical_review` - Clinical review
     ReasonRequest:
       type: object
       properties:
@@ -6094,6 +6454,16 @@ components:
         * `PPB` - Pharmacy and Poisons Board
         * `KMLTTB` - Kenya Medical Laboratory Technicians and Technologists Board
         * `OTHER` - Other regulator
+    ReviewStatusEnum:
+      enum:
+      - pending
+      - justified
+      - escalated
+      type: string
+      description: |-
+        * `pending` - Awaiting review
+        * `justified` - Justified
+        * `escalated` - Escalated
     Revoke:
       type: object
       properties:

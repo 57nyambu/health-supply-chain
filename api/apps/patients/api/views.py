@@ -1,7 +1,8 @@
 """Reception and registry API (P1-PAT-01), scoped to the request facility.
 
-Reading a record is a chart open and is audited with its purpose; searching is audited
-with the term stored only as an HMAC (api/CLAUDE.md).
+Reading a record is a chart open: ``selectors.open_record`` checks the chart access level
+(care team, break-glass) and audits it with its purpose. Searching is audited with the term
+stored only as an HMAC (api/CLAUDE.md).
 """
 
 from typing import Any
@@ -13,13 +14,16 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
+from apps.access import breakglass, chart
 from apps.access.drf import require_facility
-from apps.audit.services import record
+from apps.access.roles import ChartAccess
 from apps.facilities.models import Facility
-from apps.patients import services
+from apps.patients import selectors, services
 from apps.patients.models import Patient, PatientMerge
 
 from .serializers import (
+    BreakGlassGrantSerializer,
+    BreakGlassRequestSerializer,
     ContactInputSerializer,
     ContactSerializer,
     IdentifierInputSerializer,
@@ -38,7 +42,6 @@ from .serializers import (
 )
 
 UPDATE = "patients.patient.update"
-PURPOSES = {"care", "registration", "billing", "records", "audit"}
 
 
 class PatientThrottle(ScopedRateThrottle):
@@ -67,6 +70,8 @@ class PatientViewSet(
         "contacts": UPDATE,
         "next_of_kin": UPDATE,
         "merge": "patients.merge.request",
+        "chart": "clinical.record.read_summary",
+        "break_glass": "access.breakglass.request",
     }
 
     def get_queryset(self) -> QuerySet[Patient]:
@@ -74,6 +79,14 @@ class PatientViewSet(
 
     def facility(self) -> Facility:
         return Facility.objects.get(pk=require_facility(self.request))
+
+    def editable_object(self) -> Patient:
+        """Writes need at least demographic access (already audited by the service)."""
+        patient = self.get_object()
+        decision = chart.decide(self.request.user, patient, purpose="registration")
+        if not decision.allows(ChartAccess.DEMOGRAPHICS):
+            raise selectors.ChartAccessDenied(decision, ChartAccess.DEMOGRAPHICS)
+        return patient
 
     @action(detail=False, methods=["get"], serializer_class=SearchResultSerializer)
     def search(self, request: Request) -> Response:
@@ -97,16 +110,50 @@ class PatientViewSet(
         return Response(PatientSerializer(patient).data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Demographics (name, identifiers, contacts, next of kin) with the access banner."""
         patient = self.get_object()
-        purpose = request.query_params.get("purpose", "care")
-        record(
-            "patients.chart.opened",
+        decision = selectors.open_record(
             request.user,
             patient,
-            patient=patient,
-            purpose=purpose if purpose in PURPOSES else "care",
+            purpose=request.query_params.get("purpose", "care"),
+            needed=ChartAccess.DEMOGRAPHICS,
         )
-        return Response(PatientSerializer(patient).data)
+        return Response(
+            {**PatientSerializer(patient).data, "access": selectors.access_payload(decision)}
+        )
+
+    @action(detail=True, methods=["get"])
+    def chart(self, request: Request, pk: str | None = None) -> Response:
+        """The clinical record, shaped by the chart access level (summary, full, sensitive)."""
+        patient = self.get_object()
+        decision = selectors.open_record(
+            request.user,
+            patient,
+            purpose=request.query_params.get("purpose", "care"),
+            needed=ChartAccess.SUMMARY,
+        )
+        return Response(
+            {
+                "access": selectors.access_payload(decision),
+                "patient": PatientSerializer(patient).data,
+                **selectors.chart_sections(patient, decision),
+            }
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="break-glass",
+        serializer_class=BreakGlassRequestSerializer,
+    )
+    def break_glass(self, request: Request, pk: str | None = None) -> Response:
+        """Emergency full access for a limited time; reviewed afterwards (DESIGN §7.8)."""
+        serializer = BreakGlassRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        grant = breakglass.request_access(
+            user=request.user, patient=self.get_object(), **serializer.validated_data
+        )
+        return Response(BreakGlassGrantSerializer(grant).data, status=status.HTTP_201_CREATED)
 
     def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = PatientUpdateSerializer(data=request.data)
@@ -114,7 +161,7 @@ class PatientViewSet(
         data = dict(serializer.validated_data)
         version = data.pop("version")
         patient = services.update_patient(
-            self.get_object(), actor=request.user, version=version, **data
+            self.editable_object(), actor=request.user, version=version, **data
         )
         return Response(PatientSerializer(patient).data)
 
@@ -132,7 +179,7 @@ class PatientViewSet(
         serializer = IdentifierInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         row = services.add_identifier(
-            self.get_object(),
+            self.editable_object(),
             actor=request.user,
             type_=serializer.validated_data["type"],
             value=serializer.validated_data["value"],
@@ -145,7 +192,7 @@ class PatientViewSet(
         serializer = ContactInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         row = services.add_contact(
-            self.get_object(), actor=request.user, **serializer.validated_data
+            self.editable_object(), actor=request.user, **serializer.validated_data
         )
         return Response(ContactSerializer(row).data, status=status.HTTP_201_CREATED)
 
@@ -159,7 +206,7 @@ class PatientViewSet(
         serializer = NextOfKinInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         row = services.add_next_of_kin(
-            self.get_object(), actor=request.user, **serializer.validated_data
+            self.editable_object(), actor=request.user, **serializer.validated_data
         )
         return Response(NextOfKinSerializer(row).data, status=status.HTTP_201_CREATED)
 

@@ -141,4 +141,10 @@ def revoke_assignment(
         detail={"user_id": assignment.user_id, "role": assignment.role.code},
         severity="notice",
     )
+    if assignment.approval_id is not None:
+        approvals.withdraw(
+            ApprovalRequest.objects.get(pk=assignment.approval_id),
+            by=revoked_by,
+            cause="assignment_revoked",
+        )
     return assignment

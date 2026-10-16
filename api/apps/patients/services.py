@@ -10,8 +10,9 @@ from django.db import IntegrityError, transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from apps.access import approvals, policies
+from apps.access import approvals, chart, policies
 from apps.access.models import ApprovalRequest
+from apps.access.roles import ChartAccess
 from apps.audit.services import record
 from apps.core import crypto
 from apps.core.problems import ApiProblem, Conflict
@@ -143,6 +144,8 @@ def search(
 ) -> list[Candidate]:
     """Search-before-create: exact identifier/phone first, then fuzzy name + DOB scoring."""
     facility_id = int(getattr(facility, "pk", facility))
+    if chart.baseline_level(actor, facility_id) == ChartAccess.NONE:
+        raise PermissionDenied("Your role does not give access to patient records.")
     query = query.strip()
     found: dict[Any, Candidate] = {}
     exact = _exact_matches(facility_id, query, found) if query else False

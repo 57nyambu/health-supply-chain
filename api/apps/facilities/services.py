@@ -25,6 +25,7 @@ FACILITY_FIELDS = {
     "session_idle_minutes",
     "session_absolute_hours",
     "care_team_expiry_hours",
+    "break_glass_minutes",
     "active",
 }
 

@@ -15,7 +15,7 @@ from apps.access.models import ApprovalRequest, Role, RoleAssignment
 from apps.accounts.models import UserSession, WorkerProfile
 from apps.accounts.services import deactivate_user
 from apps.audit.models import AuditEvent
-from apps.facilities.tests.factories import DepartmentFactory, FacilityFactory
+from apps.facilities.tests.factories import DepartmentFactory, FacilityFactory, WardFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -112,6 +112,8 @@ def test_grant_needs_permission_in_the_target_facility(admins, make_user):
         ({"role": "public_api_client"}, "role"),
         ({"reason": " "}, "reason"),
         ({"other_department": True}, "department"),
+        ({"other_ward": True}, "ward"),
+        ({"inactive_role": True}, "role"),
     ],
 )
 def test_grant_validation(admins, make_user, facility, kwargs, field):
@@ -124,6 +126,10 @@ def test_grant_validation(admins, make_user, facility, kwargs, field):
     }
     if kwargs.get("other_department"):
         values["department"] = DepartmentFactory.create()
+    if kwargs.get("other_ward"):
+        values["ward"] = WardFactory.create()
+    if kwargs.get("inactive_role"):
+        values["role"] = Role.objects.create(code="retired_role", name="Retired", active=False)
     with pytest.raises(ValidationError) as excinfo:
         grant_role(**values)
     assert field in excinfo.value.message_dict
@@ -214,3 +220,30 @@ def test_legacy_roles_are_migrated_to_assignments(make_user, facility):
     assert policies.role_codes(orphan) == []
     migration.backwards(live_apps, None)
     assert not RoleAssignment.objects.filter(reason=migration.REASON).exists()
+
+
+def test_revoking_a_pending_privileged_grant_withdraws_its_approval(admins, make_user, facility):
+    first, second = admins
+    pending = grant_role(
+        granted_by=first,
+        user=make_user(),
+        role=role("finance_manager"),
+        facility=facility,
+        reason="Cover",
+    )
+    revoke_assignment(pending, revoked_by=first, reason="Not needed after all")
+    assert pending.approval is not None
+    request = ApprovalRequest.objects.get(pk=pending.approval.pk)
+    assert request.status == ApprovalRequest.Status.CANCELLED
+    assert (
+        AuditEvent.objects.get(action="access.approval.cancelled").detail["cause"]
+        == "assignment_revoked"
+    )
+    assert (
+        approvals.withdraw(request, by=first, cause="again").status
+        == ApprovalRequest.Status.CANCELLED
+    )
+    from apps.access.assignments import activate_privileged_grant
+
+    with pytest.raises(ValidationError):  # the executor refuses a grant that is no longer pending
+        activate_privileged_grant(request, second)

@@ -212,6 +212,19 @@ def cancel(request: ApprovalRequest, *, by: Any) -> ApprovalRequest:
     return request
 
 
+@transaction.atomic
+def withdraw(request: ApprovalRequest, *, by: Any, cause: str) -> ApprovalRequest:
+    """Close a pending request because its subject went away (e.g. the grant was revoked)."""
+    request = _locked(request)
+    if request.status != ApprovalRequest.Status.PENDING:
+        return request
+    request.status = ApprovalRequest.Status.CANCELLED
+    request.decided_at = timezone.now()
+    request.save(update_fields=["status", "decided_at"])
+    _audit("cancelled", request, by, cause=cause)
+    return request
+
+
 def expire_overdue() -> int:
     """Mark pending requests past their expiry as expired (beat task); each is audited."""
     expired = 0

@@ -3,7 +3,8 @@
 Usage: python coverage_gate.py reports/coverage.json [--total 85] [--critical 95]
 
 Critical modules are the services and policies of access, audit, billing,
-payments and insurance; they are checked once they exist.
+payments and insurance — including the access decision modules (chart access,
+break-glass, care teams, approvals, assignments); they are checked once they exist.
 """
 
 import argparse
@@ -12,7 +13,10 @@ import re
 import sys
 from pathlib import Path
 
-CRITICAL = re.compile(r"^apps[\\/](access|audit|billing|payments|insurance)[\\/](services|policies)\.py$")
+CRITICAL = re.compile(
+    r"^apps[\\/](access|audit|billing|payments|insurance)[\\/]"
+    r"(services|policies|approvals|assignments|chart|breakglass|care_team)\.py$"
+)
 
 
 def main() -> int:
