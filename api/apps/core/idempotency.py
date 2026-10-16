@@ -11,6 +11,7 @@ without the header.
 
 import hashlib
 from datetime import timedelta
+from typing import cast
 
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse, JsonResponse
@@ -64,7 +65,7 @@ def _is_required(view_func, method: str) -> bool:
 
 def _replay(record: IdempotencyRecord) -> HttpResponse:
     response = HttpResponse(
-        bytes(record.response_body),
+        cast(bytes, record.response_body),
         status=record.status_code,
         content_type=record.content_type or None,
     )

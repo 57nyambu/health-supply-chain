@@ -62,6 +62,7 @@ Legend: **Req (prod)** — the API refuses to start in production without a safe
 | Variable | Default | Purpose |
 |---|---|---|
 | `BREACHED_PASSWORDS_FILE` | empty | Extra offline breached-password list (one per line, optionally gzipped) checked in addition to the bundled list. |
+| `FACILITY_NETWORK_ALLOWLIST` | `127.0.0.0/8,::1/128` | CIDRs of the facility networks. Sign-ins from any other address need MFA, for every user. Set the facility LAN ranges in production (with `TRUST_PROXY_HEADERS` behind nginx). |
 | `LOGIN_RATE` | `20/min` | Login attempts per client IP (DRF throttle); account lockout is separate (5 → delay, 10 → lock). |
 
 ## Legacy integrations (replaced by adapters in later phases)

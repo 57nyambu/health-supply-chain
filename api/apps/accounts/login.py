@@ -110,11 +110,16 @@ def attempt_login(request: HttpRequest, email: str, password: str) -> LoginResul
         User.objects.filter(pk=authenticated.pk).update(
             failed_login_attempts=0, last_failed_login_at=None
         )
-    login(request, authenticated)
+    return LoginResult("ok", user=authenticated)
+
+
+def complete_login(request: HttpRequest, user: User, *, mfa_verified: bool) -> None:
+    """Start the session once every required factor is in (password, and MFA when enrolled)."""
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
     request.session["auth_at"] = timezone.now().timestamp()
     request.session["last_activity"] = request.session["auth_at"]
-    record("auth.login.succeeded", authenticated, authenticated)
-    return LoginResult("ok", user=authenticated)
+    request.session["mfa_verified"] = mfa_verified
+    record("auth.login.succeeded", user, user, detail={"mfa": mfa_verified})
 
 
 @transaction.atomic
@@ -167,6 +172,9 @@ def reset_credentials(user: User, *, by: Any, facility: Any) -> str:
     user = User.objects.select_for_update().get(pk=user.pk)
     user.set_password(temporary)
     user.must_change_password = True
+    from apps.accounts.mfa import remove_devices
+
+    remove_devices(user)
     user.account_locked = False
     user.failed_login_attempts = 0
     user.save()

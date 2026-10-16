@@ -57,6 +57,11 @@ def api_as(make_user, grant):
             grant(person, code, facility)
         client = APIClient()
         client.force_login(person)
+        # A fully signed-in user: password and (where required) second factor done.
+        # MFA itself is exercised end to end in apps/accounts/tests/test_mfa.py.
+        session = client.session
+        session["mfa_verified"] = True
+        session.save()
         client.user = person  # type: ignore[attr-defined]
         return client
 

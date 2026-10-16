@@ -1,5 +1,7 @@
 from django.db import models
 
+from apps.core.fields import EncryptedBinaryField
+
 
 class BaseModel(models.Model):
     """Abstract model with common fields for all models."""
@@ -57,7 +59,8 @@ class IdempotencyRecord(models.Model):
     state = models.CharField(max_length=20, choices=State.choices, default=State.IN_PROGRESS)
     status_code = models.PositiveSmallIntegerField(null=True, blank=True)
     content_type = models.CharField(max_length=100, blank=True)
-    response_body = models.BinaryField(blank=True, default=b"")
+    # Responses may contain personal data: encrypted at rest (DESIGN §8.2).
+    response_body = EncryptedBinaryField(blank=True, default=b"")
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(db_index=True)
 

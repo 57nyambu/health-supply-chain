@@ -88,6 +88,28 @@ class PasswordChangeRequired(APIException):
     default_code = "password_change_required"
 
 
+class MfaEnrolmentRequired(APIException):
+    status_code = 403
+    default_detail = "Set up two-step sign-in (an authenticator app) before continuing."
+    default_code = "mfa_enrolment_required"
+
+
+class MfaVerificationRequired(APIException):
+    status_code = 403
+    default_detail = "Enter the code from your authenticator app to continue."
+    default_code = "mfa_required"
+
+
+def enforce_mfa(request: Any) -> None:
+    from apps.accounts import mfa
+
+    current = mfa.state(request)
+    if current == "enrol":
+        raise MfaEnrolmentRequired()
+    if current == "verify":
+        raise MfaVerificationRequired()
+
+
 class PolicyPermission(BasePermission):
     message = "You do not have permission to perform this action."
 
@@ -103,6 +125,17 @@ class PolicyPermission(BasePermission):
         user = request.user
         if user is None or not user.is_authenticated:
             return False
+        if getattr(user, "is_service_account", False):
+            from apps.access.authentication import ServicePrincipal
+
+            return (
+                code != AUTHENTICATED
+                and is_known(code)
+                and isinstance(user, ServicePrincipal)
+                and user.has_code(code)
+            )
+        if not getattr(view, "mfa_exempt", False):
+            enforce_mfa(request)
         if code == AUTHENTICATED:
             return True
         if getattr(user, "must_change_password", False):
@@ -110,10 +143,6 @@ class PolicyPermission(BasePermission):
         if not is_known(code):
             logger.error("Denied: %s references unknown permission %s", type(view).__name__, code)
             return False
-        if getattr(user, "is_service_account", False):
-            from apps.access.authentication import ServicePrincipal
-
-            return isinstance(user, ServicePrincipal) and user.has_code(code)
         facility = request_facility(request)
         if facility is None:
             return False

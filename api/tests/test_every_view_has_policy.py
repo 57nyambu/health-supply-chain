@@ -25,6 +25,7 @@ PUBLIC_ALLOWLIST = {
     ("CsrfView", None),
     ("LoginView", None),
     ("LogoutView", None),
+    ("MfaVerifyView", None),  # second sign-in step; verifies the pending session itself
 }
 
 

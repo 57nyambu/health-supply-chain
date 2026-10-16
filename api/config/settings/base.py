@@ -142,6 +142,10 @@ DATA_RESIDENCY_MODE = env("DATA_RESIDENCY_MODE", default="warn")
 RESIDENCY_ALLOWED_HOSTS = env.list("RESIDENCY_ALLOWED_HOSTS", default=[])
 # Password for synthetic seed users (make seed); never a real person's password.
 SEED_PASSWORD = env("SEED_PASSWORD", default="")
+# Networks treated as inside the facility; sign-ins from elsewhere need MFA (DESIGN §7.2).
+FACILITY_NETWORK_ALLOWLIST = env.list(
+    "FACILITY_NETWORK_ALLOWLIST", default=["127.0.0.0/8", "::1/128"]
+)
 # Behind nginx, take the client IP from X-Real-IP (only when the proxy sets it).
 TRUST_PROXY_HEADERS = env.bool("TRUST_PROXY_HEADERS", default=False)
 # Production: the role the API connects as; migrations revoke UPDATE/DELETE on audit tables from it.

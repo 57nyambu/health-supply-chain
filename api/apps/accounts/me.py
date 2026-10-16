@@ -9,6 +9,7 @@ from django.http import HttpRequest
 
 from apps.access import policies
 from apps.access.drf import SESSION_FACILITY_KEY, request_facility
+from apps.accounts import mfa
 from apps.accounts.legacy import legacy_tier, legacy_warehouse_id
 from apps.accounts.login import session_limits
 from apps.accounts.session_timeout import SESSION_LIMITS_KEY
@@ -52,6 +53,7 @@ def me_payload(request: Any) -> dict[str, Any]:
         if facility_id
         else [],
         "session": limits,
+        "mfa": mfa.summary(request),
         # Legacy dashboards (frontend/) route by these until P1-WEB-06 removes them.
         "legacy": {
             "role": user.role,

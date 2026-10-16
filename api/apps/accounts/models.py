@@ -3,6 +3,7 @@ from django.core.validators import FileExtensionValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.fields import EncryptedTextField
 from apps.core.models import BaseModel
 
 
@@ -132,3 +133,36 @@ class UserSession(models.Model):
 
     def __str__(self):
         return f"session of user {self.user_id} ({'open' if self.ended_at is None else self.end_reason})"
+
+
+class MfaDevice(models.Model):
+    """A TOTP authenticator (DESIGN §7.2). The shared secret is encrypted at rest."""
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="mfa_devices")
+    secret = EncryptedTextField()
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    last_used_counter = models.BigIntegerField(
+        default=0, help_text="Highest TOTP step accepted (replay guard)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    removed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return (
+            f"TOTP device of user {self.user_id} ({'active' if self.confirmed_at else 'pending'})"
+        )
+
+
+class RecoveryCode(models.Model):
+    """Single-use MFA recovery code; only an HMAC of the code is stored."""
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="recovery_codes")
+    code_hash = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"recovery code of user {self.user_id} ({'used' if self.used_at else 'unused'})"
