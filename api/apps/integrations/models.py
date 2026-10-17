@@ -86,3 +86,40 @@ class ExchangeLog(models.Model):
 
     def __str__(self) -> str:
         return f"{self.integration}.{self.operation} {self.outcome}"
+
+
+class WebhookInbox(models.Model):
+    """One callback or IPN from an external system, stored before it is processed
+    (DESIGN §17, PAYMENTS.md §1, INSURANCE.md §10; ``apps.integrations.webhooks``).
+
+    The raw body is encrypted (it can carry phone numbers, member numbers, amounts);
+    headers are stored redacted. ``reference`` is the provider's own reference, used to
+    drop duplicates. Rows are never deleted.
+    """
+
+    class Status(models.TextChoices):
+        RECEIVED = "received", "Received"
+        PROCESSED = "processed", "Processed"
+        FAILED = "failed", "Failed, will retry"
+        PARKED = "parked", "Failed too often; needs an operator"
+        DUPLICATE = "duplicate", "Duplicate of an earlier notification"
+        REJECTED = "rejected", "Failed verification"
+
+    id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    provider = models.CharField(max_length=40, db_index=True)
+    received_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    remote_addr = models.GenericIPAddressField(null=True, blank=True)
+    headers = models.JSONField(default=dict, blank=True)
+    raw_body = EncryptedTextField(blank=True, default="")
+    reference = models.CharField(max_length=128, blank=True)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.RECEIVED)
+    attempts = models.PositiveIntegerField(default=0)
+    last_error = models.CharField(max_length=100, blank=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["received_at"]
+        indexes = [models.Index(fields=["provider", "reference"])]
+
+    def __str__(self) -> str:
+        return f"{self.provider} {self.status} {self.pk}"

@@ -13,6 +13,7 @@ import environ
 from celery.schedules import crontab
 
 from apps.core.logs import logging_config
+from config import lanes
 
 # BASE_DIR is api/; the shared .env and data/ live at the repository root.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -72,6 +73,7 @@ INSTALLED_APPS = [
     "apps.facilities",
     "apps.patients",
     "apps.documents",
+    "apps.insurance",
     "apps.products",
     "apps.suppliers",
     "apps.warehouses",
@@ -82,6 +84,8 @@ INSTALLED_APPS = [
     "apps.facility_ops",
     "apps.ai",
 ]
+# Apps of the parallel Phase 2 / Phase 3 lanes (ADR-024): registered in config/lanes/.
+INSTALLED_APPS += lanes.installed_apps()
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -282,6 +286,14 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.accounts.tasks.warn_expiring_licences",
         "schedule": crontab(hour=6, minute=0),
     },
+    "relay-outbox": {
+        "task": "apps.core.tasks.relay_outbox",
+        "schedule": crontab(minute="*"),
+    },
+    "process-webhooks": {
+        "task": "apps.integrations.tasks.process_webhooks",
+        "schedule": crontab(minute="*"),
+    },
     "deliver-notifications": {
         "task": "apps.integrations.tasks.deliver_notifications",
         "schedule": crontab(minute="*"),
@@ -295,6 +307,7 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="*/30"),
     },
 }
+CELERY_BEAT_SCHEDULE.update(lanes.beat_schedule())
 
 # --- Email and notifications ----------------------------------------------------------
 NOTIFICATION_CHANNEL = env("NOTIFICATION_CHANNEL", default="email").lower()
@@ -339,3 +352,7 @@ CSRF_COOKIE_SAMESITE = "Lax"
 LOGGING = logging_config(env("LOG_LEVEL", default="INFO"))
 # Sentry-compatible DSN. Enabled only when set and allowed by the residency guard.
 ERROR_TRACKER_DSN = env("ERROR_TRACKER_DSN", default="")
+
+# --- Parallel lanes (ADR-024) ------------------------------------------------------------
+# Settings the Phase 2 and Phase 3 lanes add (config/lanes/phase2.py, phase3.py).
+globals().update(lanes.settings(env))

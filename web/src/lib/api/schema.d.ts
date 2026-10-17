@@ -982,6 +982,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/hooks/{provider}/{token}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_hooks_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurance/coverages/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description A patient's cover, current and ended (masked member numbers; an audited read). */
+        get: operations["v1_insurance_coverages_list"];
+        put?: never;
+        post: operations["v1_insurance_coverages_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurance/coverages/{id}/end/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_insurance_coverages_end_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurance/schemes/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Active schemes a visit can be billed to; no scheme means cash / self-pay. */
+        get: operations["v1_insurance_schemes_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -2198,6 +2264,39 @@ export interface components {
          * @enum {string}
          */
         CountyEnum: "MOMBASA" | "KWALE" | "KILIFI" | "TANA_RIVER" | "LAMU" | "TAITA_TAVETA" | "GARISSA" | "WAJIR" | "MANDERA" | "MARSABIT" | "ISIOLO" | "MERU" | "THARAKA_NITHI" | "EMBU" | "KITUI" | "MACHAKOS" | "MAKUENI" | "NYANDARUA" | "NYERI" | "KIRINYAGA" | "MURANGA" | "KIAMBU" | "TURKANA" | "WEST_POKOT" | "SAMBURU" | "TRANS_NZOIA" | "UASIN_GISHU" | "ELGEYO_MARAKWET" | "NANDI" | "BARINGO" | "LAIKIPIA" | "NAKURU" | "NAROK" | "KAJIADO" | "KERICHO" | "BOMET" | "KAKAMEGA" | "VIHIGA" | "BUNGOMA" | "BUSIA" | "SIAYA" | "KISUMU" | "HOMA_BAY" | "MIGORI" | "KISII" | "NYAMIRA" | "NAIROBI";
+        /** @description Member numbers are masked; the full number never leaves the server here. */
+        Coverage: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly patient: string;
+            readonly scheme: components["schemas"]["Scheme"];
+            readonly member_number: string;
+            readonly relationship: components["schemas"]["RelationshipEnum"];
+            /** Format: date */
+            readonly valid_from: string | null;
+            /** Format: date */
+            readonly valid_to: string | null;
+            readonly verification: components["schemas"]["VerificationEnum"];
+            /** Format: date-time */
+            readonly verified_at: string | null;
+            readonly active: boolean;
+            readonly current: boolean;
+            readonly version: number;
+        };
+        CoverageCreateRequest: {
+            /** Format: uuid */
+            patient: string;
+            /** Format: uuid */
+            scheme: string;
+            member_number: string;
+            /** @default principal */
+            relationship: components["schemas"]["RelationshipEnum"];
+            /** Format: date */
+            valid_from?: string | null;
+            /** Format: date */
+            valid_to?: string | null;
+        };
         Decision: {
             /** @default  */
             comment: string;
@@ -2324,6 +2423,9 @@ export interface components {
         DsarVerifyRequest: {
             evidence: components["schemas"]["EvidenceEnum"];
         };
+        EndCoverageRequest: {
+            reason: string;
+        };
         /**
          * @description * `birth_certificate_seen` - birth_certificate_seen
          *     * `known_to_staff` - known_to_staff
@@ -2407,6 +2509,16 @@ export interface components {
             doctors_scheduled?: number;
             doctors_present?: number;
         };
+        /**
+         * @description * `sha_hie` - SHA through the HIE (eClaims REST)
+         *     * `sha_fhir` - SHA through AfyaLink (FHIR bundle)
+         *     * `smart` - SMART
+         *     * `slade360` - Slade360
+         *     * `mtiba` - M-TIBA
+         *     * `manual` - Manual claim pack
+         * @enum {string}
+         */
+        GatewayEnum: "sha_hie" | "sha_fhir" | "smart" | "slade360" | "mtiba" | "manual";
         /**
          * @description * `patient` - The patient
          *     * `guardian` - Parent or guardian
@@ -2696,6 +2808,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Category"][];
+        };
+        PaginatedCoverageList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Coverage"][];
         };
         PaginatedDepartmentList: {
             /** @example 123 */
@@ -3167,6 +3294,23 @@ export interface components {
             readonly legal_hold: boolean;
             readonly access: components["schemas"]["Access"];
         };
+        PayerSummary: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly code: string;
+            readonly name: string;
+            readonly kind: components["schemas"]["PayerSummaryKindEnum"];
+            readonly gateway: components["schemas"]["GatewayEnum"];
+        };
+        /**
+         * @description * `sha` - Social Health Authority
+         *     * `insurer` - Private insurer
+         *     * `employer` - Employer or corporate
+         *     * `government` - Other government
+         *     * `other` - Other
+         * @enum {string}
+         */
+        PayerSummaryKindEnum: "sha" | "insurer" | "employer" | "government" | "other";
         Pin: {
             pin: string;
         };
@@ -3383,6 +3527,12 @@ export interface components {
          */
         RegulatorEnum: "KMPDC" | "COC" | "NCK" | "PPB" | "KMLTTB" | "OTHER";
         /**
+         * @description * `principal` - Principal member
+         *     * `dependant` - Dependant
+         * @enum {string}
+         */
+        RelationshipEnum: "principal" | "dependant";
+        /**
          * @description * `patient` - The patient
          *     * `guardian` - Parent or guardian
          *     * `representative` - Authorised representative
@@ -3429,6 +3579,25 @@ export interface components {
          * @enum {string}
          */
         RoleEnum: "ADMIN" | "BRANCH_MANAGER" | "PROCUREMENT" | "WAREHOUSE" | "CASHIER" | "REPORTER";
+        Scheme: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly code: string;
+            readonly name: string;
+            readonly kind: components["schemas"]["SchemeKindEnum"];
+            readonly payer: components["schemas"]["PayerSummary"];
+        };
+        /**
+         * @description * `shif` - SHIF (Social Health Insurance Fund)
+         *     * `phc` - Primary health care (PHC/UHC)
+         *     * `eccif` - Emergency, chronic and critical illness (ECCIF)
+         *     * `pomsf` - Public officers' medical scheme (POMSF)
+         *     * `corporate` - Corporate scheme
+         *     * `individual` - Individual or family cover
+         *     * `other` - Other
+         * @enum {string}
+         */
+        SchemeKindEnum: "shif" | "phc" | "eccif" | "pomsf" | "corporate" | "individual" | "other";
         /**
          * @description Search terms travel in the body, never the URL: names, IDs and phones would
          *     otherwise land in proxy access logs (ADR-023).
@@ -3737,6 +3906,13 @@ export interface components {
          * @enum {string}
          */
         VatCategoryEnum: "STANDARD" | "ZERO" | "EXEMPT";
+        /**
+         * @description * `unverified` - Not verified yet
+         *     * `verified` - Verified with the payer
+         *     * `failed` - Not eligible or not found
+         * @enum {string}
+         */
+        VerificationEnum: "unverified" | "verified" | "failed";
         Ward: {
             readonly id: number;
             code: string;
@@ -5677,6 +5853,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FacilityDailyStats"];
+                };
+            };
+        };
+    };
+    v1_hooks_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No response body */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No response body */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v1_insurance_coverages_list: {
+        parameters: {
+            query: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                patient: string;
+                /**
+                 * @description * `registration` - registration
+                 *     * `billing` - billing
+                 *     * `care` - care
+                 */
+                purpose?: "registration" | "billing" | "care";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedCoverageList"];
+                };
+            };
+        };
+    };
+    v1_insurance_coverages_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoverageCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CoverageCreateRequest"];
+                "multipart/form-data": components["schemas"]["CoverageCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Coverage"];
+                };
+            };
+        };
+    };
+    v1_insurance_coverages_end_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this coverage. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EndCoverageRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EndCoverageRequest"];
+                "multipart/form-data": components["schemas"]["EndCoverageRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Coverage"];
+                };
+            };
+        };
+    };
+    v1_insurance_schemes_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Scheme"][];
                 };
             };
         };

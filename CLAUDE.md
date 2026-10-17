@@ -4,6 +4,9 @@
 
 You are turning this repository — a Kenyan retail inventory system with a health add-on (AfyaSync) — into a hospital management information system that a Kenyan facility can run from reception to completion of treatment, that integrates with SHA through the national Health Information Exchange, and that can pass Digital Health Agency (DHA) certification. Patients' safety, money and privacy depend on this code: prefer correct, explicit and boring over clever.
 
+## Parallel lanes (ADR-024)
+Phase 2 and Phase 3 are built at the same time on the branches `lane/phase-2` and `lane/phase-3`, while the integration session works on `main`. If your task names a lane, `docs/agent/lanes/README.md` (coordination, ownership, sync, delivery, conflicts), `docs/agent/lanes/SEAMS.md` (contracts) and your `GUIDE-PHASE-<N>.md` replace three rules below: you may start before the previous phase's tag ("one phase is active at a time"); you commit to your lane branch and reach `main` only by the fast-forward delivery in README §5 ("commit straight to `main`"); and you log in `docs/agent/lanes/PROGRESS-PHASE-<N>.md` instead of `PROGRESS.md`. Everything else here applies unchanged.
+
 ## Every session starts like this
 1. Read `docs/agent/PROGRESS.md` — where things stand, what's next, open blockers.
 2. Read the active phase brief `docs/agent/PHASE-<n>.md`. One phase is active at a time; the phase changes only after the previous `phase-<n>-complete` tag exists.
@@ -74,6 +77,7 @@ docs/    agent/ (design, phases, ledger, ADRs), compliance/, integrations/, oper
 | `docs/agent/PHASE-1.md` · `PHASE-2.md` · `PHASE-3.md` | phase briefs: scope, order, exit criteria |
 | `docs/agent/COMPLETION.md` | definition of done, acceptance scenarios E2E-01…16, evidence pack, go-live |
 | `docs/agent/features.json` | the feature ledger |
+| `docs/agent/lanes/` | parallel lanes: README (rules, reconciliation), SEAMS (contracts), GUIDE-PHASE-2/3, lane progress logs |
 | `docs/agent/DECISIONS.md` | ADRs and research findings |
 | `docs/compliance/KENYA-REGULATORY-REGISTER.md` | requirement IDs `KE-*` with sources |
 | `docs/integrations/INSURANCE.md` · `PAYMENTS.md` · `STORAGE.md` | SHA/SMART/Slade360; M-Pesa/banks/cards; local ↔ S3 storage |

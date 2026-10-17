@@ -48,6 +48,14 @@ def test_seed_loads_synthetic_data_idempotently(settings, monkeypatch):
     assert FacilityAlert.objects.filter(warehouse__in=stores).count() == 1
     assert RTInventoryAlert.objects.filter(warehouse__in=stores).count() == 1
 
+    # Payers, schemes and synthetic cover (the seam Phase 2 and Phase 3 share, ADR-024).
+    from apps.insurance.models import Coverage, Payer
+
+    assert Payer.objects.filter(code="sha").exists()
+    covered = Coverage.objects.filter(patient__facility=site)
+    assert covered.count() == 2  # patients 3 and 6 of 6 have SHA SHIF cover
+    assert all(c.member_number.startswith("SHA-SYN-") for c in covered)
+
 
 @pytest.mark.django_db
 def test_seed_refuses_in_production(settings):

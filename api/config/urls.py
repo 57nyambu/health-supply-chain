@@ -9,6 +9,8 @@ from django.urls import include, path
 
 from apps.accounts.api.urls import auth_urlpatterns, me_urlpatterns
 from apps.core import api_docs, health
+from apps.integrations.hooks_api import HookView
+from config import lanes
 
 urlpatterns = [
     path("healthz", health.healthz, name="healthz"),
@@ -23,6 +25,8 @@ urlpatterns = [
     path("api/v1/access/", include("apps.access.api.urls")),
     path("api/v1/patients/", include("apps.patients.api.urls")),
     path("api/v1/documents/", include("apps.documents.api.urls")),
+    path("api/v1/insurance/", include("apps.insurance.api.urls")),
+    path("api/v1/hooks/<slug:provider>/<str:token>/", HookView.as_view(), name="webhook"),
     path("api/v1/audit/", include("apps.audit.api.urls")),
     path("api/v1/analytics/", include("apps.analytics.urls")),
     path("api/v1/facility-ops/", include("apps.facility_ops.urls")),
@@ -31,6 +35,8 @@ urlpatterns = [
     path("api/v1/products/", include("apps.products.urls")),
     path("api/v1/warehouses/", include("apps.warehouses.urls")),
 ]
+# Routes of the parallel Phase 2 / Phase 3 lanes (ADR-024): registered in config/lanes/.
+urlpatterns += [path(prefix, include(module)) for prefix, module in lanes.url_mounts()]
 
 handler404 = "apps.core.problems.handler404"
 handler500 = "apps.core.problems.handler500"

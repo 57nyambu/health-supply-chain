@@ -1981,6 +1981,159 @@ paths:
               schema:
                 $ref: '#/components/schemas/FacilityDailyStats'
           description: ''
+  /api/v1/hooks/{provider}/{token}/:
+    post:
+      operationId: v1_hooks_create
+      parameters:
+      - in: path
+        name: provider
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      responses:
+        '200':
+          description: No response body
+        '403':
+          description: No response body
+        '404':
+          description: No response body
+  /api/v1/insurance/coverages/:
+    get:
+      operationId: v1_insurance_coverages_list
+      description: A patient's cover, current and ended (masked member numbers; an
+        audited read).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: patient
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: purpose
+        schema:
+          enum:
+          - registration
+          - billing
+          - care
+          type: string
+          default: registration
+          minLength: 1
+        description: |-
+          * `registration` - registration
+          * `billing` - billing
+          * `care` - care
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCoverageList'
+          description: ''
+    post:
+      operationId: v1_insurance_coverages_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoverageCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CoverageCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CoverageCreateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coverage'
+          description: ''
+  /api/v1/insurance/coverages/{id}/end/:
+    post:
+      operationId: v1_insurance_coverages_end_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this coverage.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EndCoverageRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EndCoverageRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EndCoverageRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coverage'
+          description: ''
+  /api/v1/insurance/schemes/:
+    get:
+      operationId: v1_insurance_schemes_list
+      description: Active schemes a visit can be billed to; no scheme means cash /
+        self-pay.
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Scheme'
+          description: ''
   /api/v1/me:
     get:
       operationId: v1_me_retrieve
@@ -5072,6 +5225,105 @@ components:
         * `KISII` - Kisii
         * `NYAMIRA` - Nyamira
         * `NAIROBI` - Nairobi
+    Coverage:
+      type: object
+      description: Member numbers are masked; the full number never leaves the server
+        here.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+        scheme:
+          allOf:
+          - $ref: '#/components/schemas/Scheme'
+          readOnly: true
+        member_number:
+          type: string
+          readOnly: true
+        relationship:
+          allOf:
+          - $ref: '#/components/schemas/RelationshipEnum'
+          readOnly: true
+        valid_from:
+          type:
+          - string
+          - 'null'
+          format: date
+          readOnly: true
+        valid_to:
+          type:
+          - string
+          - 'null'
+          format: date
+          readOnly: true
+        verification:
+          allOf:
+          - $ref: '#/components/schemas/VerificationEnum'
+          readOnly: true
+        verified_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        active:
+          type: boolean
+          readOnly: true
+        current:
+          type: boolean
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+      required:
+      - active
+      - current
+      - id
+      - member_number
+      - patient
+      - relationship
+      - scheme
+      - valid_from
+      - valid_to
+      - verification
+      - verified_at
+      - version
+    CoverageCreateRequest:
+      type: object
+      properties:
+        patient:
+          type: string
+          format: uuid
+        scheme:
+          type: string
+          format: uuid
+        member_number:
+          type: string
+          minLength: 1
+          maxLength: 40
+        relationship:
+          allOf:
+          - $ref: '#/components/schemas/RelationshipEnum'
+          default: principal
+        valid_from:
+          type:
+          - string
+          - 'null'
+          format: date
+        valid_to:
+          type:
+          - string
+          - 'null'
+          format: date
+      required:
+      - member_number
+      - patient
+      - scheme
     Decision:
       type: object
       properties:
@@ -5398,6 +5650,15 @@ components:
           $ref: '#/components/schemas/EvidenceEnum'
       required:
       - evidence
+    EndCoverageRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - reason
     EvidenceEnum:
       enum:
       - birth_certificate_seen
@@ -5641,6 +5902,22 @@ components:
       required:
       - date
       - warehouse
+    GatewayEnum:
+      enum:
+      - sha_hie
+      - sha_fhir
+      - smart
+      - slade360
+      - mtiba
+      - manual
+      type: string
+      description: |-
+        * `sha_hie` - SHA through the HIE (eClaims REST)
+        * `sha_fhir` - SHA through AfyaLink (FHIR bundle)
+        * `smart` - SMART
+        * `slade360` - Slade360
+        * `mtiba` - M-TIBA
+        * `manual` - Manual claim pack
     GivenByEnum:
       enum:
       - patient
@@ -6244,6 +6521,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Category'
+    PaginatedCoverageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coverage'
     PaginatedDepartmentList:
       type: object
       required:
@@ -7322,6 +7622,48 @@ components:
       - sex
       - status
       - version
+    PayerSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/PayerSummaryKindEnum'
+          readOnly: true
+        gateway:
+          allOf:
+          - $ref: '#/components/schemas/GatewayEnum'
+          readOnly: true
+      required:
+      - code
+      - gateway
+      - id
+      - kind
+      - name
+    PayerSummaryKindEnum:
+      enum:
+      - sha
+      - insurer
+      - employer
+      - government
+      - other
+      type: string
+      description: |-
+        * `sha` - Social Health Authority
+        * `insurer` - Private insurer
+        * `employer` - Employer or corporate
+        * `government` - Other government
+        * `other` - Other
     Pin:
       type: object
       properties:
@@ -7837,6 +8179,14 @@ components:
         * `PPB` - Pharmacy and Poisons Board
         * `KMLTTB` - Kenya Medical Laboratory Technicians and Technologists Board
         * `OTHER` - Other regulator
+    RelationshipEnum:
+      enum:
+      - principal
+      - dependant
+      type: string
+      description: |-
+        * `principal` - Principal member
+        * `dependant` - Dependant
     RequesterEnum:
       enum:
       - patient
@@ -7948,6 +8298,52 @@ components:
         * `WAREHOUSE` - Warehouse Staff
         * `CASHIER` - Cashier
         * `REPORTER` - Reports Viewer
+    Scheme:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/SchemeKindEnum'
+          readOnly: true
+        payer:
+          allOf:
+          - $ref: '#/components/schemas/PayerSummary'
+          readOnly: true
+      required:
+      - code
+      - id
+      - kind
+      - name
+      - payer
+    SchemeKindEnum:
+      enum:
+      - shif
+      - phc
+      - eccif
+      - pomsf
+      - corporate
+      - individual
+      - other
+      type: string
+      description: |-
+        * `shif` - SHIF (Social Health Insurance Fund)
+        * `phc` - Primary health care (PHC/UHC)
+        * `eccif` - Emergency, chronic and critical illness (ECCIF)
+        * `pomsf` - Public officers' medical scheme (POMSF)
+        * `corporate` - Corporate scheme
+        * `individual` - Individual or family cover
+        * `other` - Other
     SearchQueryRequest:
       type: object
       description: |-
@@ -8670,6 +9066,16 @@ components:
         * `STANDARD` - Standard Rate (16%)
         * `ZERO` - Zero Rated (0%)
         * `EXEMPT` - Exempt
+    VerificationEnum:
+      enum:
+      - unverified
+      - verified
+      - failed
+      type: string
+      description: |-
+        * `unverified` - Not verified yet
+        * `verified` - Verified with the payer
+        * `failed` - Not eligible or not found
     Ward:
       type: object
       properties:

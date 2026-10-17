@@ -18,6 +18,8 @@ EXEMPT = {
     ("token_blacklist", "blacklistedtoken", "token"),  # foreign key to the row above
     ("access", "approvalrequest", "payload"),  # IDs only; integrity via payload_hash
     ("access", "approvalrequest", "payload_hash"),
+    # Domain events carry IDs and codes only; core.events.emit refuses personal-data keys.
+    ("core", "outboxevent", "payload"),
 }
 
 

@@ -27,6 +27,7 @@ PUBLIC_ALLOWLIST = {
     ("LogoutView", None),
     ("MfaVerifyView", None),  # second sign-in step; verifies the pending session itself
     ("SwitchUserView", None),  # PIN hand-over on a workstation the user signed in on
+    ("HookView", None),  # provider callbacks/IPNs; each provider verifies (integrations.webhooks)
 }
 
 

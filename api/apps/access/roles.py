@@ -5,7 +5,7 @@ Chart access: ``chart_baseline`` applies to any patient in the user's scope;
 The sensitive level additionally needs ``clinical.record.read_sensitive``.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import StrEnum
 
 from apps.access.catalogue import expand
@@ -132,6 +132,8 @@ ROLES: list[RoleDef] = [
             "access.review.read",
             "facilities.*",
             "operations.*",
+            "insurance.payer.read",
+            "insurance.payer.manage",
         ),
         privileged=True,
         mfa_required=True,
@@ -196,6 +198,9 @@ ROLES: list[RoleDef] = [
             "visits.appointment.manage",
             "insurance.eligibility.check",
             "insurance.consent.request",
+            "insurance.payer.read",
+            "insurance.coverage.read",
+            "insurance.coverage.manage",
             "facilities.location.read",
         ),
         chart_baseline=C.DEMOGRAPHICS,
@@ -332,6 +337,8 @@ ROLES: list[RoleDef] = [
             "payments.shift.own",
             "payments.refund.request",
             "billing.charge.read",
+            "insurance.payer.read",
+            "insurance.coverage.read",
             "sales.pos.sell",
             "sales.order.read",
         ),
@@ -349,6 +356,8 @@ ROLES: list[RoleDef] = [
             "billing.invoice.finalize",
             "billing.waiver.request",
             "billing.pricelist.manage",
+            "insurance.payer.read",
+            "insurance.coverage.read",
         ),
         chart_baseline=C.DEMOGRAPHICS,
         chart_care_team=C.DEMOGRAPHICS,
@@ -365,6 +374,9 @@ ROLES: list[RoleDef] = [
             "insurance.claim.prepare",
             "insurance.claim.submit",
             "insurance.remittance.post",
+            "insurance.payer.read",
+            "insurance.coverage.read",
+            "insurance.coverage.manage",
             "billing.charge.read",
         ),
         chart_baseline=C.DEMOGRAPHICS,
@@ -480,4 +492,27 @@ ROLES: list[RoleDef] = [
     ),
 ]
 
+
+def with_lane_grants(roles: list[RoleDef], grants: dict[str, tuple[str, ...]]) -> list[RoleDef]:
+    """Add the parallel lanes' extra grants (config/lanes/, ADR-024) to existing roles."""
+    unknown = sorted(set(grants) - {role.code for role in roles})
+    if unknown:
+        raise ValueError(f"Lane role grants name unknown roles: {unknown}")
+    return [
+        replace(
+            role,
+            grants=role.grants
+            + tuple(c for c in grants.get(role.code, ()) if c not in role.grants),
+        )
+        for role in roles
+    ]
+
+
+def _lane_grants() -> dict[str, tuple[str, ...]]:
+    from config import lanes
+
+    return lanes.role_grants()
+
+
+ROLES = with_lane_grants(ROLES, _lane_grants())
 ROLES_BY_CODE = {role.code: role for role in ROLES}

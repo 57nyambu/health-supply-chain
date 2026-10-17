@@ -116,3 +116,45 @@ class PhiModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class OutboxEvent(models.Model):
+    """A domain event written in the same transaction as the change (ADR-016).
+
+    ``payload`` carries IDs and codes only — never names, identifiers or clinical text
+    (``apps.core.events.emit`` refuses sensitive keys). Consumers are delivered at least
+    once by ``apps.core.events.relay`` and must be idempotent.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    topic = models.CharField(max_length=100, db_index=True)
+    aggregate_type = models.CharField(max_length=64)
+    aggregate_id = models.CharField(max_length=64)
+    facility_id = models.BigIntegerField(null=True, blank=True)
+    payload = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    relayed_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.topic} {self.aggregate_type}:{self.aggregate_id}"
+
+
+class EventDelivery(models.Model):
+    """One consumer's receipt of one event: delivered once, retried until it is."""
+
+    event = models.ForeignKey(OutboxEvent, on_delete=models.PROTECT, related_name="deliveries")
+    consumer = models.CharField(max_length=100)
+    attempts = models.PositiveIntegerField(default=0)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["event", "consumer"], name="core_delivery_once")
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.consumer} <- {self.event_id}"

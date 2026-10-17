@@ -149,6 +149,18 @@ Context: Reception searches by name, national ID, phone or MRN. As `GET …/sear
 Decision: `POST /api/v1/patients/search/` and `POST /api/v1/patients/registry-search/` take their terms as JSON; GET is refused. Logged request objects are reduced to method and path by the scrubbing filter. nginx logs with `afyasync_no_query` (`$uri`, never `$request`/`$args`). Search stays a read: audited with an HMAC of the term, rate-limited, never idempotency-keyed.
 Consequences: Search calls need the CSRF token like any POST; caches never store search responses. Other list filters that could carry PHI follow the same rule (UUIDs and codes in URLs only).
 
+## ADR-024 Parallel build lanes for Phases 2 and 3
+Status: accepted (owner decision) · Date: 2026-10-17
+Context: The owner wants Phase 2 and Phase 3 built at the same time by two agents while the integration session finishes Phase 1 (the phases were planned one after another, each committed straight to `main`). SHA, private insurers, banks, cards and eTIMS still need specifications, agreements and credentials from the owner.
+Decision: Two lane branches, `lane/phase-2` and `lane/phase-3`, each in its own worktree; ownership by app, route and file, and delivery to `main` only as a fast-forward of a fully gated branch that already contains `main` (`docs/agent/lanes/README.md`). Lanes register apps, URLs, seed steps, beat jobs, settings and role grants in `api/config/lanes/phase<N>.py` and admin tabs in `sections-phase<N>.ts`, never in the shared lists. Seams both lanes need were built first on `main` (`docs/agent/lanes/SEAMS.md`): the transactional outbox `apps.core.events` (ADR-016), the callback inbox `apps.integrations.webhooks`, the notification outbox, `apps.insurance` (`Payer`, `Scheme`, `Coverage` with synthetic data) and two web extension slots. Vendor integrations are built as port, fake, contract tests and full fake-mode flows with synthetic data; the real adapter waits for credentials (feature `blocked` with the owner's waiver, PHASE-3 exit criteria). Phase 2 and 3 may start before `phase-1-complete`; tags still come in order. ADR numbers: integration 024–039, Phase 2 lane 040–069, Phase 3 lane 070–099.
+Consequences: `main` always equals a gated lane head and lane merges are mechanical (generated files regenerated, lockfiles re-added, merge migrations where two leaves meet). The integrator folds each lane's registrations into the shared files at its phase tag. Phase 3's claims, reconciliation and eTIMS hooks (stage B) wait for Phase 2's billing and payments on `main`.
+
+## Phase 2 lane ADRs (ADR-040…069)
+<!-- Written only by the Phase 2 lane. -->
+
+## Phase 3 lane ADRs (ADR-070…099)
+<!-- Written only by the Phase 3 lane. -->
+
 ---
 
 ## Findings
@@ -156,3 +168,9 @@ Consequences: Search calls need the CSRF token like any POST; caches never store
 - 2026-10-15 — MinIO no longer publishes server images on Docker Hub (`minio/minio` returns "object not found"); `pgsty/minio` publishes maintained rebuilds (latest `RELEASE.2026-08-04T00-00-00Z`) — https://hub.docker.com/v2/repositories/minio/minio , https://hub.docker.com/r/pgsty/minio — dev/CI compose uses `pgsty/minio` for the S3-compatible test backend; production S3 is whatever Kenyan endpoint ADR-006 selects, never this image.
 - 2026-10-16 — Data Protection (General) Regulations 2021 (Legal Notice 263) deadlines, read from the gazetted text: access within 7 days (reg. 9(4)); rectification within 14 days, refusal notified within 7 days (reg. 10(4)–(5)); portability within 30 days on payment of the prescribed fee, refusal notified within 7 days (reg. 11(3), (6)); erasure answered within 14 days (reg. 12(3)); objection and restriction within 14 days; indirect collection notified within 14 days — https://www.odpc.go.ke/wp-content/uploads/2024/03/THE-DATA-PROTECTION-GENERAL-REGULATIONS-2021-1.pdf — `apps/patients/dsar.py` `DUE_DAYS` uses calendar days from receipt; the register flags overdue requests. Whether "days" excludes public holidays is not stated; calendar days are the conservative reading.
 - 2026-10-16 — Next.js 16.4.1 is a security release: critical unauthenticated RCE in `use cache` functions returning typed arrays (GHSA-673q-mjm6-r5xr), critical unauthenticated RCE in the Image Optimization API with SVG (GHSA-2464-fhr4-w9xw), high DoS via Server Actions (GHSA-p3m5-59mp-jv5r); 16.4.2 adds only Turbopack backports — https://github.com/vercel/next.js/releases/tag/v16.4.1 , https://github.com/vercel/next.js/releases/tag/v16.4.2 — `web/` pins 16.4.1 as the floor (ADR-022).
+
+### Findings — Phase 2 lane
+<!-- Written only by the Phase 2 lane. Format as above. -->
+
+### Findings — Phase 3 lane
+<!-- Written only by the Phase 3 lane. Format as above. -->

@@ -9,6 +9,15 @@ from .services import NotificationService
 
 
 @shared_task
+def process_webhooks():
+    """Handle stored callbacks and IPNs outside the request (apps.integrations.webhooks)."""
+    from .webhooks import process_pending
+
+    processed, failed = process_pending()
+    return {"processed": processed, "failed": failed}
+
+
+@shared_task
 def deliver_notifications():
     """Outbox: e-mail stored staff notifications (apps.integrations.notify)."""
     from .notify import deliver_pending

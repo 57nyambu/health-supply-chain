@@ -109,3 +109,17 @@ Read by `web/playwright.config.ts` and `web/tests/e2e/storage-env.ts`; never by 
 | `PUBLIC_API_RATE` | Throttle for each API client on `/api/v1/public/` (default `120/min`). Clients are created with `manage.py create_api_client`; keys are stored only as HMACs. The legacy shared `PUBLIC_API_KEY` was removed in P1-UAC-03. |
 | `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_BUSINESS_SHORTCODE`, `MPESA_PASSKEY`, `MPESA_CALLBACK_URL` | Legacy M-Pesa STK push (secrets). Replaced by `payments/adapters/mpesa` in Phase 2. |
 | `AT_USERNAME`, `AT_API_KEY` | Africa's Talking SMS (secret: `AT_API_KEY`). |
+
+## Phase 2 lane settings (ADR-024)
+
+Added only by the Phase 2 lane (registered in `api/config/lanes/phase2.py`).
+
+| Variable | Default | Req (prod) | Purpose |
+|---|---|---|---|
+
+## Phase 3 lane settings (ADR-024)
+
+Added only by the Phase 3 lane (registered in `api/config/lanes/phase3.py`).
+
+| Variable | Default | Req (prod) | Purpose |
+|---|---|---|---|
