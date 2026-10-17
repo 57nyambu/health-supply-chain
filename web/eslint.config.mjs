@@ -6,7 +6,7 @@ export default defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    // Colours come only from design tokens (DESIGN-SYSTEM §2, §10). (esquery regexes cannot use .)
+    // Colours come only from design tokens (DESIGN-SYSTEM §2, §10). (esquery regexes cannot use \b.)
     files: ["src/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-syntax": [

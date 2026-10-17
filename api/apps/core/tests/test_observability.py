@@ -99,6 +99,13 @@ def test_scrub_text_removes_identifiers(value):
     assert value not in scrub_text(f"patient {value} arrived")
 
 
+def test_scrub_text_keeps_uuids_even_when_a_group_is_all_digits():
+    """Regression: an audit detail's grant ID ended in 12 digits and became "[number]"."""
+    record_id = "01a1487c-5b80-7d9d-9c58-785334721303"
+    assert scrub_text(f"grant {record_id} for {NATIONAL_ID}") == f"grant {record_id} for [number]"
+    assert scrub_text(f"{PHONE}/{record_id}") == f"[number]/{record_id}"
+
+
 def test_scrub_text_keeps_ordinary_text():
     text = "Visit closed on 2026-10-15 after 42 minutes"
     assert scrub_text(text) == text

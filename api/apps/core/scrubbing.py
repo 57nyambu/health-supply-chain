@@ -67,12 +67,31 @@ def _phone(match: re.Match[str]) -> str:
     return "[number]" if digits >= MIN_PHONE_DIGITS else match.group(0)
 
 
-def scrub_text(text: str) -> str:
+# UUIDs are opaque record IDs, not personal data. Their hex groups can be all digits
+# (e.g. ``…-785334721303``), which the digit-run patterns would otherwise mangle.
+_UUID = re.compile(
+    r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
+)
+
+
+def _scrub_segment(text: str) -> str:
     text = _PATTERNS[0][0].sub(_PATTERNS[0][1], text)  # e-mail first: it contains digits too
     text = _PHONE_LIKE.sub(_phone, text)
     for pattern, replacement in _PATTERNS[1:]:
         text = pattern.sub(replacement, text)
     return text
+
+
+def scrub_text(text: str) -> str:
+    """Scrub everything except UUIDs, which pass through unchanged."""
+    out: list[str] = []
+    last = 0
+    for match in _UUID.finditer(text):
+        out.append(_scrub_segment(text[last : match.start()]))
+        out.append(match.group(0))
+        last = match.end()
+    out.append(_scrub_segment(text[last:]))
+    return "".join(out)
 
 
 def is_sensitive_key(key: str) -> bool:

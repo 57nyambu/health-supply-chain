@@ -1,5 +1,6 @@
 // AfyaSync CI: every push to main runs the commit gate and the end-to-end suite.
-// Agent requirements: Docker + Compose v2, uv, Node 24 + pnpm, gitleaks, GNU make.
+// Agent requirements: Docker + Compose v2, uv, Node 22.12+ with pnpm 11 (ADR-022), gitleaks, GNU make.
+// Credential 'afyasync-ci-seed-password' (secret text): any synthetic password of 12+ characters.
 // Configure the job as a multibranch/pipeline job on main with a push webhook;
 // pollSCM is a fallback when the webhook is not available.
 

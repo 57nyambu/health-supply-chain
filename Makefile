@@ -68,10 +68,10 @@ test-web: ## vitest
 	@if [ -n "$(HAS_WEB)" ]; then cd web && $(PNPM) test; else echo "test-web: web/ not scaffolded yet (P1-WEB-01)"; fi
 
 e2e: seed-e2e ## Playwright scenario suite (fake integrations, synthetic seed; needs SEED_PASSWORD)
-	@if [ -n "$(HAS_WEB)" ]; then cd web && $(PNPM) e2e; else echo "e2e: web/ not scaffolded yet (P1-WEB-01)"; fi
+	@if [ -n "$(HAS_WEB)" ]; then cd web && DJANGO_ENV=dev $(PNPM) e2e; else echo "e2e: web/ not scaffolded yet (P1-WEB-01)"; fi
 
 smoke: seed-e2e ## Playwright smoke: login, open a workspace, axe clean (needs SEED_PASSWORD)
-	@if [ -n "$(HAS_WEB)" ] && [ -f web/tests/e2e/smoke.spec.ts ]; then cd web && E2E_STORAGE=off $(PNPM) smoke; \
+	@if [ -n "$(HAS_WEB)" ] && [ -f web/tests/e2e/smoke.spec.ts ]; then cd web && DJANGO_ENV=dev E2E_STORAGE=off $(PNPM) smoke; \
 	else echo "smoke: login UI not built yet (P1-WEB-03)"; fi
 
 seed-e2e: ## Idempotent synthetic seed of the DJANGO_ENV=dev database for browser scenarios
