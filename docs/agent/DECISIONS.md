@@ -158,6 +158,24 @@ Consequences: `main` always equals a gated lane head and lane merges are mechani
 ## Phase 2 lane ADRs (ADR-040…069)
 <!-- Written only by the Phase 2 lane. -->
 
+## ADR-040 Visit state machine additions and completion requirements
+Status: accepted · Date: 2026-10-17
+Context: DESIGN §6.2 draws the main visit path but not walk-in visits, emergency patients the treating team triages, patients who leave while waiting for triage, or death outside consultation/admission. "Clinically complete" and "financially cleared" depend on facts owned by other apps (diagnoses, orders, prescriptions, invoices).
+Decision: `apps.visits.services.TRANSITIONS` is the single table of allowed moves. Additions to §6.2: `registered → awaiting_services` for walk-in pharmacy/lab visits only; `in_triage → in_consultation` (emergency treated by the triaging team); `awaiting_triage → left_before_seen`; `in_consultation → awaiting_consultation` (hand-back to the queue); `deceased` reachable from triage, services and review; `deceased → financially_cleared` (billing proceeds normally, DESIGN §6.7). A patient has at most one open visit, except that an emergency visit can always be opened. Other apps add the checks behind `clinically_complete`, `financially_cleared` and `closed` with `visits.services.register_requirement(status, name, fn)`; a transition with unmet requirements returns 409 `visit_transition_refused` listing them (PHI-free). Visit numbers `{OP|EM|IP}-{MFL}-{YYMMDD}-{seq:03d}` come from `core.sequences` (series per facility per day); queue tickets `{service point code}-{seq:03d}` per service point per day.
+Consequences: Visits never import clinical or billing models. New paths need a row in `TRANSITIONS` and a test.
+
+## ADR-041 Payment gates: context-keyed policy, emergency and discharge in code, pluggable checks
+Status: accepted · Date: 2026-10-17
+Context: DESIGN §6.4 keys `GatePolicy` on service-point type, visit type and payer type; ADR-013 and KE-HLT-01/02 require that no configuration can gate an emergency or a discharge.
+Decision: `GatePolicy(facility, context, payer_type) → gate, condition` where `context` is consultation, lab, imaging, procedure, pharmacy or elective admission (an elective admission is not a service point; visit type is not a column because the only visit-type rule — emergency — is code). `apps.visits.gates.evaluate` returns cleared for every emergency visit before reading any data, and discharge is not a context at all (`evaluate_discharge` always clears). Condition `if_flagged` covers "pre-authorisation if the intervention/scheme flags it" and "uncovered pharmacy items": flaggers are registered by the insurance lane (none in Phase 2, so those gates do not apply yet). Gate checks are registered per gate type (billing: pay-before-service, deposit, credit limit; cover verification reads `insurance.Coverage.verification`); a gate without a registered checker is not cleared (fail closed for money, never for emergencies or discharge). Overrides need `visits.gate.override`, a reason code and text; they are audited and listed on the visit and the bill. Policy changes are maker-checker between two holders of `visits.gate.manage` (facility administrators).
+Consequences: Phase 3 can switch on payer rules without touching clinical code. Defaults from §6.4 are seeded per facility.
+
+## ADR-042 Queue boards authenticate with a board-scoped device token
+Status: accepted · Date: 2026-10-17
+Context: P2-VIS-03 needs boards that run without a clinical session; tokens must not sit in browser storage (web/CLAUDE.md) or in logged URLs.
+Decision: `QueueBoard` stores only an HMAC of a random token (`prefix.secret`, shown once at creation). `BoardTokenAuthentication` (view-level, header `X-Board-Token`) yields a `BoardPrincipal` (a `ServicePrincipal`) holding the single code `visits.board.display`, which no role has; the display endpoint returns ticket number, room, service point and status — never names. The TV opens `/board#<token>`: the fragment never reaches a server or access log, and the page keeps the token in memory only.
+Consequences: Revoking a board kills its token immediately; a board token opens nothing else (tested).
+
 ## Phase 3 lane ADRs (ADR-070…099)
 <!-- Written only by the Phase 3 lane. -->
 

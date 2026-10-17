@@ -13,6 +13,9 @@ import { type Schemas, unwrap } from "@/lib/api/query";
 import { useMe } from "@/lib/auth/session";
 import { identifierLabel, maskIdentifier } from "@/lib/patients";
 
+import { VisitPanel } from "@/components/visits/visit-panel";
+import { journeyStep, PAYER_TYPE_LABEL } from "@/lib/visits";
+
 import { ClinicalRecord, type ChartSummary } from "./clinical-record";
 import { RegistrationDetails } from "./registration-details";
 
@@ -42,6 +45,13 @@ export default function PatientPage() {
     queryFn: () =>
       unwrap(api.GET("/api/v1/patients/{id}/", { params: { path: { id }, query: { purpose: clinical ? "care" : "registration" } } })),
   });
+  const visits = useQuery({
+    queryKey: ["patient", id, "open-visit"],
+    enabled: can("visits.visit.read"),
+    retry: false,
+    queryFn: () => unwrap(api.GET("/api/v1/visits/", { params: { query: { patient: id, open: true } } })),
+  });
+  const openVisit = visits.data?.results?.[0] ?? null;
   const refresh = () => client.invalidateQueries({ queryKey: ["patient", id] });
   const loaded: PatientRecord | undefined = chart.data ? { ...chart.data.patient, access: chart.data.access } : record.data;
 
@@ -98,6 +108,11 @@ export default function PatientPage() {
           allergies: summary?.allergies.length
             ? { state: "recorded", items: summary.allergies.map((a) => a.label ?? String(a.substance ?? "")) }
             : { state: "not_recorded" },
+          payer: openVisit
+            ? openVisit.payer_type === "cash" || openVisit.payer_type === "waiver"
+              ? { name: PAYER_TYPE_LABEL[openVisit.payer_type] ?? "Cash", status: "self_pay" }
+              : { name: openVisit.scheme_name ?? PAYER_TYPE_LABEL[openVisit.payer_type] ?? "", status: "pending" }
+            : undefined,
           alerts: [
             ...(patient.is_unidentified ? ["Unidentified — confirm identity"] : []),
             ...(summary?.alerts.map((a) => a.label ?? "") ?? []),
@@ -105,7 +120,10 @@ export default function PatientPage() {
         }}
       />
       {grant && <BreakGlassBanner expiresAt={grant.expires_at} onEnd={endEmergencyAccess} />}
-      <JourneyRail current="Reception" emergency={patient.is_unidentified} />
+      <JourneyRail
+        current={journeyStep(openVisit?.status)}
+        emergency={openVisit ? openVisit.visit_type === "emergency" : patient.is_unidentified}
+      />
       {patient.status === "merged" && (
         <div className="px-6 pt-4">
           <Callout tone="warning" title="This record was merged into another record.">
@@ -118,6 +136,14 @@ export default function PatientPage() {
         </div>
       )}
       <div className={clinical ? "grid gap-6 p-6 xl:grid-cols-2" : "flex max-w-4xl flex-col gap-6 p-6"}>
+        {can("visits.visit.read") && patient.status === "active" && (
+          <VisitPanel
+            patientId={id}
+            visit={visits.isPending ? undefined : openVisit}
+            canOpen={can("visits.visit.create")}
+            onOpened={refresh}
+          />
+        )}
         <RegistrationDetails patient={patient} editable={can("patients.patient.update") && patient.status === "active"} onChanged={refresh} />
         {clinical && (
           <ClinicalRecord

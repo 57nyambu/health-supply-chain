@@ -6,6 +6,7 @@ import {
   FileBarChart,
   FlaskConical,
   HeartPulse,
+  ListOrdered,
   Pill,
   Receipt,
   ScanLine,
@@ -36,9 +37,10 @@ export const WORKSPACES: Workspace[] = [
   { key: "cashier", label: "Cashier", icon: Banknote, anyOf: ["payments.receive."], ready: false },
   { key: "billing", label: "Billing", icon: Receipt, anyOf: ["billing.invoice.", "billing.charge."], ready: false },
   { key: "claims", label: "Claims", icon: ClipboardList, anyOf: ["insurance.claim."], ready: false },
+  { key: "queue", label: "Queues", icon: ListOrdered, anyOf: ["visits.queue.manage"], ready: true },
   { key: "inventory", label: "Inventory", icon: Warehouse, anyOf: ["inventory.stock.read"], ready: true },
   { key: "reports", label: "Reports", icon: FileBarChart, anyOf: ["reports.aggregate.read", "reporting.moh.read"], ready: true },
-  { key: "admin", label: "Administration", icon: Settings, anyOf: ["admin.user.read", "access.assignment.read", "facilities.facility.read", "audit.log.read", "access.breakglass.review"], ready: true },
+  { key: "admin", label: "Administration", icon: Settings, anyOf: ["admin.user.read", "access.assignment.read", "facilities.facility.read", "audit.log.read", "access.breakglass.review", "access.approval.read", "billing.pricelist.manage", "visits.gate.manage", "visits.board.manage"], ready: true },
 ];
 
 export function can(permissions: readonly string[], code: string): boolean {

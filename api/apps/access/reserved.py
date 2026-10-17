@@ -17,12 +17,6 @@ PERMISSIONS = [
         "Record and manage privacy incidents and notifications",
         S.SENSITIVE,
     ),
-    # --- visits (Phase 2) --------------------------------------------------------------------------
-    P("visits.visit.read", "View visits and their status", S.PHI),
-    P("visits.visit.create", "Open a visit", S.PHI),
-    P("visits.queue.manage", "Call, skip, transfer and prioritise queue tickets", S.PHI),
-    P("visits.gate.override", "Override a payment gate with a reason", S.FINANCIAL),
-    P("visits.appointment.manage", "Book and change appointments", S.PHI),
     # --- clinical (Phase 2) ----------------------------------------------------------------------------
     P(
         "clinical.record.read_summary",
@@ -95,32 +89,6 @@ PERMISSIONS = [
     P("inpatient.discharge.sign", "Sign discharge summaries", S.PHI, requires_licence=True),
     # --- referrals (Phase 2) ------------------------------------------------------------------------------------
     P("referrals.referral.create", "Refer a patient", S.PHI, requires_licence=True),
-    # --- billing (Phase 2) ----------------------------------------------------------------------------------------
-    P("billing.charge.read", "View charges and bills", S.FINANCIAL),
-    P("billing.charge.adjust_request", "Request a charge adjustment", S.FINANCIAL),
-    P("billing.invoice.finalize", "Finalise invoices", S.FINANCIAL),
-    P("billing.waiver.request", "Request a waiver", S.FINANCIAL),
-    P("billing.waiver.approve_low", "Approve waivers up to threshold A", S.FINANCIAL),
-    P("billing.waiver.approve", "Approve waivers above threshold A", S.FINANCIAL, privileged=True),
-    P(
-        "billing.waiver.approve_high",
-        "Co-approve waivers above threshold B",
-        S.FINANCIAL,
-        privileged=True,
-    ),
-    P(
-        "billing.writeoff.approve",
-        "Approve write-offs of patient debt",
-        S.FINANCIAL,
-        privileged=True,
-    ),
-    P("billing.pricelist.manage", "Edit price lists and services (maker)", S.FINANCIAL),
-    P(
-        "billing.pricelist.approve",
-        "Approve price list changes and new services",
-        S.FINANCIAL,
-        privileged=True,
-    ),
     # --- payments (Phase 2/3) --------------------------------------------------------------------------------------
     P("payments.receive.cash", "Receive cash payments", S.FINANCIAL),
     P("payments.receive.mpesa", "Initiate and receive M-Pesa payments", S.FINANCIAL),

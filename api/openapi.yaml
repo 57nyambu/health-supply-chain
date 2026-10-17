@@ -1243,6 +1243,326 @@ paths:
               schema:
                 $ref: '#/components/schemas/Pin'
           description: ''
+  /api/v1/billing/price-lists/:
+    get:
+      operationId: v1_billing_price_lists_list
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PriceList'
+          description: ''
+    post:
+      operationId: v1_billing_price_lists_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriceListCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PriceListCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PriceListCreateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceList'
+          description: ''
+  /api/v1/billing/price-lists/{id}/:
+    get:
+      operationId: v1_billing_price_lists_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this price list.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceList'
+          description: ''
+  /api/v1/billing/price-lists/{id}/items/:
+    get:
+      operationId: v1_billing_price_lists_items_list
+      description: Price history of this list, newest first per service.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this price list.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PriceItem'
+          description: ''
+  /api/v1/billing/price-lists/{id}/prices/:
+    post:
+      operationId: v1_billing_price_lists_prices_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this price list.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriceChangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PriceChangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PriceChangeRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRef'
+          description: ''
+  /api/v1/billing/quote/:
+    get:
+      operationId: v1_billing_quote_retrieve
+      description: The price that applies to a service for a scheme (or cash) on a
+        date.
+      parameters:
+      - in: query
+        name: 'on'
+        schema:
+          type:
+          - string
+          - 'null'
+          format: date
+      - in: query
+        name: scheme
+        schema:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      - in: query
+        name: service
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+          description: ''
+  /api/v1/billing/services/:
+    get:
+      operationId: v1_billing_services_list
+      description: The facility's service catalogue. New services wait for finance
+        approval.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedServiceList'
+          description: ''
+    post:
+      operationId: v1_billing_services_create
+      description: The facility's service catalogue. New services wait for finance
+        approval.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceRequestRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRef'
+          description: ''
+  /api/v1/billing/services/{id}/:
+    get:
+      operationId: v1_billing_services_retrieve
+      description: The facility's service catalogue. New services wait for finance
+        approval.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this service.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+    patch:
+      operationId: v1_billing_services_partial_update
+      description: The facility's service catalogue. New services wait for finance
+        approval.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this service.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceUpdateRequest'
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+  /api/v1/billing/services/{id}/status/:
+    post:
+      operationId: v1_billing_services_status_create
+      description: The facility's service catalogue. New services wait for finance
+        approval.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this service.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceStatusRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceStatusRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceStatusRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
   /api/v1/documents/:
     get:
       operationId: v1_documents_list
@@ -3564,6 +3884,806 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/visits/:
+    get:
+      operationId: v1_visits_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: open
+        schema:
+          type:
+          - boolean
+          - 'null'
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: patient
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: array
+          items:
+            enum:
+            - registered
+            - awaiting_triage
+            - in_triage
+            - awaiting_consultation
+            - in_consultation
+            - awaiting_services
+            - in_service
+            - awaiting_review
+            - admitted
+            - clinically_complete
+            - financially_cleared
+            - closed
+            - cancelled
+            - left_before_seen
+            - deceased
+            type: string
+            description: |-
+              * `registered` - Registered
+              * `awaiting_triage` - Waiting for triage
+              * `in_triage` - In triage
+              * `awaiting_consultation` - Waiting for consultation
+              * `in_consultation` - In consultation
+              * `awaiting_services` - Waiting for services
+              * `in_service` - At a service point
+              * `awaiting_review` - Waiting for review
+              * `admitted` - Admitted
+              * `clinically_complete` - Clinically complete
+              * `financially_cleared` - Financially cleared
+              * `closed` - Closed
+              * `cancelled` - Cancelled
+              * `left_before_seen` - Left before being seen
+              * `deceased` - Deceased
+      - in: query
+        name: visit_type
+        schema:
+          enum:
+          - opd
+          - emergency
+          - inpatient
+          - walk_in_pharmacy
+          - walk_in_lab
+          type: string
+          minLength: 1
+        description: |-
+          * `opd` - Outpatient
+          * `emergency` - Emergency
+          * `inpatient` - Inpatient (direct admission)
+          * `walk_in_pharmacy` - Walk-in pharmacy
+          * `walk_in_lab` - Walk-in laboratory
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVisitList'
+          description: ''
+    post:
+      operationId: v1_visits_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisitOpenRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VisitOpenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VisitOpenRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visit'
+          description: ''
+  /api/v1/visits/{id}/:
+    get:
+      operationId: v1_visits_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this visit.
+        required: true
+      - in: query
+        name: purpose
+        schema:
+          type: string
+          enum:
+          - billing
+          - care
+          - registration
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitDetail'
+          description: ''
+  /api/v1/visits/{id}/disposition/:
+    post:
+      operationId: v1_visits_disposition_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this visit.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DispositionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DispositionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DispositionRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visit'
+          description: ''
+  /api/v1/visits/{id}/gate/:
+    get:
+      operationId: v1_visits_gate_retrieve
+      parameters:
+      - in: query
+        name: context
+        schema:
+          enum:
+          - consultation
+          - lab
+          - imaging
+          - procedure
+          - pharmacy
+          - elective_admission
+          type: string
+          minLength: 1
+        description: |-
+          * `consultation` - OPD consultation
+          * `lab` - Laboratory
+          * `imaging` - Imaging
+          * `procedure` - Procedure / treatment room
+          * `pharmacy` - Pharmacy
+          * `elective_admission` - Elective admission
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this visit.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GateDecision'
+          description: ''
+  /api/v1/visits/{id}/gate-override/:
+    post:
+      operationId: v1_visits_gate_override_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this visit.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GateOverrideRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GateOverrideRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GateOverrideRequestRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GateOverride'
+          description: ''
+  /api/v1/visits/{id}/transition/:
+    post:
+      operationId: v1_visits_transition_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this visit.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisitTransitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VisitTransitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VisitTransitionRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visit'
+          description: ''
+  /api/v1/visits/board-display/:
+    get:
+      operationId: v1_visits_board_display_retrieve
+      description: 'What the TV shows: called tickets and the next waiting numbers.
+        No names (KE-DPA-01).'
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardDisplay'
+          description: ''
+  /api/v1/visits/boards/:
+    get:
+      operationId: v1_visits_boards_list
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Board'
+          description: ''
+    post:
+      operationId: v1_visits_boards_create
+      description: The device token is returned once; enter it on the TV (``/board#<token>``).
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BoardCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BoardCreateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardCreated'
+          description: ''
+  /api/v1/visits/boards/{id}/revoke/:
+    post:
+      operationId: v1_visits_boards_revoke_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this queue board.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Board'
+          description: ''
+  /api/v1/visits/gate-policies/:
+    get:
+      operationId: v1_visits_gate_policies_list
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GatePolicy'
+          description: ''
+    post:
+      operationId: v1_visits_gate_policies_create
+      description: Ask a second administrator to approve a gate change (maker-checker).
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatePolicyChangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GatePolicyChangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GatePolicyChangeRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRef'
+          description: ''
+  /api/v1/visits/queues/:
+    get:
+      operationId: v1_visits_queues_list
+      description: 'Queues per service point: counts, the ordered list and call-next.'
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServicePointQueue'
+          description: ''
+  /api/v1/visits/queues/{id}/:
+    get:
+      operationId: v1_visits_queues_list_2
+      description: Called and serving tickets first, then waiting tickets in queue
+        order.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service point.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/visits/queues/{id}/call-next/:
+    post:
+      operationId: v1_visits_queues_call_next_create
+      description: 'Queues per service point: counts, the ordered list and call-next.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this service point.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CallRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CallRequest'
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+        '204':
+          description: No response body
+  /api/v1/visits/tickets/:
+    get:
+      operationId: v1_visits_tickets_list
+      description: Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work
+        queue.
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/visits/tickets/{id}/call/:
+    post:
+      operationId: v1_visits_tickets_call_create
+      description: Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work
+        queue.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this queue ticket.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CallRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CallRequest'
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/visits/tickets/{id}/confirm-lwbs/:
+    post:
+      operationId: v1_visits_tickets_confirm_lwbs_create
+      description: Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work
+        queue.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this queue ticket.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visit'
+          description: ''
+  /api/v1/visits/tickets/{id}/dismiss-lwbs/:
+    post:
+      operationId: v1_visits_tickets_dismiss_lwbs_create
+      description: Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work
+        queue.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this queue ticket.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/visits/tickets/{id}/finish/:
+    post:
+      operationId: v1_visits_tickets_finish_create
+      description: Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work
+        queue.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this queue ticket.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/visits/tickets/{id}/prioritise/:
+    post:
+      operationId: v1_visits_tickets_prioritise_create
+      description: Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work
+        queue.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this queue ticket.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrioritiseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PrioritiseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PrioritiseRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/visits/tickets/{id}/send-back/:
+    post:
+      operationId: v1_visits_tickets_send_back_create
+      description: Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work
+        queue.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this queue ticket.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/visits/tickets/{id}/skip/:
+    post:
+      operationId: v1_visits_tickets_skip_create
+      description: Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work
+        queue.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this queue ticket.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/visits/tickets/{id}/start/:
+    post:
+      operationId: v1_visits_tickets_start_create
+      description: Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work
+        queue.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this queue ticket.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/visits/tickets/{id}/transfer/:
+    post:
+      operationId: v1_visits_tickets_transfer_create
+      description: Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work
+        queue.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this queue ticket.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
   /api/v1/warehouses/bins/:
     get:
       operationId: v1_warehouses_bins_list
@@ -4226,6 +5346,17 @@ components:
       - resource_type
       - status
       - threshold_band
+    ApprovalRef:
+      type: object
+      properties:
+        approval_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+      required:
+      - approval_id
+      - status
     ApprovalStatusEnum:
       enum:
       - pending
@@ -4242,6 +5373,16 @@ components:
         * `expired` - Expired
         * `cancelled` - Cancelled
         * `invalidated` - Invalidated
+    ArrivalModeEnum:
+      enum:
+      - walk_in
+      - ambulance
+      - other
+      type: string
+      description: |-
+        * `walk_in` - Walk-in
+        * `ambulance` - Ambulance
+        * `other` - Other
     Assignment:
       type: object
       properties:
@@ -4596,6 +5737,139 @@ components:
         * `PALLET` - Pallet
         * `BIN` - Storage Bin
         * `ROOM` - Storage Room
+    BlankEnum:
+      enum:
+      - ''
+    Board:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        service_points:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+        active:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        last_seen_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+      required:
+      - active
+      - created_at
+      - id
+      - last_seen_at
+      - name
+      - service_points
+    BoardCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        service_points:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+      required:
+      - name
+      - service_points
+    BoardCreated:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        service_points:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+        active:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        last_seen_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        token:
+          type: string
+          readOnly: true
+      required:
+      - active
+      - created_at
+      - id
+      - last_seen_at
+      - name
+      - service_points
+      - token
+    BoardDisplay:
+      type: object
+      properties:
+        name:
+          type: string
+        now_calling:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoardTicket'
+        waiting:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoardTicket'
+      required:
+      - name
+      - now_calling
+      - waiting
+    BoardTicket:
+      type: object
+      description: 'What a TV may show: ticket number, where to go, status. Never
+        a name (KE-DPA-01).'
+      properties:
+        number:
+          type: string
+        room:
+          type: string
+        service_point:
+          type: string
+        status:
+          type: string
+        called_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      required:
+      - called_at
+      - number
+      - room
+      - service_point
+      - status
     Branch:
       type: object
       properties:
@@ -4906,6 +6180,29 @@ components:
           maxLength: 500
       required:
       - outcome
+    BroughtByEnum:
+      enum:
+      - self
+      - relative
+      - samaritan
+      - paramedics
+      - police
+      - unknown
+      type: string
+      description: |-
+        * `self` - Self
+        * `relative` - Relative
+        * `samaritan` - Good samaritan
+        * `paramedics` - Paramedics
+        * `police` - Police
+        * `unknown` - Unknown
+    CallRequest:
+      type: object
+      properties:
+        room:
+          type: string
+          default: ''
+          maxLength: 40
     Category:
       type: object
       properties:
@@ -5028,6 +6325,14 @@ components:
         * `summary` - summary
         * `full` - full
         * `sensitive` - sensitive
+    ConditionEnum:
+      enum:
+      - always
+      - if_flagged
+      type: string
+      description: |-
+        * `always` - Always
+        * `if_flagged` - Only if the intervention or scheme flags it
     Consent:
       type: object
       properties:
@@ -5127,6 +6432,22 @@ components:
       required:
       - kind
       - value
+    ContextEnum:
+      enum:
+      - consultation
+      - lab
+      - imaging
+      - procedure
+      - pharmacy
+      - elective_admission
+      type: string
+      description: |-
+        * `consultation` - OPD consultation
+        * `lab` - Laboratory
+        * `imaging` - Imaging
+        * `procedure` - Procedure / treatment room
+        * `pharmacy` - Pharmacy
+        * `elective_admission` - Elective admission
     CountyEnum:
       enum:
       - MOMBASA
@@ -5382,6 +6703,25 @@ components:
       required:
       - code
       - name
+    DispositionEnum:
+      enum:
+      - home
+      - admit
+      - refer
+      - deceased
+      type: string
+      description: |-
+        * `home` - Home
+        * `admit` - Admit
+        * `refer` - Refer
+        * `deceased` - Deceased
+    DispositionRequest:
+      type: object
+      properties:
+        disposition:
+          $ref: '#/components/schemas/DispositionEnum'
+      required:
+      - disposition
     Document:
       type: object
       properties:
@@ -5902,6 +7242,201 @@ components:
       required:
       - date
       - warehouse
+    FromStatusEnum:
+      enum:
+      - registered
+      - awaiting_triage
+      - in_triage
+      - awaiting_consultation
+      - in_consultation
+      - awaiting_services
+      - in_service
+      - awaiting_review
+      - admitted
+      - clinically_complete
+      - financially_cleared
+      - closed
+      - cancelled
+      - left_before_seen
+      - deceased
+      type: string
+      description: |-
+        * `registered` - Registered
+        * `awaiting_triage` - Waiting for triage
+        * `in_triage` - In triage
+        * `awaiting_consultation` - Waiting for consultation
+        * `in_consultation` - In consultation
+        * `awaiting_services` - Waiting for services
+        * `in_service` - At a service point
+        * `awaiting_review` - Waiting for review
+        * `admitted` - Admitted
+        * `clinically_complete` - Clinically complete
+        * `financially_cleared` - Financially cleared
+        * `closed` - Closed
+        * `cancelled` - Cancelled
+        * `left_before_seen` - Left before being seen
+        * `deceased` - Deceased
+    GateDecision:
+      type: object
+      properties:
+        cleared:
+          type: boolean
+        gate:
+          type: string
+        reason:
+          type: string
+        context:
+          type: string
+        override_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        details:
+          type: object
+          additionalProperties: {}
+      required:
+      - cleared
+      - context
+      - details
+      - gate
+      - override_id
+      - reason
+    GateEnum:
+      enum:
+      - none
+      - pay_before_service
+      - eligibility_verified
+      - member_verified
+      - preauth_approved
+      - deposit
+      - credit_limit
+      type: string
+      description: |-
+        * `none` - No gate
+        * `pay_before_service` - Pay before service
+        * `eligibility_verified` - Eligibility verified
+        * `member_verified` - Member verified
+        * `preauth_approved` - Pre-authorisation approved
+        * `deposit` - Deposit paid
+        * `credit_limit` - Within credit limit
+    GateOverride:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        context:
+          allOf:
+          - $ref: '#/components/schemas/ContextEnum'
+          readOnly: true
+        gate:
+          allOf:
+          - $ref: '#/components/schemas/GateEnum'
+          readOnly: true
+        reason_code:
+          allOf:
+          - $ref: '#/components/schemas/ReasonCodeB67Enum'
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        created_by:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - context
+      - created_at
+      - created_by
+      - gate
+      - id
+      - reason
+      - reason_code
+    GateOverrideRequestRequest:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/ContextEnum'
+        reason_code:
+          $ref: '#/components/schemas/ReasonCodeB67Enum'
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - context
+      - reason
+      - reason_code
+    GatePolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        context:
+          allOf:
+          - $ref: '#/components/schemas/ContextEnum'
+          readOnly: true
+        payer_type:
+          allOf:
+          - $ref: '#/components/schemas/PayerTypeEnum'
+          readOnly: true
+        gate:
+          allOf:
+          - $ref: '#/components/schemas/GateEnum'
+          readOnly: true
+        condition:
+          allOf:
+          - $ref: '#/components/schemas/ConditionEnum'
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        approval:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+      required:
+      - approval
+      - condition
+      - context
+      - gate
+      - id
+      - payer_type
+      - updated_at
+    GatePolicyChangeRequest:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/ContextEnum'
+        payer_type:
+          $ref: '#/components/schemas/PayerTypeEnum'
+        gate:
+          $ref: '#/components/schemas/GateEnum'
+        condition:
+          allOf:
+          - $ref: '#/components/schemas/ConditionEnum'
+          default: always
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - context
+      - gate
+      - payer_type
+      - reason
     GatewayEnum:
       enum:
       - sha_hie
@@ -6076,6 +7611,28 @@ components:
       description: |-
         * `phone` - Phone
         * `email` - E-mail
+    KindFdbEnum:
+      enum:
+      - consultation
+      - lab
+      - imaging
+      - procedure
+      - bed_day
+      - nursing
+      - drug_dispense
+      - package
+      - other
+      type: string
+      description: |-
+        * `consultation` - Consultation
+        * `lab` - Laboratory test
+        * `imaging` - Imaging
+        * `procedure` - Procedure
+        * `bed_day` - Bed-day
+        * `nursing` - Nursing care
+        * `drug_dispense` - Medicine dispensing
+        * `package` - Package
+        * `other` - Other
     Licence:
       type: object
       properties:
@@ -6751,6 +8308,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Product'
+    PaginatedServiceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
     PaginatedServicePointList:
       type: object
       required:
@@ -6820,6 +8400,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
+    PaginatedVisitList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Visit'
     PaginatedWardList:
       type: object
       required:
@@ -7226,6 +8825,29 @@ components:
           - 'null'
         active:
           type: boolean
+    PatchedServiceUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        department:
+          type:
+          - integer
+          - 'null'
+        revenue_code:
+          type: string
+          maxLength: 20
+        sha_interventions:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+        etims_item_code:
+          type: string
+          maxLength: 40
     PatchedUserRequest:
       type: object
       properties:
@@ -7447,6 +9069,33 @@ components:
       - sex
       - status
       - version
+    PatientBrief:
+      type: object
+      description: 'Demographics level only: what any worklist role may see.'
+      properties:
+        id:
+          type: string
+          format: uuid
+        mrn:
+          type: string
+        display_name:
+          type: string
+        sex:
+          type: string
+        age:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        is_unidentified:
+          type: boolean
+      required:
+      - age
+      - display_name
+      - id
+      - is_unidentified
+      - mrn
+      - sex
     PatientCreateRequest:
       type: object
       properties:
@@ -7664,6 +9313,20 @@ components:
         * `employer` - Employer or corporate
         * `government` - Other government
         * `other` - Other
+    PayerTypeEnum:
+      enum:
+      - cash
+      - sha
+      - insurer
+      - corporate
+      - waiver
+      type: string
+      description: |-
+        * `cash` - Cash / self-pay
+        * `sha` - SHA
+        * `insurer` - Private insurer
+        * `corporate` - Corporate
+        * `waiver` - Waiver
     Pin:
       type: object
       properties:
@@ -7703,6 +9366,172 @@ components:
       required:
       - password
       - pin
+    PriceChangeRequest:
+      type: object
+      properties:
+        service:
+          type: string
+          format: uuid
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+        effective_from:
+          type:
+          - string
+          - 'null'
+          format: date
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - price
+      - reason
+      - service
+    PriceItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        service:
+          type: string
+          format: uuid
+          readOnly: true
+        service_code:
+          type: string
+          readOnly: true
+        service_name:
+          type: string
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        effective_from:
+          type: string
+          format: date
+          readOnly: true
+        effective_to:
+          type:
+          - string
+          - 'null'
+          format: date
+          readOnly: true
+        approval:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+      required:
+      - approval
+      - effective_from
+      - effective_to
+      - id
+      - price
+      - service
+      - service_code
+      - service_name
+    PriceList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          readOnly: true
+        basis:
+          type: string
+          readOnly: true
+        payer:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        payer_name:
+          type: string
+          readOnly: true
+        scheme:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        scheme_name:
+          type: string
+          readOnly: true
+        active:
+          type: boolean
+          readOnly: true
+      required:
+      - active
+      - basis
+      - code
+      - id
+      - name
+      - payer
+      - payer_name
+      - scheme
+      - scheme_name
+    PriceListCreateRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 40
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        payer:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        scheme:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      required:
+      - code
+      - name
+    PrioritiseRequest:
+      type: object
+      properties:
+        reason_code:
+          $ref: '#/components/schemas/ReasonCode2a7Enum'
+      required:
+      - reason_code
+    PriorityReasonEnum:
+      enum:
+      - elderly
+      - disabled
+      - pregnant
+      - child
+      - clinical
+      - vip
+      type: string
+      description: |-
+        * `elderly` - Elderly
+        * `disabled` - Disability
+        * `pregnant` - Pregnant
+        * `child` - Young child
+        * `clinical` - Clinical concern
+        * `vip` - VIP
     PrivacyNoticeRequest:
       type: object
       properties:
@@ -7986,6 +9815,26 @@ components:
         * `PHYSICAL` - Physical Product
         * `DIGITAL` - Digital Product
         * `SERVICE` - Service
+    Quote:
+      type: object
+      properties:
+        service:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+        basis:
+          type: string
+        price_list:
+          type: string
+          format: uuid
+      required:
+      - amount
+      - basis
+      - price_list
+      - service
     RTInventoryAlert:
       type: object
       properties:
@@ -8028,6 +9877,36 @@ components:
           maxLength: 255
       required:
       - reason
+    ReasonCode2a7Enum:
+      enum:
+      - elderly
+      - disabled
+      - pregnant
+      - child
+      - clinical
+      - vip
+      type: string
+      description: |-
+        * `elderly` - Elderly
+        * `disabled` - Disability
+        * `pregnant` - Pregnant
+        * `child` - Young child
+        * `clinical` - Clinical concern
+        * `vip` - VIP
+    ReasonCodeB67Enum:
+      enum:
+      - clinical_urgency
+      - payment_promised
+      - waiver_pending
+      - payer_system_down
+      - other
+      type: string
+      description: |-
+        * `clinical_urgency` - Clinical urgency
+        * `payment_promised` - Payment promised
+        * `waiver_pending` - Waiver being processed
+        * `payer_system_down` - Payer system unavailable
+        * `other` - Other
     ReasonEnum:
       enum:
       - emergency
@@ -8435,6 +10314,54 @@ components:
         * `gbv` - Gender-based violence and post-rape care
         * `substance_use` - Substance use
         * `genetic` - Genetic results
+    Service:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/KindFdbEnum'
+          readOnly: true
+        department:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        revenue_code:
+          type: string
+          readOnly: true
+        sha_interventions:
+          type: array
+          items:
+            type: string
+            maxLength: 40
+          readOnly: true
+        etims_item_code:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ServiceStatusEnum'
+          readOnly: true
+      required:
+      - code
+      - department
+      - etims_item_code
+      - id
+      - kind
+      - name
+      - revenue_code
+      - sha_interventions
+      - status
     ServicePoint:
       type: object
       properties:
@@ -8488,6 +10415,31 @@ components:
         * `ward_station` - Ward station
         * `records` - Health records
         * `other` - Other
+    ServicePointQueue:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+        waiting:
+          type: integer
+        called:
+          type: integer
+        serving:
+          type: integer
+      required:
+      - called
+      - code
+      - id
+      - kind
+      - name
+      - serving
+      - waiting
     ServicePointRequest:
       type: object
       properties:
@@ -8511,6 +10463,75 @@ components:
       - code
       - kind
       - name
+    ServiceRequestRequest:
+      type: object
+      description: A new service waits for the finance manager's approval (maker-checker).
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 40
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        kind:
+          $ref: '#/components/schemas/KindFdbEnum'
+        department:
+          type:
+          - integer
+          - 'null'
+        revenue_code:
+          type: string
+          default: ''
+          maxLength: 20
+        sha_interventions:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+        etims_item_code:
+          type: string
+          default: ''
+          maxLength: 40
+        cash_price:
+          type:
+          - string
+          - 'null'
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - code
+      - kind
+      - name
+      - reason
+    ServiceStatusEnum:
+      enum:
+      - pending_approval
+      - active
+      - inactive
+      type: string
+      description: |-
+        * `pending_approval` - Waiting for approval
+        * `active` - Active
+        * `inactive` - Inactive
+    ServiceStatusRequest:
+      type: object
+      properties:
+        active:
+          type: boolean
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - active
+      - reason
     SeverityEnum:
       enum:
       - low
@@ -8543,6 +10564,40 @@ components:
         * `manual` - Entered by staff
         * `client_registry` - HIE Client Registry
         * `system` - Generated by the system
+    Status2b1Enum:
+      enum:
+      - registered
+      - awaiting_triage
+      - in_triage
+      - awaiting_consultation
+      - in_consultation
+      - awaiting_services
+      - in_service
+      - awaiting_review
+      - admitted
+      - clinically_complete
+      - financially_cleared
+      - closed
+      - cancelled
+      - left_before_seen
+      - deceased
+      type: string
+      description: |-
+        * `registered` - Registered
+        * `awaiting_triage` - Waiting for triage
+        * `in_triage` - In triage
+        * `awaiting_consultation` - Waiting for consultation
+        * `in_consultation` - In consultation
+        * `awaiting_services` - Waiting for services
+        * `in_service` - At a service point
+        * `awaiting_review` - Waiting for review
+        * `admitted` - Admitted
+        * `clinically_complete` - Clinically complete
+        * `financially_cleared` - Financially cleared
+        * `closed` - Closed
+        * `cancelled` - Cancelled
+        * `left_before_seen` - Left before being seen
+        * `deceased` - Deceased
     StatusCcdEnum:
       enum:
       - available
@@ -8555,6 +10610,24 @@ components:
         * `occupied` - Occupied
         * `cleaning` - Cleaning
         * `out_of_service` - Out of service
+    StatusD05Enum:
+      enum:
+      - waiting
+      - called
+      - serving
+      - done
+      - transferred
+      - cancelled
+      - left
+      type: string
+      description: |-
+        * `waiting` - Waiting
+        * `called` - Called
+        * `serving` - Being served
+        * `done` - Done
+        * `transferred` - Transferred
+        * `cancelled` - Cancelled
+        * `left` - Left before being seen
     StatusD33Enum:
       enum:
       - active
@@ -8812,6 +10885,222 @@ components:
       required:
       - email
       - pin
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: string
+          readOnly: true
+        service_point:
+          type: integer
+          readOnly: true
+        service_point_name:
+          type: string
+          readOnly: true
+        service_point_kind:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusD05Enum'
+          readOnly: true
+        arrived_at:
+          type: string
+          format: date-time
+          readOnly: true
+        call_count:
+          type: integer
+          readOnly: true
+        room:
+          type: string
+          readOnly: true
+        priority_reason:
+          allOf:
+          - $ref: '#/components/schemas/PriorityReasonEnum'
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        lwbs_flagged_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        visit:
+          allOf:
+          - $ref: '#/components/schemas/Visit'
+          readOnly: true
+        called_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        served_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+      required:
+      - arrived_at
+      - call_count
+      - called_at
+      - id
+      - lwbs_flagged_at
+      - note
+      - number
+      - priority_reason
+      - room
+      - served_at
+      - service_point
+      - service_point_kind
+      - service_point_name
+      - status
+      - visit
+    TicketBrief:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: string
+          readOnly: true
+        service_point:
+          type: integer
+          readOnly: true
+        service_point_name:
+          type: string
+          readOnly: true
+        service_point_kind:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusD05Enum'
+          readOnly: true
+        arrived_at:
+          type: string
+          format: date-time
+          readOnly: true
+        call_count:
+          type: integer
+          readOnly: true
+        room:
+          type: string
+          readOnly: true
+        priority_reason:
+          allOf:
+          - $ref: '#/components/schemas/PriorityReasonEnum'
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        lwbs_flagged_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+      required:
+      - arrived_at
+      - call_count
+      - id
+      - lwbs_flagged_at
+      - note
+      - number
+      - priority_reason
+      - room
+      - service_point
+      - service_point_kind
+      - service_point_name
+      - status
+    ToEnum:
+      enum:
+      - registered
+      - awaiting_triage
+      - in_triage
+      - awaiting_consultation
+      - in_consultation
+      - awaiting_services
+      - in_service
+      - awaiting_review
+      - admitted
+      - clinically_complete
+      - financially_cleared
+      - closed
+      - cancelled
+      - left_before_seen
+      - deceased
+      type: string
+      description: |-
+        * `registered` - Registered
+        * `awaiting_triage` - Waiting for triage
+        * `in_triage` - In triage
+        * `awaiting_consultation` - Waiting for consultation
+        * `in_consultation` - In consultation
+        * `awaiting_services` - Waiting for services
+        * `in_service` - At a service point
+        * `awaiting_review` - Waiting for review
+        * `admitted` - Admitted
+        * `clinically_complete` - Clinically complete
+        * `financially_cleared` - Financially cleared
+        * `closed` - Closed
+        * `cancelled` - Cancelled
+        * `left_before_seen` - Left before being seen
+        * `deceased` - Deceased
+    ToStatusEnum:
+      enum:
+      - registered
+      - awaiting_triage
+      - in_triage
+      - awaiting_consultation
+      - in_consultation
+      - awaiting_services
+      - in_service
+      - awaiting_review
+      - admitted
+      - clinically_complete
+      - financially_cleared
+      - closed
+      - cancelled
+      - left_before_seen
+      - deceased
+      type: string
+      description: |-
+        * `registered` - Registered
+        * `awaiting_triage` - Waiting for triage
+        * `in_triage` - In triage
+        * `awaiting_consultation` - Waiting for consultation
+        * `in_consultation` - In consultation
+        * `awaiting_services` - Waiting for services
+        * `in_service` - At a service point
+        * `awaiting_review` - Waiting for review
+        * `admitted` - Admitted
+        * `clinically_complete` - Clinically complete
+        * `financially_cleared` - Financially cleared
+        * `closed` - Closed
+        * `cancelled` - Cancelled
+        * `left_before_seen` - Left before being seen
+        * `deceased` - Deceased
+    TransferRequest:
+      type: object
+      properties:
+        service_point:
+          type: integer
+        note:
+          type: string
+          default: ''
+          maxLength: 255
+      required:
+      - service_point
     TransferTypeEnum:
       enum:
       - INTERNAL
@@ -8824,6 +11113,49 @@ components:
         * `SUPPLIER` - Supplier Delivery
         * `CUSTOMER` - Customer Return
         * `DAMAGED` - Damaged Goods
+    Transition:
+      type: object
+      properties:
+        from_status:
+          allOf:
+          - $ref: '#/components/schemas/FromStatusEnum'
+          readOnly: true
+        to_status:
+          allOf:
+          - $ref: '#/components/schemas/ToStatusEnum'
+          readOnly: true
+        actor:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actor
+      - at
+      - from_status
+      - reason
+      - to_status
+    TriageCategoryEnum:
+      enum:
+      - red
+      - orange
+      - yellow
+      - green
+      - blue
+      type: string
+      description: |-
+        * `red` - Red — emergency
+        * `orange` - Orange — very urgent
+        * `yellow` - Yellow — urgent
+        * `green` - Green — routine
+        * `blue` - Blue — dead on arrival
     Type7a8Enum:
       enum:
       - cr_id
@@ -9076,6 +11408,283 @@ components:
         * `unverified` - Not verified yet
         * `verified` - Verified with the payer
         * `failed` - Not eligible or not found
+    Visit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: string
+          readOnly: true
+        patient:
+          allOf:
+          - $ref: '#/components/schemas/PatientBrief'
+          readOnly: true
+        visit_type:
+          allOf:
+          - $ref: '#/components/schemas/VisitTypeEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status2b1Enum'
+          readOnly: true
+        coverage:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        scheme_name:
+          type: string
+          readOnly: true
+        payer_type:
+          allOf:
+          - $ref: '#/components/schemas/PayerTypeEnum'
+          readOnly: true
+        arrival_mode:
+          allOf:
+          - $ref: '#/components/schemas/ArrivalModeEnum'
+          readOnly: true
+        brought_by:
+          allOf:
+          - $ref: '#/components/schemas/BroughtByEnum'
+          readOnly: true
+        triage_category:
+          allOf:
+          - $ref: '#/components/schemas/TriageCategoryEnum'
+          readOnly: true
+        disposition:
+          allOf:
+          - $ref: '#/components/schemas/DispositionEnum'
+          readOnly: true
+        episode_of:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        opened_at:
+          type: string
+          format: date-time
+          readOnly: true
+        status_changed_at:
+          type: string
+          format: date-time
+          readOnly: true
+        clinically_completed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        closed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+      required:
+      - arrival_mode
+      - brought_by
+      - clinically_completed_at
+      - closed_at
+      - coverage
+      - disposition
+      - episode_of
+      - id
+      - number
+      - opened_at
+      - patient
+      - payer_type
+      - scheme_name
+      - status
+      - status_changed_at
+      - triage_category
+      - version
+      - visit_type
+    VisitDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: string
+          readOnly: true
+        patient:
+          allOf:
+          - $ref: '#/components/schemas/PatientBrief'
+          readOnly: true
+        visit_type:
+          allOf:
+          - $ref: '#/components/schemas/VisitTypeEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status2b1Enum'
+          readOnly: true
+        coverage:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        scheme_name:
+          type: string
+          readOnly: true
+        payer_type:
+          allOf:
+          - $ref: '#/components/schemas/PayerTypeEnum'
+          readOnly: true
+        arrival_mode:
+          allOf:
+          - $ref: '#/components/schemas/ArrivalModeEnum'
+          readOnly: true
+        brought_by:
+          allOf:
+          - $ref: '#/components/schemas/BroughtByEnum'
+          readOnly: true
+        triage_category:
+          allOf:
+          - $ref: '#/components/schemas/TriageCategoryEnum'
+          readOnly: true
+        disposition:
+          allOf:
+          - $ref: '#/components/schemas/DispositionEnum'
+          readOnly: true
+        episode_of:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        opened_at:
+          type: string
+          format: date-time
+          readOnly: true
+        status_changed_at:
+          type: string
+          format: date-time
+          readOnly: true
+        clinically_completed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        closed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+        transitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transition'
+          readOnly: true
+        tickets:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketBrief'
+          readOnly: true
+        gate_overrides:
+          type: array
+          items:
+            $ref: '#/components/schemas/GateOverride'
+          readOnly: true
+      required:
+      - arrival_mode
+      - brought_by
+      - clinically_completed_at
+      - closed_at
+      - coverage
+      - disposition
+      - episode_of
+      - gate_overrides
+      - id
+      - number
+      - opened_at
+      - patient
+      - payer_type
+      - scheme_name
+      - status
+      - status_changed_at
+      - tickets
+      - transitions
+      - triage_category
+      - version
+      - visit_type
+    VisitOpenRequest:
+      type: object
+      properties:
+        patient:
+          type: string
+          format: uuid
+        visit_type:
+          $ref: '#/components/schemas/VisitTypeEnum'
+        coverage:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        waiver:
+          type: boolean
+          default: false
+        service_point:
+          type:
+          - integer
+          - 'null'
+        arrival_mode:
+          allOf:
+          - $ref: '#/components/schemas/ArrivalModeEnum'
+          default: walk_in
+        brought_by:
+          default: ''
+          oneOf:
+          - $ref: '#/components/schemas/BroughtByEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+      required:
+      - patient
+      - visit_type
+    VisitTransitionRequest:
+      type: object
+      properties:
+        to:
+          $ref: '#/components/schemas/ToEnum'
+        reason:
+          type: string
+          default: ''
+          maxLength: 255
+        version:
+          type:
+          - integer
+          - 'null'
+      required:
+      - to
+    VisitTypeEnum:
+      enum:
+      - opd
+      - emergency
+      - inpatient
+      - walk_in_pharmacy
+      - walk_in_lab
+      type: string
+      description: |-
+        * `opd` - Outpatient
+        * `emergency` - Emergency
+        * `inpatient` - Inpatient (direct admission)
+        * `walk_in_pharmacy` - Walk-in pharmacy
+        * `walk_in_lab` - Walk-in laboratory
     Ward:
       type: object
       properties:

@@ -705,6 +705,141 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/billing/price-lists/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_billing_price_lists_list"];
+        put?: never;
+        post: operations["v1_billing_price_lists_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/price-lists/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_billing_price_lists_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/price-lists/{id}/items/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Price history of this list, newest first per service. */
+        get: operations["v1_billing_price_lists_items_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/price-lists/{id}/prices/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_billing_price_lists_prices_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/quote/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The price that applies to a service for a scheme (or cash) on a date. */
+        get: operations["v1_billing_quote_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/services/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The facility's service catalogue. New services wait for finance approval. */
+        get: operations["v1_billing_services_list"];
+        put?: never;
+        /** @description The facility's service catalogue. New services wait for finance approval. */
+        post: operations["v1_billing_services_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/services/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The facility's service catalogue. New services wait for finance approval. */
+        get: operations["v1_billing_services_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description The facility's service catalogue. New services wait for finance approval. */
+        patch: operations["v1_billing_services_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/billing/services/{id}/status/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description The facility's service catalogue. New services wait for finance approval. */
+        post: operations["v1_billing_services_status_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/documents/": {
         parameters: {
             query?: never;
@@ -1663,6 +1798,390 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/visits/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_visits_list"];
+        put?: never;
+        post: operations["v1_visits_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_visits_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/{id}/disposition/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_visits_disposition_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/{id}/gate/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_visits_gate_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/{id}/gate-override/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_visits_gate_override_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/{id}/transition/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_visits_transition_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/board-display/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description What the TV shows: called tickets and the next waiting numbers. No names (KE-DPA-01). */
+        get: operations["v1_visits_board_display_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/boards/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_visits_boards_list"];
+        put?: never;
+        /** @description The device token is returned once; enter it on the TV (``/board#<token>``). */
+        post: operations["v1_visits_boards_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/boards/{id}/revoke/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1_visits_boards_revoke_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/gate-policies/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1_visits_gate_policies_list"];
+        put?: never;
+        /** @description Ask a second administrator to approve a gate change (maker-checker). */
+        post: operations["v1_visits_gate_policies_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/queues/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Queues per service point: counts, the ordered list and call-next. */
+        get: operations["v1_visits_queues_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/queues/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Called and serving tickets first, then waiting tickets in queue order. */
+        get: operations["v1_visits_queues_list_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/queues/{id}/call-next/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Queues per service point: counts, the ordered list and call-next. */
+        post: operations["v1_visits_queues_call_next_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/tickets/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work queue. */
+        get: operations["v1_visits_tickets_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/tickets/{id}/call/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work queue. */
+        post: operations["v1_visits_tickets_call_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/tickets/{id}/confirm-lwbs/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work queue. */
+        post: operations["v1_visits_tickets_confirm_lwbs_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/tickets/{id}/dismiss-lwbs/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work queue. */
+        post: operations["v1_visits_tickets_dismiss_lwbs_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/tickets/{id}/finish/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work queue. */
+        post: operations["v1_visits_tickets_finish_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/tickets/{id}/prioritise/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work queue. */
+        post: operations["v1_visits_tickets_prioritise_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/tickets/{id}/send-back/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work queue. */
+        post: operations["v1_visits_tickets_send_back_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/tickets/{id}/skip/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work queue. */
+        post: operations["v1_visits_tickets_skip_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/tickets/{id}/start/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work queue. */
+        post: operations["v1_visits_tickets_start_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/visits/tickets/{id}/transfer/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Ticket actions. ``GET ?lwbs=true`` is the left-before-seen work queue. */
+        post: operations["v1_visits_tickets_transfer_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/warehouses/bins/": {
         parameters: {
             query?: never;
@@ -1874,6 +2393,11 @@ export interface components {
             /** Format: date-time */
             readonly decided_at: string | null;
         };
+        ApprovalRef: {
+            /** Format: uuid */
+            approval_id: string;
+            status: string;
+        };
         /**
          * @description * `pending` - Pending
          *     * `approved` - Approved
@@ -1884,6 +2408,13 @@ export interface components {
          * @enum {string}
          */
         ApprovalStatusEnum: "pending" | "approved" | "rejected" | "expired" | "cancelled" | "invalidated";
+        /**
+         * @description * `walk_in` - Walk-in
+         *     * `ambulance` - Ambulance
+         *     * `other` - Other
+         * @enum {string}
+         */
+        ArrivalModeEnum: "walk_in" | "ambulance" | "other";
         Assignment: {
             readonly id: number;
             user: number;
@@ -2011,6 +2542,49 @@ export interface components {
          * @enum {string}
          */
         BinTypeEnum: "SHELF" | "PALLET" | "BIN" | "ROOM";
+        /** @enum {unknown} */
+        BlankEnum: "";
+        Board: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly name: string;
+            readonly service_points: number[];
+            readonly active: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly last_seen_at: string | null;
+        };
+        BoardCreateRequest: {
+            name: string;
+            service_points: number[];
+        };
+        BoardCreated: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly name: string;
+            readonly service_points: number[];
+            readonly active: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly last_seen_at: string | null;
+            readonly token: string;
+        };
+        BoardDisplay: {
+            name: string;
+            now_calling: components["schemas"]["BoardTicket"][];
+            waiting: components["schemas"]["BoardTicket"][];
+        };
+        /** @description What a TV may show: ticket number, where to go, status. Never a name (KE-DPA-01). */
+        BoardTicket: {
+            number: string;
+            room: string;
+            service_point: string;
+            status: string;
+            /** Format: date-time */
+            called_at: string | null;
+        };
         Branch: {
             readonly id: number;
             /** Format: date-time */
@@ -2116,6 +2690,20 @@ export interface components {
             /** @default  */
             note: string;
         };
+        /**
+         * @description * `self` - Self
+         *     * `relative` - Relative
+         *     * `samaritan` - Good samaritan
+         *     * `paramedics` - Paramedics
+         *     * `police` - Police
+         *     * `unknown` - Unknown
+         * @enum {string}
+         */
+        BroughtByEnum: "self" | "relative" | "samaritan" | "paramedics" | "police" | "unknown";
+        CallRequest: {
+            /** @default  */
+            room: string;
+        };
         Category: {
             readonly id: number;
             /** Format: date-time */
@@ -2178,6 +2766,12 @@ export interface components {
          * @enum {string}
          */
         ChartCareTeamEnum: "none" | "demographics" | "summary" | "full" | "sensitive";
+        /**
+         * @description * `always` - Always
+         *     * `if_flagged` - Only if the intervention or scheme flags it
+         * @enum {string}
+         */
+        ConditionEnum: "always" | "if_flagged";
         Consent: {
             /** Format: uuid */
             readonly id: string;
@@ -2213,6 +2807,16 @@ export interface components {
             /** @default false */
             is_primary: boolean;
         };
+        /**
+         * @description * `consultation` - OPD consultation
+         *     * `lab` - Laboratory
+         *     * `imaging` - Imaging
+         *     * `procedure` - Procedure / treatment room
+         *     * `pharmacy` - Pharmacy
+         *     * `elective_admission` - Elective admission
+         * @enum {string}
+         */
+        ContextEnum: "consultation" | "lab" | "imaging" | "procedure" | "pharmacy" | "elective_admission";
         /**
          * @description * `MOMBASA` - Mombasa
          *     * `KWALE` - Kwale
@@ -2322,6 +2926,17 @@ export interface components {
             code: string;
             name: string;
             active?: boolean;
+        };
+        /**
+         * @description * `home` - Home
+         *     * `admit` - Admit
+         *     * `refer` - Refer
+         *     * `deceased` - Deceased
+         * @enum {string}
+         */
+        DispositionEnum: "home" | "admit" | "refer" | "deceased";
+        DispositionRequest: {
+            disposition: components["schemas"]["DispositionEnum"];
         };
         Document: {
             /** Format: uuid */
@@ -2510,6 +3125,83 @@ export interface components {
             doctors_present?: number;
         };
         /**
+         * @description * `registered` - Registered
+         *     * `awaiting_triage` - Waiting for triage
+         *     * `in_triage` - In triage
+         *     * `awaiting_consultation` - Waiting for consultation
+         *     * `in_consultation` - In consultation
+         *     * `awaiting_services` - Waiting for services
+         *     * `in_service` - At a service point
+         *     * `awaiting_review` - Waiting for review
+         *     * `admitted` - Admitted
+         *     * `clinically_complete` - Clinically complete
+         *     * `financially_cleared` - Financially cleared
+         *     * `closed` - Closed
+         *     * `cancelled` - Cancelled
+         *     * `left_before_seen` - Left before being seen
+         *     * `deceased` - Deceased
+         * @enum {string}
+         */
+        FromStatusEnum: "registered" | "awaiting_triage" | "in_triage" | "awaiting_consultation" | "in_consultation" | "awaiting_services" | "in_service" | "awaiting_review" | "admitted" | "clinically_complete" | "financially_cleared" | "closed" | "cancelled" | "left_before_seen" | "deceased";
+        GateDecision: {
+            cleared: boolean;
+            gate: string;
+            reason: string;
+            context: string;
+            /** Format: uuid */
+            override_id: string | null;
+            details: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * @description * `none` - No gate
+         *     * `pay_before_service` - Pay before service
+         *     * `eligibility_verified` - Eligibility verified
+         *     * `member_verified` - Member verified
+         *     * `preauth_approved` - Pre-authorisation approved
+         *     * `deposit` - Deposit paid
+         *     * `credit_limit` - Within credit limit
+         * @enum {string}
+         */
+        GateEnum: "none" | "pay_before_service" | "eligibility_verified" | "member_verified" | "preauth_approved" | "deposit" | "credit_limit";
+        GateOverride: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly context: components["schemas"]["ContextEnum"];
+            readonly gate: components["schemas"]["GateEnum"];
+            readonly reason_code: components["schemas"]["ReasonCodeB67Enum"];
+            readonly reason: string;
+            readonly created_by: number | null;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        GateOverrideRequestRequest: {
+            context: components["schemas"]["ContextEnum"];
+            reason_code: components["schemas"]["ReasonCodeB67Enum"];
+            reason: string;
+        };
+        GatePolicy: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly context: components["schemas"]["ContextEnum"];
+            readonly payer_type: components["schemas"]["PayerTypeEnum"];
+            readonly gate: components["schemas"]["GateEnum"];
+            readonly condition: components["schemas"]["ConditionEnum"];
+            /** Format: date-time */
+            readonly updated_at: string;
+            /** Format: uuid */
+            readonly approval: string | null;
+        };
+        GatePolicyChangeRequest: {
+            context: components["schemas"]["ContextEnum"];
+            payer_type: components["schemas"]["PayerTypeEnum"];
+            gate: components["schemas"]["GateEnum"];
+            /** @default always */
+            condition: components["schemas"]["ConditionEnum"];
+            reason: string;
+        };
+        /**
          * @description * `sha_hie` - SHA through the HIE (eClaims REST)
          *     * `sha_fhir` - SHA through AfyaLink (FHIR bundle)
          *     * `smart` - SMART
@@ -2588,6 +3280,19 @@ export interface components {
          * @enum {string}
          */
         KindA4cEnum: "phone" | "email";
+        /**
+         * @description * `consultation` - Consultation
+         *     * `lab` - Laboratory test
+         *     * `imaging` - Imaging
+         *     * `procedure` - Procedure
+         *     * `bed_day` - Bed-day
+         *     * `nursing` - Nursing care
+         *     * `drug_dispense` - Medicine dispensing
+         *     * `package` - Package
+         *     * `other` - Other
+         * @enum {string}
+         */
+        KindFdbEnum: "consultation" | "lab" | "imaging" | "procedure" | "bed_day" | "nursing" | "drug_dispense" | "package" | "other";
         Licence: {
             readonly id: number;
             user: number;
@@ -2959,6 +3664,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["Product"][];
         };
+        PaginatedServiceList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Service"][];
+        };
         PaginatedServicePointList: {
             /** @example 123 */
             count: number;
@@ -3003,6 +3723,19 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["User"][];
+        };
+        PaginatedVisitList: {
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?cursor=cD00ODY%3D"
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+             */
+            previous?: string | null;
+            results: components["schemas"]["Visit"][];
         };
         PaginatedWardList: {
             /** @example 123 */
@@ -3175,6 +3908,13 @@ export interface components {
             department?: number | null;
             active?: boolean;
         };
+        PatchedServiceUpdateRequest: {
+            name?: string;
+            department?: number | null;
+            revenue_code?: string;
+            sha_interventions?: string[];
+            etims_item_code?: string;
+        };
         PatchedUserRequest: {
             /**
              * Email address
@@ -3247,6 +3987,16 @@ export interface components {
             readonly retention_until: string | null;
             readonly legal_hold: boolean;
         };
+        /** @description Demographics level only: what any worklist role may see. */
+        PatientBrief: {
+            /** Format: uuid */
+            id: string;
+            mrn: string;
+            display_name: string;
+            sex: string;
+            readonly age: string | null;
+            is_unidentified: boolean;
+        };
         PatientCreateRequest: {
             given_name: string;
             /** @default  */
@@ -3311,6 +4061,15 @@ export interface components {
          * @enum {string}
          */
         PayerSummaryKindEnum: "sha" | "insurer" | "employer" | "government" | "other";
+        /**
+         * @description * `cash` - Cash / self-pay
+         *     * `sha` - SHA
+         *     * `insurer` - Private insurer
+         *     * `corporate` - Corporate
+         *     * `waiver` - Waiver
+         * @enum {string}
+         */
+        PayerTypeEnum: "cash" | "sha" | "insurer" | "corporate" | "waiver";
         Pin: {
             pin: string;
         };
@@ -3324,6 +4083,66 @@ export interface components {
             pin: string;
             password: string;
         };
+        PriceChangeRequest: {
+            /** Format: uuid */
+            service: string;
+            /** Format: decimal */
+            price: string;
+            /** Format: date */
+            effective_from?: string | null;
+            reason: string;
+        };
+        PriceItem: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly service: string;
+            readonly service_code: string;
+            readonly service_name: string;
+            /** Format: decimal */
+            readonly price: string;
+            /** Format: date */
+            readonly effective_from: string;
+            /** Format: date */
+            readonly effective_to: string | null;
+            /** Format: uuid */
+            readonly approval: string | null;
+        };
+        PriceList: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly code: string;
+            readonly name: string;
+            readonly basis: string;
+            /** Format: uuid */
+            readonly payer: string | null;
+            readonly payer_name: string;
+            /** Format: uuid */
+            readonly scheme: string | null;
+            readonly scheme_name: string;
+            readonly active: boolean;
+        };
+        PriceListCreateRequest: {
+            code: string;
+            name: string;
+            /** Format: uuid */
+            payer?: string | null;
+            /** Format: uuid */
+            scheme?: string | null;
+        };
+        PrioritiseRequest: {
+            reason_code: components["schemas"]["ReasonCode2a7Enum"];
+        };
+        /**
+         * @description * `elderly` - Elderly
+         *     * `disabled` - Disability
+         *     * `pregnant` - Pregnant
+         *     * `child` - Young child
+         *     * `clinical` - Clinical concern
+         *     * `vip` - VIP
+         * @enum {string}
+         */
+        PriorityReasonEnum: "elderly" | "disabled" | "pregnant" | "child" | "clinical" | "vip";
         PrivacyNoticeRequest: {
             version: string;
             method: components["schemas"]["MethodEnum"];
@@ -3450,6 +4269,15 @@ export interface components {
          * @enum {string}
          */
         ProductTypeEnum: "PHYSICAL" | "DIGITAL" | "SERVICE";
+        Quote: {
+            /** Format: uuid */
+            service: string;
+            /** Format: decimal */
+            amount: string;
+            basis: string;
+            /** Format: uuid */
+            price_list: string;
+        };
         RTInventoryAlert: {
             readonly id: number;
             product: number;
@@ -3464,6 +4292,25 @@ export interface components {
         Reason: {
             reason: string;
         };
+        /**
+         * @description * `elderly` - Elderly
+         *     * `disabled` - Disability
+         *     * `pregnant` - Pregnant
+         *     * `child` - Young child
+         *     * `clinical` - Clinical concern
+         *     * `vip` - VIP
+         * @enum {string}
+         */
+        ReasonCode2a7Enum: "elderly" | "disabled" | "pregnant" | "child" | "clinical" | "vip";
+        /**
+         * @description * `clinical_urgency` - Clinical urgency
+         *     * `payment_promised` - Payment promised
+         *     * `waiver_pending` - Waiver being processed
+         *     * `payer_system_down` - Payer system unavailable
+         *     * `other` - Other
+         * @enum {string}
+         */
+        ReasonCodeB67Enum: "clinical_urgency" | "payment_promised" | "waiver_pending" | "payer_system_down" | "other";
         /**
          * @description * `emergency` - Emergency
          *     * `continuity_of_care` - Continuity of care
@@ -3637,6 +4484,18 @@ export interface components {
          * @enum {string}
          */
         SensitivityEnum: "normal" | "hiv" | "mental_health" | "sexual_reproductive" | "gbv" | "substance_use" | "genetic";
+        Service: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly code: string;
+            readonly name: string;
+            readonly kind: components["schemas"]["KindFdbEnum"];
+            readonly department: number | null;
+            readonly revenue_code: string;
+            readonly sha_interventions: string[];
+            readonly etims_item_code: string;
+            readonly status: components["schemas"]["ServiceStatusEnum"];
+        };
         ServicePoint: {
             readonly id: number;
             code: string;
@@ -3661,12 +4520,47 @@ export interface components {
          * @enum {string}
          */
         ServicePointKindEnum: "reception" | "triage" | "consultation" | "emergency" | "lab" | "imaging" | "pharmacy" | "cashier" | "treatment_room" | "ward_station" | "records" | "other";
+        ServicePointQueue: {
+            id: number;
+            code: string;
+            name: string;
+            kind: string;
+            waiting: number;
+            called: number;
+            serving: number;
+        };
         ServicePointRequest: {
             code: string;
             name: string;
             kind: components["schemas"]["ServicePointKindEnum"];
             department?: number | null;
             active?: boolean;
+        };
+        /** @description A new service waits for the finance manager's approval (maker-checker). */
+        ServiceRequestRequest: {
+            code: string;
+            name: string;
+            kind: components["schemas"]["KindFdbEnum"];
+            department?: number | null;
+            /** @default  */
+            revenue_code: string;
+            sha_interventions?: string[];
+            /** @default  */
+            etims_item_code: string;
+            /** Format: decimal */
+            cash_price?: string | null;
+            reason: string;
+        };
+        /**
+         * @description * `pending_approval` - Waiting for approval
+         *     * `active` - Active
+         *     * `inactive` - Inactive
+         * @enum {string}
+         */
+        ServiceStatusEnum: "pending_approval" | "active" | "inactive";
+        ServiceStatusRequest: {
+            active: boolean;
+            reason: string;
         };
         /**
          * @description * `low` - Low
@@ -3691,6 +4585,25 @@ export interface components {
          */
         SourceEnum: "manual" | "client_registry" | "system";
         /**
+         * @description * `registered` - Registered
+         *     * `awaiting_triage` - Waiting for triage
+         *     * `in_triage` - In triage
+         *     * `awaiting_consultation` - Waiting for consultation
+         *     * `in_consultation` - In consultation
+         *     * `awaiting_services` - Waiting for services
+         *     * `in_service` - At a service point
+         *     * `awaiting_review` - Waiting for review
+         *     * `admitted` - Admitted
+         *     * `clinically_complete` - Clinically complete
+         *     * `financially_cleared` - Financially cleared
+         *     * `closed` - Closed
+         *     * `cancelled` - Cancelled
+         *     * `left_before_seen` - Left before being seen
+         *     * `deceased` - Deceased
+         * @enum {string}
+         */
+        Status2b1Enum: "registered" | "awaiting_triage" | "in_triage" | "awaiting_consultation" | "in_consultation" | "awaiting_services" | "in_service" | "awaiting_review" | "admitted" | "clinically_complete" | "financially_cleared" | "closed" | "cancelled" | "left_before_seen" | "deceased";
+        /**
          * @description * `available` - Available
          *     * `occupied` - Occupied
          *     * `cleaning` - Cleaning
@@ -3698,6 +4611,17 @@ export interface components {
          * @enum {string}
          */
         StatusCcdEnum: "available" | "occupied" | "cleaning" | "out_of_service";
+        /**
+         * @description * `waiting` - Waiting
+         *     * `called` - Called
+         *     * `serving` - Being served
+         *     * `done` - Done
+         *     * `transferred` - Transferred
+         *     * `cancelled` - Cancelled
+         *     * `left` - Left before being seen
+         * @enum {string}
+         */
+        StatusD05Enum: "waiting" | "called" | "serving" | "done" | "transferred" | "cancelled" | "left";
         /**
          * @description * `active` - Active
          *     * `merged` - Merged into another record
@@ -3795,6 +4719,88 @@ export interface components {
             /** Format: email */
             email: string;
         };
+        Ticket: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly number: string;
+            readonly service_point: number;
+            readonly service_point_name: string;
+            readonly service_point_kind: string;
+            readonly status: components["schemas"]["StatusD05Enum"];
+            /** Format: date-time */
+            readonly arrived_at: string;
+            readonly call_count: number;
+            readonly room: string;
+            readonly priority_reason: components["schemas"]["PriorityReasonEnum"];
+            readonly note: string;
+            /** Format: date-time */
+            readonly lwbs_flagged_at: string | null;
+            readonly visit: components["schemas"]["Visit"];
+            /** Format: date-time */
+            readonly called_at: string | null;
+            /** Format: date-time */
+            readonly served_at: string | null;
+        };
+        TicketBrief: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly number: string;
+            readonly service_point: number;
+            readonly service_point_name: string;
+            readonly service_point_kind: string;
+            readonly status: components["schemas"]["StatusD05Enum"];
+            /** Format: date-time */
+            readonly arrived_at: string;
+            readonly call_count: number;
+            readonly room: string;
+            readonly priority_reason: components["schemas"]["PriorityReasonEnum"];
+            readonly note: string;
+            /** Format: date-time */
+            readonly lwbs_flagged_at: string | null;
+        };
+        /**
+         * @description * `registered` - Registered
+         *     * `awaiting_triage` - Waiting for triage
+         *     * `in_triage` - In triage
+         *     * `awaiting_consultation` - Waiting for consultation
+         *     * `in_consultation` - In consultation
+         *     * `awaiting_services` - Waiting for services
+         *     * `in_service` - At a service point
+         *     * `awaiting_review` - Waiting for review
+         *     * `admitted` - Admitted
+         *     * `clinically_complete` - Clinically complete
+         *     * `financially_cleared` - Financially cleared
+         *     * `closed` - Closed
+         *     * `cancelled` - Cancelled
+         *     * `left_before_seen` - Left before being seen
+         *     * `deceased` - Deceased
+         * @enum {string}
+         */
+        ToEnum: "registered" | "awaiting_triage" | "in_triage" | "awaiting_consultation" | "in_consultation" | "awaiting_services" | "in_service" | "awaiting_review" | "admitted" | "clinically_complete" | "financially_cleared" | "closed" | "cancelled" | "left_before_seen" | "deceased";
+        /**
+         * @description * `registered` - Registered
+         *     * `awaiting_triage` - Waiting for triage
+         *     * `in_triage` - In triage
+         *     * `awaiting_consultation` - Waiting for consultation
+         *     * `in_consultation` - In consultation
+         *     * `awaiting_services` - Waiting for services
+         *     * `in_service` - At a service point
+         *     * `awaiting_review` - Waiting for review
+         *     * `admitted` - Admitted
+         *     * `clinically_complete` - Clinically complete
+         *     * `financially_cleared` - Financially cleared
+         *     * `closed` - Closed
+         *     * `cancelled` - Cancelled
+         *     * `left_before_seen` - Left before being seen
+         *     * `deceased` - Deceased
+         * @enum {string}
+         */
+        ToStatusEnum: "registered" | "awaiting_triage" | "in_triage" | "awaiting_consultation" | "in_consultation" | "awaiting_services" | "in_service" | "awaiting_review" | "admitted" | "clinically_complete" | "financially_cleared" | "closed" | "cancelled" | "left_before_seen" | "deceased";
+        TransferRequest: {
+            service_point: number;
+            /** @default  */
+            note: string;
+        };
         /**
          * @description * `INTERNAL` - Internal Transfer
          *     * `SUPPLIER` - Supplier Delivery
@@ -3803,6 +4809,23 @@ export interface components {
          * @enum {string}
          */
         TransferTypeEnum: "INTERNAL" | "SUPPLIER" | "CUSTOMER" | "DAMAGED";
+        Transition: {
+            readonly from_status: components["schemas"]["FromStatusEnum"];
+            readonly to_status: components["schemas"]["ToStatusEnum"];
+            readonly actor: number | null;
+            readonly reason: string;
+            /** Format: date-time */
+            readonly at: string;
+        };
+        /**
+         * @description * `red` - Red — emergency
+         *     * `orange` - Orange — very urgent
+         *     * `yellow` - Yellow — urgent
+         *     * `green` - Green — routine
+         *     * `blue` - Blue — dead on arrival
+         * @enum {string}
+         */
+        TriageCategoryEnum: "red" | "orange" | "yellow" | "green" | "blue";
         /**
          * @description * `cr_id` - HIE Client Registry ID
          *     * `sha_number` - SHA number
@@ -3913,6 +4936,92 @@ export interface components {
          * @enum {string}
          */
         VerificationEnum: "unverified" | "verified" | "failed";
+        Visit: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly number: string;
+            readonly patient: components["schemas"]["PatientBrief"];
+            readonly visit_type: components["schemas"]["VisitTypeEnum"];
+            readonly status: components["schemas"]["Status2b1Enum"];
+            /** Format: uuid */
+            readonly coverage: string | null;
+            readonly scheme_name: string;
+            readonly payer_type: components["schemas"]["PayerTypeEnum"];
+            readonly arrival_mode: components["schemas"]["ArrivalModeEnum"];
+            readonly brought_by: components["schemas"]["BroughtByEnum"];
+            readonly triage_category: components["schemas"]["TriageCategoryEnum"];
+            readonly disposition: components["schemas"]["DispositionEnum"];
+            /** Format: uuid */
+            readonly episode_of: string | null;
+            /** Format: date-time */
+            readonly opened_at: string;
+            /** Format: date-time */
+            readonly status_changed_at: string;
+            /** Format: date-time */
+            readonly clinically_completed_at: string | null;
+            /** Format: date-time */
+            readonly closed_at: string | null;
+            readonly version: number;
+        };
+        VisitDetail: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly number: string;
+            readonly patient: components["schemas"]["PatientBrief"];
+            readonly visit_type: components["schemas"]["VisitTypeEnum"];
+            readonly status: components["schemas"]["Status2b1Enum"];
+            /** Format: uuid */
+            readonly coverage: string | null;
+            readonly scheme_name: string;
+            readonly payer_type: components["schemas"]["PayerTypeEnum"];
+            readonly arrival_mode: components["schemas"]["ArrivalModeEnum"];
+            readonly brought_by: components["schemas"]["BroughtByEnum"];
+            readonly triage_category: components["schemas"]["TriageCategoryEnum"];
+            readonly disposition: components["schemas"]["DispositionEnum"];
+            /** Format: uuid */
+            readonly episode_of: string | null;
+            /** Format: date-time */
+            readonly opened_at: string;
+            /** Format: date-time */
+            readonly status_changed_at: string;
+            /** Format: date-time */
+            readonly clinically_completed_at: string | null;
+            /** Format: date-time */
+            readonly closed_at: string | null;
+            readonly version: number;
+            readonly transitions: components["schemas"]["Transition"][];
+            readonly tickets: components["schemas"]["TicketBrief"][];
+            readonly gate_overrides: components["schemas"]["GateOverride"][];
+        };
+        VisitOpenRequest: {
+            /** Format: uuid */
+            patient: string;
+            visit_type: components["schemas"]["VisitTypeEnum"];
+            /** Format: uuid */
+            coverage?: string | null;
+            /** @default false */
+            waiver: boolean;
+            service_point?: number | null;
+            /** @default walk_in */
+            arrival_mode: components["schemas"]["ArrivalModeEnum"];
+            /** @default  */
+            brought_by: components["schemas"]["BroughtByEnum"] | components["schemas"]["BlankEnum"];
+        };
+        VisitTransitionRequest: {
+            to: components["schemas"]["ToEnum"];
+            /** @default  */
+            reason: string;
+            version?: number | null;
+        };
+        /**
+         * @description * `opd` - Outpatient
+         *     * `emergency` - Emergency
+         *     * `inpatient` - Inpatient (direct admission)
+         *     * `walk_in_pharmacy` - Walk-in pharmacy
+         *     * `walk_in_lab` - Walk-in laboratory
+         * @enum {string}
+         */
+        VisitTypeEnum: "opd" | "emergency" | "inpatient" | "walk_in_pharmacy" | "walk_in_lab";
         Ward: {
             readonly id: number;
             code: string;
@@ -5205,6 +6314,272 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Pin"];
+                };
+            };
+        };
+    };
+    v1_billing_price_lists_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceList"][];
+                };
+            };
+        };
+    };
+    v1_billing_price_lists_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PriceListCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PriceListCreateRequest"];
+                "multipart/form-data": components["schemas"]["PriceListCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceList"];
+                };
+            };
+        };
+    };
+    v1_billing_price_lists_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this price list. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceList"];
+                };
+            };
+        };
+    };
+    v1_billing_price_lists_items_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this price list. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceItem"][];
+                };
+            };
+        };
+    };
+    v1_billing_price_lists_prices_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this price list. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PriceChangeRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PriceChangeRequest"];
+                "multipart/form-data": components["schemas"]["PriceChangeRequest"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalRef"];
+                };
+            };
+        };
+    };
+    v1_billing_quote_retrieve: {
+        parameters: {
+            query: {
+                on?: string | null;
+                scheme?: string | null;
+                service: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Quote"];
+                };
+            };
+        };
+    };
+    v1_billing_services_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedServiceList"];
+                };
+            };
+        };
+    };
+    v1_billing_services_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceRequestRequest"];
+                "multipart/form-data": components["schemas"]["ServiceRequestRequest"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalRef"];
+                };
+            };
+        };
+    };
+    v1_billing_services_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this service. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Service"];
+                };
+            };
+        };
+    };
+    v1_billing_services_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this service. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedServiceUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedServiceUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Service"];
+                };
+            };
+        };
+    };
+    v1_billing_services_status_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this service. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceStatusRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceStatusRequest"];
+                "multipart/form-data": components["schemas"]["ServiceStatusRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Service"];
                 };
             };
         };
@@ -7227,6 +8602,653 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    v1_visits_list: {
+        parameters: {
+            query?: {
+                /** @description The pagination cursor value. */
+                cursor?: string;
+                date?: string;
+                open?: boolean | null;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                patient?: string;
+                status?: ("registered" | "awaiting_triage" | "in_triage" | "awaiting_consultation" | "in_consultation" | "awaiting_services" | "in_service" | "awaiting_review" | "admitted" | "clinically_complete" | "financially_cleared" | "closed" | "cancelled" | "left_before_seen" | "deceased")[];
+                /**
+                 * @description * `opd` - Outpatient
+                 *     * `emergency` - Emergency
+                 *     * `inpatient` - Inpatient (direct admission)
+                 *     * `walk_in_pharmacy` - Walk-in pharmacy
+                 *     * `walk_in_lab` - Walk-in laboratory
+                 */
+                visit_type?: "opd" | "emergency" | "inpatient" | "walk_in_pharmacy" | "walk_in_lab";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedVisitList"];
+                };
+            };
+        };
+    };
+    v1_visits_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisitOpenRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VisitOpenRequest"];
+                "multipart/form-data": components["schemas"]["VisitOpenRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Visit"];
+                };
+            };
+        };
+    };
+    v1_visits_retrieve: {
+        parameters: {
+            query?: {
+                purpose?: "billing" | "care" | "registration";
+            };
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this visit. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VisitDetail"];
+                };
+            };
+        };
+    };
+    v1_visits_disposition_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this visit. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DispositionRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["DispositionRequest"];
+                "multipart/form-data": components["schemas"]["DispositionRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Visit"];
+                };
+            };
+        };
+    };
+    v1_visits_gate_retrieve: {
+        parameters: {
+            query: {
+                /**
+                 * @description * `consultation` - OPD consultation
+                 *     * `lab` - Laboratory
+                 *     * `imaging` - Imaging
+                 *     * `procedure` - Procedure / treatment room
+                 *     * `pharmacy` - Pharmacy
+                 *     * `elective_admission` - Elective admission
+                 */
+                context: "consultation" | "lab" | "imaging" | "procedure" | "pharmacy" | "elective_admission";
+            };
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this visit. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GateDecision"];
+                };
+            };
+        };
+    };
+    v1_visits_gate_override_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this visit. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GateOverrideRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["GateOverrideRequestRequest"];
+                "multipart/form-data": components["schemas"]["GateOverrideRequestRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GateOverride"];
+                };
+            };
+        };
+    };
+    v1_visits_transition_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this visit. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisitTransitionRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VisitTransitionRequest"];
+                "multipart/form-data": components["schemas"]["VisitTransitionRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Visit"];
+                };
+            };
+        };
+    };
+    v1_visits_board_display_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoardDisplay"];
+                };
+            };
+        };
+    };
+    v1_visits_boards_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Board"][];
+                };
+            };
+        };
+    };
+    v1_visits_boards_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BoardCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BoardCreateRequest"];
+                "multipart/form-data": components["schemas"]["BoardCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoardCreated"];
+                };
+            };
+        };
+    };
+    v1_visits_boards_revoke_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this queue board. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Board"];
+                };
+            };
+        };
+    };
+    v1_visits_gate_policies_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GatePolicy"][];
+                };
+            };
+        };
+    };
+    v1_visits_gate_policies_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GatePolicyChangeRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["GatePolicyChangeRequest"];
+                "multipart/form-data": components["schemas"]["GatePolicyChangeRequest"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalRef"];
+                };
+            };
+        };
+    };
+    v1_visits_queues_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServicePointQueue"][];
+                };
+            };
+        };
+    };
+    v1_visits_queues_list_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this service point. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"][];
+                };
+            };
+        };
+    };
+    v1_visits_queues_call_next_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this service point. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CallRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CallRequest"];
+                "multipart/form-data": components["schemas"]["CallRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v1_visits_tickets_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"][];
+                };
+            };
+        };
+    };
+    v1_visits_tickets_call_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this queue ticket. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CallRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CallRequest"];
+                "multipart/form-data": components["schemas"]["CallRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+        };
+    };
+    v1_visits_tickets_confirm_lwbs_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this queue ticket. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Visit"];
+                };
+            };
+        };
+    };
+    v1_visits_tickets_dismiss_lwbs_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this queue ticket. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+        };
+    };
+    v1_visits_tickets_finish_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this queue ticket. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+        };
+    };
+    v1_visits_tickets_prioritise_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this queue ticket. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrioritiseRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PrioritiseRequest"];
+                "multipart/form-data": components["schemas"]["PrioritiseRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+        };
+    };
+    v1_visits_tickets_send_back_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this queue ticket. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["TransferRequest"];
+                "multipart/form-data": components["schemas"]["TransferRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+        };
+    };
+    v1_visits_tickets_skip_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this queue ticket. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+        };
+    };
+    v1_visits_tickets_start_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this queue ticket. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+        };
+    };
+    v1_visits_tickets_transfer_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this queue ticket. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["TransferRequest"];
+                "multipart/form-data": components["schemas"]["TransferRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
             };
         };
     };
