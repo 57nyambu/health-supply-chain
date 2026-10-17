@@ -20,6 +20,7 @@ the lane in.
 | P3-SHA-01 | in progress | HIE client (single-flight token, 401 replay, facility headers), CR/HWR/facility registry adapters, eligibility snapshots, benefits, `import_sha_tariffs` with versioned synthetic tariff. Facility set-up screen wiring needs Phase 1's admin (R-P3-007). |
 | P3-SHA-02 | in progress | OTP and fingerprint consent API; W1 slot fills OTP and member-code consent; fingerprint capture UI to do (needs the workstation hardware-service contract, GAP-HIE-011). |
 | P3-PVT-01/02 | in progress | SMART and Slade360 scripted fakes pass the contract suite; real adapters need specs (GAP-SMART-001, GAP-SLADE-001). |
+| P3-TAX-01 | in progress (vendor part) | VSCU client per KRA's VSCU v2.0 spec, fake VSCU, queue with branch-sequential invoice numbers, offline retry (beat `p3-etims-retry`), credit notes; `ETIMS_MODE=off` by default (ADR-076). Invoice hook and printed control data: stage B. |
 | P3-BNK-01/02, P3-CRD-01 | in progress (vendor part) | Jenga signing + IPN (Basic auth) + status query; Buni IPN signature + IP allowlist; Pesapal token/IPN/checkout/status; fakes and IPN test vectors. Port glue, W2, PDQ, refunds: stage B. |
 | others | todo | |
 
@@ -54,6 +55,11 @@ the lane in.
 - R-P3-006 — `api/CLAUDE.md` names `core.money` helpers that do not exist yet.
 - R-P3-007 — facility set-up (Phase 1 admin) could call `GET /api/v1/interop/facility-registry/?identifier=&type=fid`
   to confirm the FID, KEPH level and SHA contract before saving (P3-SHA-01 acceptance 2, "facility setup").
+- R-P3-009 — E2E timing on a shared machine: `E2E-11` test 4 ("a privileged grant waits for a second
+  administrator…") needs 1.3–1.8 min under load against its 90 s budget, and `signIn`'s 15 s URL expectation
+  times out while both lanes' gates run. Both lanes saw it (Phase 2 agrees). Please raise that test's timeout
+  (`test.setTimeout`) and consider a longer expectation after sign-in. Lanes now take turns on browser runs and
+  keep heavy jobs off the machine during the other lane's `make e2e`.
 - R-P3-008 — the `insurance` app's mypy strictness is set in a Phase 3 override block of `api/pyproject.toml`
   (apps.insurance, interop, banking, etims, privacy); fold it into the shared strict list when convenient.
 
@@ -70,10 +76,16 @@ the lane in.
 - [GAP-SHA-TARIFF-001] SHA tariffs — the official Benefits and Tariffs spreadsheet and its column layout — synthetic `SYN-…` version loaded; importer reads our documented CSV layout — owner action: provide the spreadsheet.
 - [GAP-JENGA-002/003] Jenga — token endpoint not in the public guides; decimal formatting in signed strings — sandbox/live refuse — owner action: JengaHQ onboarding, then record the token call from the portal or sandbox.
 - [GAP-BUNI-001] KCB Buni — IPN payload, acknowledgement and query API only inside the Buni portal — IPNs verified (signature + IP) and stored, not confirmed — owner action: KCB request letter and portal access.
+- [GAP-PDQ-001] PDQ — acquirers' settlement file layouts — importer reads our documented CSV (`terminal_id, rrn, approval_code, amount, settled_on`) and refuses card-number columns — owner action: a sample settlement file from the acquiring bank.
+- [GAP-ETIMS-001/002] eTIMS — OSCU specification not read; QR content format not in the VSCU spec read — VSCU only; receipt fields stored — owner action: KRA eTIMS onboarding (device registration) and the OSCU spec if OSCU is chosen.
 - [GAP-PESAPAL-001/002] Pesapal — IPN parameters/acknowledgement body; meaning of status 0 (INVALID) — read `OrderTrackingId`, treat 0 as pending — owner action: Pesapal sandbox account to record traffic.
 
 ## Waivers needed (vendor live verification)
-- None requested yet; P3-PVT-01/02 will be `blocked` with "external: SMART/Slade360 spec and credentials" when their fake parts are complete.
+- P3-PVT-01 SMART — `blocked`, "external: SMART provider integration agreement, API spec and test credentials".
+  Fake + contract suite are green; please record the owner's waiver (PHASE-3 exit criteria) or provide the spec.
+- P3-PVT-02 Slade360 — `blocked`, "external: Slade360 partner agreement, API spec and test credentials".
+  Fake + contract suite green; Slade codes are stored on facilities and licences (Phase 1 fields); using them on
+  claims arrives with P3-CLM-01. Waiver requested as above.
 
 ## Synthetic data and scripted outcomes (demo every path)
 - **Fake HIE** (`SHA_MODE=fake`, `apps/interop/hie/fake.py`) — by the last two digits of the national ID
@@ -113,4 +125,10 @@ the lane in.
   "Cover check" page with a Playwright path (`web/tests/e2e/phase3/cover-check.spec.ts`); `apps.banking` (ADR-075).
 - Found by the gate: `ClaimDiagnosis` now carries a sensitivity flag (Phase 1's sensitivity test); payer-calling
   actions check the Idempotency-Key after the policy so anonymous callers get 401/403.
+- Committed `597fe05` on `lane/phase-3` (make check green: 687 API tests, 92.3 % coverage, smoke). Full `make e2e`:
+  37 passed, 2 Phase 1 tests timed out under load (auth sign-in at 15 s; E2E-11 test 4 at 90 s); both pass on rerun
+  / with a longer diagnostic timeout (R-P3-009). `make audit-verify`: 1628 events, chains intact. Not delivered yet:
+  delivery waits for a clean `make e2e` in a quiet window agreed with the Phase 2 lane.
+- Then eTIMS (`apps.etims`, ADR-076) and the ledger rows: P3-INS-01 done (acceptance verified: models, port and
+  taxonomy, contract suite in CI); SHA-01/02, BNK-01/02, CRD-01, TAX-01 in progress; PVT-01/02 blocked (waivers).
 - Coordinated browser runs with the Phase 2 lane (fixed e2e ports; both lanes' 16:28–16:40 runs were cross-wired and discarded).

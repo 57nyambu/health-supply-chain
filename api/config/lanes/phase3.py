@@ -7,10 +7,13 @@ the integrator folds this into the shared files at `phase-3-complete`.
 
 from typing import Any
 
+from celery.schedules import crontab
+
 # Django apps this lane creates, e.g. "apps.insurance".
 INSTALLED_APPS: list[str] = [
     "apps.interop",
     "apps.banking",
+    "apps.etims",
 ]
 
 # (URL prefix, urls module), e.g. ("api/v1/insurance/", "apps.insurance.api.urls").
@@ -24,7 +27,12 @@ SEED_STEPS: list[str] = [
 ]
 
 # Celery beat entries, keyed by a name starting "p3-".
-CELERY_BEAT_SCHEDULE: dict[str, dict[str, Any]] = {}
+CELERY_BEAT_SCHEDULE: dict[str, dict[str, Any]] = {
+    "p3-etims-retry": {
+        "task": "apps.etims.tasks.transmit_due",
+        "schedule": crontab(minute="*/5"),
+    },
+}
 
 # Extra permission codes per existing role code, e.g. {"claims_officer": ("insurance.x.y",)}.
 ROLE_GRANTS: dict[str, tuple[str, ...]] = {}
@@ -75,4 +83,9 @@ def settings(env: Any) -> dict[str, Any]:
         "PESAPAL_CONSUMER_SECRET": env("PESAPAL_CONSUMER_SECRET", default=""),
         "PESAPAL_IPN_ID": env("PESAPAL_IPN_ID", default=""),
         "PESAPAL_IPN_TOKEN": env("PESAPAL_IPN_TOKEN", default=""),
+        # --- KRA eTIMS (DESIGN §10, §20 Q6; ADR-076) ---
+        "ETIMS_MODE": env("ETIMS_MODE", default="off"),
+        "ETIMS_VSCU_URL": env("ETIMS_VSCU_URL", default=""),
+        "ETIMS_PIN": env("ETIMS_PIN", default=""),
+        "ETIMS_BRANCH_ID": env("ETIMS_BRANCH_ID", default="00"),
     }

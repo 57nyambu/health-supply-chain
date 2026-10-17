@@ -148,4 +148,7 @@ Added only by the Phase 3 lane (registered in `api/config/lanes/phase3.py`).
 | `PESAPAL_MODE` | `fake` | — | Pesapal API 3.0 mode (`fake`, `sandbox`, `live`). |
 | `PESAPAL_BASE_URL` | — | when Pesapal is live | `https://cybqa.pesapal.com/pesapalv3` (sandbox) or `https://pay.pesapal.com/v3` (live). |
 | `PESAPAL_CONSUMER_KEY`, `PESAPAL_CONSUMER_SECRET` | — | when Pesapal is live | Pesapal merchant credentials (secret). |
+| `ETIMS_MODE` | `off` | — | KRA eTIMS: `off` (nothing sent), `fake` (in-process VSCU), `vscu` (the facility's KRA VSCU). DESIGN §20 Q6. |
+| `ETIMS_VSCU_URL` | — | when eTIMS is on | Base URL of the facility's KRA VSCU (a KRA JAR on the facility's server). |
+| `ETIMS_PIN`, `ETIMS_BRANCH_ID` | — / `00` | when eTIMS is on | The facility's KRA PIN (`tin`) and eTIMS branch ID (`bhfId`). |
 | `PESAPAL_IPN_ID`, `PESAPAL_IPN_TOKEN` | — | when Pesapal is live | `ipn_id` from RegisterIPN, and the secret path token of `/api/v1/hooks/pesapal/<token>/`. |
