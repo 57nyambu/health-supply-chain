@@ -2004,6 +2004,129 @@ paths:
           description: No response body
         '404':
           description: No response body
+  /api/v1/insurance/consents/:
+    post:
+      operationId: v1_insurance_consents_create
+      description: |-
+        Start consent. OTP without ``contact_id`` returns the member's masked phones to
+        choose from (no consent yet); with it, sends the code. Fingerprint returns the
+        capture page to show. Member code (SMART) waits for the code.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsentStartRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConsentStartRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConsentStartRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentStep'
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentStep'
+          description: ''
+  /api/v1/insurance/consents/{id}/:
+    get:
+      operationId: v1_insurance_consents_retrieve
+      description: The consent's state; for a fingerprint in progress this asks the
+        payer (poll).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payer consent.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentStep'
+          description: ''
+  /api/v1/insurance/consents/{id}/cancel/:
+    post:
+      operationId: v1_insurance_consents_cancel_create
+      description: |-
+        Payer consent for a visit: OTP, fingerprint or member code (P3-SHA-02). The consent
+        token is held server-side only; responses say whether one is held.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payer consent.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerConsent'
+          description: ''
+  /api/v1/insurance/consents/{id}/complete/:
+    post:
+      operationId: v1_insurance_consents_complete_create
+      description: Open the payer visit with the member's OTP or code (never stored).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payer consent.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsentCompleteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConsentCompleteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConsentCompleteRequest'
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayerConsent'
+          description: ''
   /api/v1/insurance/coverages/:
     get:
       operationId: v1_insurance_coverages_list
@@ -2056,6 +2179,10 @@ paths:
           description: ''
     post:
       operationId: v1_insurance_coverages_create
+      description: |-
+        Actions that reach a payer need an ``Idempotency-Key`` (DESIGN §17). Checked after
+        authentication and the policy, so anonymous callers still get 401/403; the core
+        middleware stores and replays the response whenever the key is sent.
       tags:
       - v1
       requestBody:
@@ -2080,9 +2207,113 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coverage'
           description: ''
+  /api/v1/insurance/coverages/{id}/benefits/:
+    get:
+      operationId: v1_insurance_coverages_benefits_list
+      description: The services the payer lists for this member, with pre-authorisation
+        flags.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this coverage.
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPayerServiceCodeList'
+          description: ''
+  /api/v1/insurance/coverages/{id}/eligibility/:
+    get:
+      operationId: v1_insurance_coverages_eligibility_retrieve
+      description: |-
+        GET: the latest eligibility snapshot (404 if never checked). POST: ask the payer
+        now (Idempotency-Key required). A payer outage gives ``pending_verification``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this coverage.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EligibilityCheck'
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EligibilityCheck'
+          description: ''
+    post:
+      operationId: v1_insurance_coverages_eligibility_create
+      description: |-
+        GET: the latest eligibility snapshot (404 if never checked). POST: ask the payer
+        now (Idempotency-Key required). A payer outage gives ``pending_verification``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this coverage.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EligibilityCheck'
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EligibilityCheck'
+          description: ''
   /api/v1/insurance/coverages/{id}/end/:
     post:
       operationId: v1_insurance_coverages_end_create
+      description: |-
+        Actions that reach a payer need an ``Idempotency-Key`` (DESIGN §17). Checked after
+        authentication and the policy, so anonymous callers still get 401/403; the core
+        middleware stores and replays the response whenever the key is sent.
       parameters:
       - in: path
         name: id
@@ -2115,6 +2346,57 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coverage'
           description: ''
+  /api/v1/insurance/coverages/{id}/pending-authorisations/:
+    get:
+      operationId: v1_insurance_coverages_pending_authorisations_retrieve
+      description: |-
+        Actions that reach a payer need an ``Idempotency-Key`` (DESIGN §17). Checked after
+        authentication and the policy, so anonymous callers still get 401/403; the core
+        middleware stores and replays the response whenever the key is sent.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this coverage.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingAuthorisations'
+          description: ''
+  /api/v1/insurance/coverages/{id}/pending-authorisations/reject/:
+    post:
+      operationId: v1_insurance_coverages_pending_authorisations_reject_create
+      description: Clear the member's stuck fingerprint authorisations at SHA (Idempotency-Key).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this coverage.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingAuthorisations'
+          description: ''
   /api/v1/insurance/schemes/:
     get:
       operationId: v1_insurance_schemes_list
@@ -2133,6 +2415,49 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Scheme'
+          description: ''
+  /api/v1/interop/facility-registry/:
+    get:
+      operationId: v1_interop_facility_registry_retrieve
+      description: Look a facility up in the national Facility Registry (FID, KEPH
+        level, SHA contract).
+      parameters:
+      - in: query
+        name: identifier
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 60
+        required: true
+      - in: query
+        name: type
+        schema:
+          enum:
+          - fid
+          - fr-code
+          - mfl
+          - license-number
+          - registration-number
+          type: string
+          default: fid
+          minLength: 1
+        description: |-
+          * `fid` - fid
+          * `fr-code` - fr-code
+          * `mfl` - mfl
+          * `license-number` - license-number
+          * `registration-number` - registration-number
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacilityRecord'
           description: ''
   /api/v1/me:
     get:
@@ -4596,6 +4921,28 @@ components:
         * `PALLET` - Pallet
         * `BIN` - Storage Bin
         * `ROOM` - Storage Room
+    BiometricContextRequest:
+      type: object
+      properties:
+        agent_id:
+          type: string
+          minLength: 1
+          maxLength: 40
+        device_os:
+          $ref: '#/components/schemas/DeviceOsEnum'
+        ekyc_provider_id:
+          type: string
+          minLength: 1
+          maxLength: 100
+        work_station_id:
+          type: string
+          minLength: 1
+          maxLength: 120
+      required:
+      - agent_id
+      - device_os
+      - ekyc_provider_id
+      - work_station_id
     Branch:
       type: object
       properties:
@@ -5048,7 +5395,7 @@ components:
           readOnly: true
         method:
           allOf:
-          - $ref: '#/components/schemas/MethodEnum'
+          - $ref: '#/components/schemas/MethodF1dEnum'
           readOnly: true
         given_by:
           allOf:
@@ -5070,6 +5417,17 @@ components:
       - recorded_at
       - recorded_by
       - version
+    ConsentCompleteRequest:
+      type: object
+      properties:
+        otp:
+          type: string
+          default: ''
+          maxLength: 12
+        member_code:
+          type: string
+          default: ''
+          maxLength: 40
     ConsentInputRequest:
       type: object
       properties:
@@ -5078,7 +5436,7 @@ components:
           default: ''
           maxLength: 20
         method:
-          $ref: '#/components/schemas/MethodEnum'
+          $ref: '#/components/schemas/MethodF1dEnum'
         given_by:
           allOf:
           - $ref: '#/components/schemas/GivenByEnum'
@@ -5091,6 +5449,78 @@ components:
       - decision
       - kind
       - method
+    ConsentStartMethodEnum:
+      enum:
+      - otp
+      - biometric
+      - card_or_code
+      type: string
+      description: |-
+        * `otp` - otp
+        * `biometric` - biometric
+        * `card_or_code` - card_or_code
+    ConsentStartRequest:
+      type: object
+      properties:
+        coverage:
+          type: string
+          format: uuid
+        service_type:
+          $ref: '#/components/schemas/ServiceTypeEnum'
+        codes:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+          maxItems: 20
+          minItems: 1
+        method:
+          $ref: '#/components/schemas/ConsentStartMethodEnum'
+        contact_id:
+          type: string
+          default: ''
+          maxLength: 40
+        visit:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        biometric:
+          oneOf:
+          - $ref: '#/components/schemas/BiometricContextRequest'
+          - type: 'null'
+      required:
+      - codes
+      - coverage
+      - method
+      - service_type
+    ConsentStep:
+      type: object
+      properties:
+        status:
+          type: string
+        consent:
+          oneOf:
+          - $ref: '#/components/schemas/PayerConsent'
+          - type: 'null'
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaskedContact'
+        capture_url:
+          type: string
+        reason:
+          type: string
+        otp_fallback:
+          type: boolean
+      required:
+      - capture_url
+      - consent
+      - contacts
+      - otp_fallback
+      - reason
+      - status
     Contact:
       type: object
       properties:
@@ -5382,6 +5812,14 @@ components:
       required:
       - code
       - name
+    DeviceOsEnum:
+      enum:
+      - windows
+      - android
+      type: string
+      description: |-
+        * `windows` - windows
+        * `android` - android
     Document:
       type: object
       properties:
@@ -5650,6 +6088,81 @@ components:
           $ref: '#/components/schemas/EvidenceEnum'
       required:
       - evidence
+    EligibilityCheck:
+      type: object
+      description: An eligibility snapshot. The member reference (CR ID) never leaves
+        the server.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        coverage:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/EligibilityCheckStatusEnum'
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+        checked_on:
+          type: string
+          format: date
+          readOnly: true
+        checked_at:
+          type: string
+          format: date-time
+          readOnly: true
+        gateway:
+          type: string
+          readOnly: true
+        mode:
+          type: string
+          readOnly: true
+        schemes:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemeAnswer'
+          readOnly: true
+        otp_allowed:
+          type: boolean
+          readOnly: true
+        biometrics_enforced:
+          type: boolean
+          readOnly: true
+        verification:
+          type: string
+          readOnly: true
+      required:
+      - biometrics_enforced
+      - checked_at
+      - checked_on
+      - coverage
+      - gateway
+      - id
+      - message
+      - mode
+      - otp_allowed
+      - schemes
+      - status
+      - verification
+    EligibilityCheckStatusEnum:
+      enum:
+      - eligible
+      - not_eligible
+      - inactive
+      - not_found
+      - pending_verification
+      type: string
+      description: |-
+        * `eligible` - Eligible
+        * `not_eligible` - Not eligible
+        * `inactive` - Cover inactive
+        * `not_found` - Member not found
+        * `pending_verification` - Payer not answering — verify later
     EndCoverageRequest:
       type: object
       properties:
@@ -5902,6 +6415,45 @@ components:
       required:
       - date
       - warehouse
+    FacilityRecord:
+      type: object
+      properties:
+        fid:
+          type: string
+        fr_code:
+          type: string
+        official_name:
+          type: string
+        keph_level:
+          type: string
+        licence_status:
+          type: string
+        licence_valid_to:
+          type:
+          - string
+          - 'null'
+          format: date
+        sha_contract_status:
+          type: string
+        operational_status:
+          type: string
+        contracted_services:
+          type: array
+          items:
+            type: string
+        sha_active:
+          type: boolean
+      required:
+      - contracted_services
+      - fid
+      - fr_code
+      - keph_level
+      - licence_status
+      - licence_valid_to
+      - official_name
+      - operational_status
+      - sha_active
+      - sha_contract_status
     GatewayEnum:
       enum:
       - sha_hie
@@ -6181,6 +6733,19 @@ components:
       required:
       - email
       - password
+    MaskedContact:
+      type: object
+      properties:
+        contact_id:
+          type: string
+        masked:
+          type: string
+        confirmed:
+          type: boolean
+      required:
+      - confirmed
+      - contact_id
+      - masked
     MaskedIdentifier:
       type: object
       properties:
@@ -6271,7 +6836,7 @@ components:
         * `requested` - Waiting for approval
         * `merged` - Merged
         * `reversed` - Reversed
-    MethodEnum:
+    MethodF1dEnum:
       enum:
       - verbal
       - printed
@@ -6705,6 +7270,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Merge'
+    PaginatedPayerServiceCodeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PayerServiceCode'
     PaginatedProductImageList:
       type: object
       required:
@@ -7622,6 +8210,152 @@ components:
       - sex
       - status
       - version
+    PayerConsent:
+      type: object
+      description: Never includes the consent token — only whether one is held.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        coverage:
+          type: string
+          format: uuid
+          readOnly: true
+        visit_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        gateway:
+          type: string
+          readOnly: true
+        method:
+          allOf:
+          - $ref: '#/components/schemas/PayerConsentMethodEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PayerConsentStatusEnum'
+          readOnly: true
+        service_type:
+          type: string
+          readOnly: true
+        service_codes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        attempts:
+          type: integer
+          readOnly: true
+        expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        authorized_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        has_token:
+          type: boolean
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+      required:
+      - attempts
+      - authorized_at
+      - coverage
+      - expires_at
+      - gateway
+      - has_token
+      - id
+      - method
+      - reason
+      - service_codes
+      - service_type
+      - status
+      - version
+      - visit_id
+    PayerConsentMethodEnum:
+      enum:
+      - otp
+      - biometric
+      - card_or_code
+      type: string
+      description: |-
+        * `otp` - One-time password
+        * `biometric` - Fingerprint
+        * `card_or_code` - Member card or code
+    PayerConsentStatusEnum:
+      enum:
+      - otp_sent
+      - awaiting_biometric
+      - awaiting_code
+      - authorized
+      - authorized_pending_visit
+      - visit_open
+      - rejected
+      - expired
+      - cancelled
+      type: string
+      description: |-
+        * `otp_sent` - OTP sent to the member
+        * `awaiting_biometric` - Waiting for the fingerprint
+        * `awaiting_code` - Waiting for the member code
+        * `authorized` - Authorised
+        * `authorized_pending_visit` - Authorised; the visit opens after pre-authorisation
+        * `visit_open` - Visit open with the payer
+        * `rejected` - Rejected
+        * `expired` - Expired
+        * `cancelled` - Cancelled
+    PayerServiceCode:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        fund:
+          type: string
+        sub_benefit_code:
+          type: string
+        access_point:
+          type: string
+        payment_mechanism:
+          type: string
+        needs_preauth:
+          type: boolean
+        needs_manual_preauth_approval:
+          type: boolean
+        needs_doctor_authorization:
+          type: boolean
+        tariff:
+          type:
+          - string
+          - 'null'
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+      required:
+      - access_point
+      - code
+      - fund
+      - name
+      - needs_doctor_authorization
+      - needs_manual_preauth_approval
+      - needs_preauth
+      - payment_mechanism
+      - sub_benefit_code
+      - tariff
     PayerSummary:
       type: object
       properties:
@@ -7664,6 +8398,13 @@ components:
         * `employer` - Employer or corporate
         * `government` - Other government
         * `other` - Other
+    PendingAuthorisations:
+      type: object
+      properties:
+        pending:
+          type: integer
+      required:
+      - pending
     Pin:
       type: object
       properties:
@@ -7711,7 +8452,7 @@ components:
           minLength: 1
           maxLength: 20
         method:
-          $ref: '#/components/schemas/MethodEnum'
+          $ref: '#/components/schemas/MethodF1dEnum'
         given_by:
           allOf:
           - $ref: '#/components/schemas/GivenByEnum'
@@ -8326,6 +9067,34 @@ components:
       - kind
       - name
       - payer
+    SchemeAnswer:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+        active:
+          type: boolean
+        valid_from:
+          type:
+          - string
+          - 'null'
+          format: date
+        valid_to:
+          type:
+          - string
+          - 'null'
+          format: date
+        reason:
+          type: string
+      required:
+      - active
+      - name
+      - reason
+      - status
+      - valid_from
+      - valid_to
     SchemeKindEnum:
       enum:
       - shif
@@ -8511,6 +9280,18 @@ components:
       - code
       - kind
       - name
+    ServiceTypeEnum:
+      enum:
+      - outpatient
+      - inpatient
+      - capitation
+      - emergency
+      type: string
+      description: |-
+        * `outpatient` - outpatient
+        * `inpatient` - inpatient
+        * `capitation` - capitation
+        * `emergency` - emergency
     SeverityEnum:
       enum:
       - low

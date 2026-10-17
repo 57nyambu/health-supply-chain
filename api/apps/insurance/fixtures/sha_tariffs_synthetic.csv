@@ -1,0 +1,9 @@
+code,name,sub_benefit_code,fund,access_point,payment_mechanism,needs_preauth,needs_manual_preauth_approval,needs_doctor_authorization,level_2,level_3,level_4,level_5,level_6,overall
+SYN-SHA-OP-001,Synthetic outpatient consultation,SYN-SB-OP,SHIF,OP,FEE_FOR_SERVICE,no,no,no,800.00,1000.00,1500.00,2000.00,2500.00,1500.00
+SYN-SHA-OP-002,Synthetic outpatient procedure (normal preauth),SYN-SB-OP,SHIF,OP,FEE_FOR_SERVICE,yes,no,no,,,8500.00,9500.00,10500.00,8500.00
+SYN-SHA-OP-003,Synthetic elective outpatient service (elective preauth),SYN-SB-OP,SHIF,OP,FEE_FOR_SERVICE,yes,yes,no,,,12000.00,13000.00,14000.00,12000.00
+SYN-SHA-IP-001,Synthetic inpatient bed day (per diem; no published level rate),SYN-SB-IP,SHIF,IP,PER_DIEM,no,no,no,,,,,,
+SYN-SHA-IP-002,Synthetic inpatient surgery (specialised preauth),SYN-SB-IP,SHIF,IP,FEE_FOR_SERVICE,yes,no,no,,,85000.00,95000.00,105000.00,85000.00
+SYN-SHA-IP-003,Synthetic elective inpatient admission (elective preauth),SYN-SB-IP,SHIF,IP,FEE_FOR_SERVICE,yes,yes,no,,,45000.00,50000.00,55000.00,45000.00
+SYN-PHC-001,Synthetic primary care visit (capitation),SYN-SB-PHC,UHC,OP,CAPITATION,no,no,no,0.00,0.00,0.00,0.00,0.00,0.00
+SYN-ECC-001,Synthetic emergency stabilisation (ECCIF protocol),SYN-SB-EM,ECCIF,OP,FEE_FOR_SERVICE,no,no,yes,6000.00,8000.00,10000.00,12000.00,14000.00,10000.00

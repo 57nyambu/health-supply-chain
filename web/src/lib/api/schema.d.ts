@@ -998,6 +998,81 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insurance/consents/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Start consent. OTP without ``contact_id`` returns the member's masked phones to
+         *     choose from (no consent yet); with it, sends the code. Fingerprint returns the
+         *     capture page to show. Member code (SMART) waits for the code.
+         */
+        post: operations["v1_insurance_consents_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurance/consents/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The consent's state; for a fingerprint in progress this asks the payer (poll). */
+        get: operations["v1_insurance_consents_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurance/consents/{id}/cancel/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Payer consent for a visit: OTP, fingerprint or member code (P3-SHA-02). The consent
+         *     token is held server-side only; responses say whether one is held.
+         */
+        post: operations["v1_insurance_consents_cancel_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurance/consents/{id}/complete/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Open the payer visit with the member's OTP or code (never stored). */
+        post: operations["v1_insurance_consents_complete_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/insurance/coverages/": {
         parameters: {
             query?: never;
@@ -1008,7 +1083,53 @@ export interface paths {
         /** @description A patient's cover, current and ended (masked member numbers; an audited read). */
         get: operations["v1_insurance_coverages_list"];
         put?: never;
+        /**
+         * @description Actions that reach a payer need an ``Idempotency-Key`` (DESIGN §17). Checked after
+         *     authentication and the policy, so anonymous callers still get 401/403; the core
+         *     middleware stores and replays the response whenever the key is sent.
+         */
         post: operations["v1_insurance_coverages_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurance/coverages/{id}/benefits/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The services the payer lists for this member, with pre-authorisation flags. */
+        get: operations["v1_insurance_coverages_benefits_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurance/coverages/{id}/eligibility/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description GET: the latest eligibility snapshot (404 if never checked). POST: ask the payer
+         *     now (Idempotency-Key required). A payer outage gives ``pending_verification``.
+         */
+        get: operations["v1_insurance_coverages_eligibility_retrieve"];
+        put?: never;
+        /**
+         * @description GET: the latest eligibility snapshot (404 if never checked). POST: ask the payer
+         *     now (Idempotency-Key required). A payer outage gives ``pending_verification``.
+         */
+        post: operations["v1_insurance_coverages_eligibility_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1024,7 +1145,50 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * @description Actions that reach a payer need an ``Idempotency-Key`` (DESIGN §17). Checked after
+         *     authentication and the policy, so anonymous callers still get 401/403; the core
+         *     middleware stores and replays the response whenever the key is sent.
+         */
         post: operations["v1_insurance_coverages_end_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurance/coverages/{id}/pending-authorisations/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Actions that reach a payer need an ``Idempotency-Key`` (DESIGN §17). Checked after
+         *     authentication and the policy, so anonymous callers still get 401/403; the core
+         *     middleware stores and replays the response whenever the key is sent.
+         */
+        get: operations["v1_insurance_coverages_pending_authorisations_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurance/coverages/{id}/pending-authorisations/reject/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Clear the member's stuck fingerprint authorisations at SHA (Idempotency-Key). */
+        post: operations["v1_insurance_coverages_pending_authorisations_reject_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1040,6 +1204,23 @@ export interface paths {
         };
         /** @description Active schemes a visit can be billed to; no scheme means cash / self-pay. */
         get: operations["v1_insurance_schemes_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/interop/facility-registry/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Look a facility up in the national Facility Registry (FID, KEPH level, SHA contract). */
+        get: operations["v1_interop_facility_registry_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2011,6 +2192,12 @@ export interface components {
          * @enum {string}
          */
         BinTypeEnum: "SHELF" | "PALLET" | "BIN" | "ROOM";
+        BiometricContextRequest: {
+            agent_id: string;
+            device_os: components["schemas"]["DeviceOsEnum"];
+            ekyc_provider_id: string;
+            work_station_id: string;
+        };
         Branch: {
             readonly id: number;
             /** Format: date-time */
@@ -2184,20 +2371,53 @@ export interface components {
             readonly kind: components["schemas"]["KindA36Enum"];
             readonly decision: components["schemas"]["DecisionEnum"];
             readonly version: string;
-            readonly method: components["schemas"]["MethodEnum"];
+            readonly method: components["schemas"]["MethodF1dEnum"];
             readonly given_by: components["schemas"]["GivenByEnum"];
             /** Format: date-time */
             readonly recorded_at: string;
             readonly recorded_by: number;
         };
+        ConsentCompleteRequest: {
+            /** @default  */
+            otp: string;
+            /** @default  */
+            member_code: string;
+        };
         ConsentInputRequest: {
             /** @default  */
             version: string;
-            method: components["schemas"]["MethodEnum"];
+            method: components["schemas"]["MethodF1dEnum"];
             /** @default patient */
             given_by: components["schemas"]["GivenByEnum"];
             kind: components["schemas"]["KindA36Enum"];
             decision: components["schemas"]["DecisionEnum"];
+        };
+        /**
+         * @description * `otp` - otp
+         *     * `biometric` - biometric
+         *     * `card_or_code` - card_or_code
+         * @enum {string}
+         */
+        ConsentStartMethodEnum: "otp" | "biometric" | "card_or_code";
+        ConsentStartRequest: {
+            /** Format: uuid */
+            coverage: string;
+            service_type: components["schemas"]["ServiceTypeEnum"];
+            codes: string[];
+            method: components["schemas"]["ConsentStartMethodEnum"];
+            /** @default  */
+            contact_id: string;
+            /** Format: uuid */
+            visit?: string | null;
+            biometric?: components["schemas"]["BiometricContextRequest"] | null;
+        };
+        ConsentStep: {
+            status: string;
+            consent: components["schemas"]["PayerConsent"] | null;
+            contacts: components["schemas"]["MaskedContact"][];
+            capture_url: string;
+            reason: string;
+            otp_fallback: boolean;
         };
         Contact: {
             /** Format: uuid */
@@ -2323,6 +2543,12 @@ export interface components {
             name: string;
             active?: boolean;
         };
+        /**
+         * @description * `windows` - windows
+         *     * `android` - android
+         * @enum {string}
+         */
+        DeviceOsEnum: "windows" | "android";
         Document: {
             /** Format: uuid */
             readonly id: string;
@@ -2423,6 +2649,34 @@ export interface components {
         DsarVerifyRequest: {
             evidence: components["schemas"]["EvidenceEnum"];
         };
+        /** @description An eligibility snapshot. The member reference (CR ID) never leaves the server. */
+        EligibilityCheck: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly coverage: string;
+            readonly status: components["schemas"]["EligibilityCheckStatusEnum"];
+            readonly message: string;
+            /** Format: date */
+            readonly checked_on: string;
+            /** Format: date-time */
+            readonly checked_at: string;
+            readonly gateway: string;
+            readonly mode: string;
+            readonly schemes: components["schemas"]["SchemeAnswer"][];
+            readonly otp_allowed: boolean;
+            readonly biometrics_enforced: boolean;
+            readonly verification: string;
+        };
+        /**
+         * @description * `eligible` - Eligible
+         *     * `not_eligible` - Not eligible
+         *     * `inactive` - Cover inactive
+         *     * `not_found` - Member not found
+         *     * `pending_verification` - Payer not answering — verify later
+         * @enum {string}
+         */
+        EligibilityCheckStatusEnum: "eligible" | "not_eligible" | "inactive" | "not_found" | "pending_verification";
         EndCoverageRequest: {
             reason: string;
         };
@@ -2508,6 +2762,19 @@ export interface components {
             beds_occupied?: number;
             doctors_scheduled?: number;
             doctors_present?: number;
+        };
+        FacilityRecord: {
+            fid: string;
+            fr_code: string;
+            official_name: string;
+            keph_level: string;
+            licence_status: string;
+            /** Format: date */
+            licence_valid_to: string | null;
+            sha_contract_status: string;
+            operational_status: string;
+            contracted_services: string[];
+            sha_active: boolean;
         };
         /**
          * @description * `sha_hie` - SHA through the HIE (eClaims REST)
@@ -2627,6 +2894,11 @@ export interface components {
             email: string;
             password: string;
         };
+        MaskedContact: {
+            contact_id: string;
+            masked: string;
+            confirmed: boolean;
+        };
         MaskedIdentifier: {
             type: components["schemas"]["Type7a8Enum"];
             readonly value: string;
@@ -2667,7 +2939,7 @@ export interface components {
          *     * `electronic` - Shown on screen or sent electronically
          * @enum {string}
          */
-        MethodEnum: "verbal" | "printed" | "electronic";
+        MethodF1dEnum: "verbal" | "printed" | "electronic";
         MfaCode: {
             code?: string;
             recovery_code?: string;
@@ -2928,6 +3200,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Merge"][];
+        };
+        PaginatedPayerServiceCodeList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["PayerServiceCode"][];
         };
         PaginatedProductImageList: {
             /** @example 123 */
@@ -3294,6 +3581,61 @@ export interface components {
             readonly legal_hold: boolean;
             readonly access: components["schemas"]["Access"];
         };
+        /** @description Never includes the consent token — only whether one is held. */
+        PayerConsent: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly coverage: string;
+            /** Format: uuid */
+            readonly visit_id: string | null;
+            readonly gateway: string;
+            readonly method: components["schemas"]["PayerConsentMethodEnum"];
+            readonly status: components["schemas"]["PayerConsentStatusEnum"];
+            readonly service_type: string;
+            readonly service_codes: string[];
+            readonly reason: string;
+            readonly attempts: number;
+            /** Format: date-time */
+            readonly expires_at: string | null;
+            /** Format: date-time */
+            readonly authorized_at: string | null;
+            readonly has_token: boolean;
+            readonly version: number;
+        };
+        /**
+         * @description * `otp` - One-time password
+         *     * `biometric` - Fingerprint
+         *     * `card_or_code` - Member card or code
+         * @enum {string}
+         */
+        PayerConsentMethodEnum: "otp" | "biometric" | "card_or_code";
+        /**
+         * @description * `otp_sent` - OTP sent to the member
+         *     * `awaiting_biometric` - Waiting for the fingerprint
+         *     * `awaiting_code` - Waiting for the member code
+         *     * `authorized` - Authorised
+         *     * `authorized_pending_visit` - Authorised; the visit opens after pre-authorisation
+         *     * `visit_open` - Visit open with the payer
+         *     * `rejected` - Rejected
+         *     * `expired` - Expired
+         *     * `cancelled` - Cancelled
+         * @enum {string}
+         */
+        PayerConsentStatusEnum: "otp_sent" | "awaiting_biometric" | "awaiting_code" | "authorized" | "authorized_pending_visit" | "visit_open" | "rejected" | "expired" | "cancelled";
+        PayerServiceCode: {
+            code: string;
+            name: string;
+            fund: string;
+            sub_benefit_code: string;
+            access_point: string;
+            payment_mechanism: string;
+            needs_preauth: boolean;
+            needs_manual_preauth_approval: boolean;
+            needs_doctor_authorization: boolean;
+            /** Format: decimal */
+            tariff: string | null;
+        };
         PayerSummary: {
             /** Format: uuid */
             readonly id: string;
@@ -3311,6 +3653,9 @@ export interface components {
          * @enum {string}
          */
         PayerSummaryKindEnum: "sha" | "insurer" | "employer" | "government" | "other";
+        PendingAuthorisations: {
+            pending: number;
+        };
         Pin: {
             pin: string;
         };
@@ -3326,7 +3671,7 @@ export interface components {
         };
         PrivacyNoticeRequest: {
             version: string;
-            method: components["schemas"]["MethodEnum"];
+            method: components["schemas"]["MethodF1dEnum"];
             /** @default patient */
             given_by: components["schemas"]["GivenByEnum"];
         };
@@ -3587,6 +3932,16 @@ export interface components {
             readonly kind: components["schemas"]["SchemeKindEnum"];
             readonly payer: components["schemas"]["PayerSummary"];
         };
+        SchemeAnswer: {
+            name: string;
+            status: string;
+            active: boolean;
+            /** Format: date */
+            valid_from: string | null;
+            /** Format: date */
+            valid_to: string | null;
+            reason: string;
+        };
         /**
          * @description * `shif` - SHIF (Social Health Insurance Fund)
          *     * `phc` - Primary health care (PHC/UHC)
@@ -3668,6 +4023,14 @@ export interface components {
             department?: number | null;
             active?: boolean;
         };
+        /**
+         * @description * `outpatient` - outpatient
+         *     * `inpatient` - inpatient
+         *     * `capitation` - capitation
+         *     * `emergency` - emergency
+         * @enum {string}
+         */
+        ServiceTypeEnum: "outpatient" | "inpatient" | "capitation" | "emergency";
         /**
          * @description * `low` - Low
          *     * `medium` - Medium
@@ -5892,6 +6255,111 @@ export interface operations {
             };
         };
     };
+    v1_insurance_consents_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentStartRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ConsentStartRequest"];
+                "multipart/form-data": components["schemas"]["ConsentStartRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentStep"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentStep"];
+                };
+            };
+        };
+    };
+    v1_insurance_consents_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this payer consent. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentStep"];
+                };
+            };
+        };
+    };
+    v1_insurance_consents_cancel_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this payer consent. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayerConsent"];
+                };
+            };
+        };
+    };
+    v1_insurance_consents_complete_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this payer consent. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ConsentCompleteRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ConsentCompleteRequest"];
+                "multipart/form-data": components["schemas"]["ConsentCompleteRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayerConsent"];
+                };
+            };
+        };
+    };
     v1_insurance_coverages_list: {
         parameters: {
             query: {
@@ -5948,6 +6416,93 @@ export interface operations {
             };
         };
     };
+    v1_insurance_coverages_benefits_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this coverage. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPayerServiceCodeList"];
+                };
+            };
+        };
+    };
+    v1_insurance_coverages_eligibility_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this coverage. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EligibilityCheck"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EligibilityCheck"];
+                };
+            };
+        };
+    };
+    v1_insurance_coverages_eligibility_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this coverage. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EligibilityCheck"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EligibilityCheck"];
+                };
+            };
+        };
+    };
     v1_insurance_coverages_end_create: {
         parameters: {
             query?: never;
@@ -5976,6 +6531,50 @@ export interface operations {
             };
         };
     };
+    v1_insurance_coverages_pending_authorisations_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this coverage. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingAuthorisations"];
+                };
+            };
+        };
+    };
+    v1_insurance_coverages_pending_authorisations_reject_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this coverage. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingAuthorisations"];
+                };
+            };
+        };
+    };
     v1_insurance_schemes_list: {
         parameters: {
             query?: never;
@@ -5991,6 +6590,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Scheme"][];
+                };
+            };
+        };
+    };
+    v1_interop_facility_registry_retrieve: {
+        parameters: {
+            query: {
+                identifier: string;
+                /**
+                 * @description * `fid` - fid
+                 *     * `fr-code` - fr-code
+                 *     * `mfl` - mfl
+                 *     * `license-number` - license-number
+                 *     * `registration-number` - registration-number
+                 */
+                type?: "fid" | "fr-code" | "mfl" | "license-number" | "registration-number";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacilityRecord"];
                 };
             };
         };

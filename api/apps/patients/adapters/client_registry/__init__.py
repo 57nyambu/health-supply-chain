@@ -2,10 +2,10 @@
 
 Reception looks a person up by identification type and number and gets the Client Registry
 ID (CR ID) plus demographics to pre-fill registration, or nothing. The HIE call is
-``GET /patients`` with ``identification_number`` and ``identification_type``; its response
-schema and the exact identification-type values are not yet documented to us (GAP-CR-001),
-so only the fake exists until the HIE adapter lands with P3-SHA-01. Every call is recorded
-in ``integrations.ExchangeLog`` with encrypted bodies.
+``GET /patients`` with ``identification_number`` and ``identification_type``.
+``CLIENT_REGISTRY_MODE=fake`` (default) uses the deterministic fake; ``sandbox``/``live`` use
+the HIE adapter (``hie.py``, P3-SHA-01) with the HIE credentials and refuse to start without
+them. Every call is recorded in ``integrations.ExchangeLog`` with encrypted bodies.
 """
 
 from dataclasses import dataclass
@@ -55,6 +55,17 @@ def get_registry() -> ClientRegistry:
         from .fake import FakeClientRegistry
 
         return FakeClientRegistry()
-    raise ImproperlyConfigured(
-        f"CLIENT_REGISTRY_MODE={mode!r} is not available yet: the HIE adapter is P3-SHA-01 (GAP-CR-001)."
-    )
+    if mode in ("sandbox", "live"):
+        from apps.interop.hie.client import HieClient, config_from_settings
+        from apps.interop.hie.errors import HieConfigurationError
+
+        from .hie import HieClientRegistry
+
+        try:
+            config = config_from_settings(
+                mode, setting="CLIENT_REGISTRY_MODE", gap="P3-SHA-01, GAP-CR-001"
+            )
+        except HieConfigurationError as exc:
+            raise ImproperlyConfigured(str(exc)) from exc
+        return HieClientRegistry(HieClient(config))
+    raise ImproperlyConfigured(f"CLIENT_REGISTRY_MODE={mode!r} is not one of fake, sandbox, live.")

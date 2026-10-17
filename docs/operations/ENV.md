@@ -123,3 +123,29 @@ Added only by the Phase 3 lane (registered in `api/config/lanes/phase3.py`).
 
 | Variable | Default | Req (prod) | Purpose |
 |---|---|---|---|
+| `SHA_MODE` | `fake` | yes (`live`) | SHA/HIE integration mode: `fake` (in-process fake HIE with synthetic members), `sandbox` (HIE UAT), `live`. Sandbox and live refuse to start without the credentials below. |
+| `SHA_TRANSPORT` | `hie` | — | `hie` = eClaims REST (primary, ADR-009); `fhir` = AfyaLink FHIR bundles (P3-SHA-07). |
+| `SHA_BASE_URL` | — | yes | HIE base URL. UAT `https://ilm-dev.dha.go.ke/uat-middleware/api/v1`; production URL is issued with production credentials after certification. |
+| `SHA_CLIENT_ID`, `SHA_CLIENT_SECRET` | — | yes | HIE OAuth2 client credentials (secret). Also used by the HIE registry adapters (`CLIENT_REGISTRY_MODE`, `HWR_MODE` = `sandbox`/`live`). |
+| `SHA_FACILITY_ID` | — | yes | The facility's Facility Registry code (FR code, e.g. `FID-47-115307-8`). |
+| `SHA_FACILITY_ID_TYPE` | `fr-code` | — | Type of `SHA_FACILITY_ID`; the HIE supports only `fr-code`. |
+| `SHA_CREDENTIAL_SCOPE` | `facility` | — | `facility` (token carries the facility; no headers) or `multi_facility` (send `X-Facility-Id`/`X-Facility-Id-Type` on every call). |
+| `SHA_CALLBACK_USER`, `SHA_CALLBACK_PASSWORD` | — | yes | Basic auth expected on SHA status callbacks (secret). |
+| `SHA_CALLBACK_ALLOWED_IPS` | — | yes | Comma-separated source IPs/CIDRs allowed to post SHA callbacks. |
+| `SMART_MODE` | `fake` | — | SMART adapter mode. `sandbox`/`live` refuse until SMART's spec and credentials exist (GAP-SMART-001). |
+| `SLADE360_MODE` | `fake` | — | Slade360 adapter mode. `sandbox`/`live` refuse until Slade360's spec and credentials exist (GAP-SLADE-001). |
+| `JENGA_MODE` | `fake` | — | Equity Jenga mode; `sandbox`/`live` refuse without credentials and until the token endpoint is recorded (GAP-JENGA-002). |
+| `JENGA_BASE_URL`, `JENGA_MERCHANT_CODE`, `JENGA_ACCOUNT_NUMBER` | — | when Jenga is live | Jenga base URL (UAT `https://uat.finserve.africa`, live `https://api.finserve.africa`), merchant code and collection account. |
+| `JENGA_API_KEY`, `JENGA_CONSUMER_SECRET` | — | when Jenga is live | JengaHQ API credentials (secret). |
+| `JENGA_PRIVATE_KEY_PATH` | — | when Jenga is live | Path (outside the repository) of the RSA private key that signs Jenga requests; its public key is registered on JengaHQ. |
+| `JENGA_IPN_TOKEN`, `JENGA_IPN_USER`, `JENGA_IPN_PASSWORD` | — | when Jenga is live | Secret path token of `/api/v1/hooks/jenga/<token>/` and the Basic-auth credentials registered with the IPN URL (secret). |
+| `BUNI_MODE` | `fake` | — | KCB Buni mode; `sandbox`/`live` refuse without credentials and until the portal docs are recorded (GAP-BUNI-001). |
+| `BUNI_BASE_URL`, `BUNI_ACCOUNT_NUMBER`, `BUNI_TILL_OR_PAYBILL` | — | when Buni is live | Buni base URL (UAT `https://uat.buni.kcbgroup.com`), account and paybill/till. |
+| `BUNI_CONSUMER_KEY`, `BUNI_CONSUMER_SECRET` | — | when Buni is live | Buni API credentials (secret). |
+| `BUNI_IPN_PUBLIC_KEY_PATH` | — | when Buni is live | KCB public key (PEM) that verifies the IPN `Signature` header. |
+| `BUNI_IPN_ALLOWED_IPS` | — | when Buni is live | Comma-separated source IPs/CIDRs allowed to post Buni IPNs (empty refuses all). |
+| `BUNI_IPN_TOKEN` | — | when Buni is live | Secret path token of `/api/v1/hooks/buni/<token>/`. |
+| `PESAPAL_MODE` | `fake` | — | Pesapal API 3.0 mode (`fake`, `sandbox`, `live`). |
+| `PESAPAL_BASE_URL` | — | when Pesapal is live | `https://cybqa.pesapal.com/pesapalv3` (sandbox) or `https://pay.pesapal.com/v3` (live). |
+| `PESAPAL_CONSUMER_KEY`, `PESAPAL_CONSUMER_SECRET` | — | when Pesapal is live | Pesapal merchant credentials (secret). |
+| `PESAPAL_IPN_ID`, `PESAPAL_IPN_TOKEN` | — | when Pesapal is live | `ipn_id` from RegisterIPN, and the secret path token of `/api/v1/hooks/pesapal/<token>/`. |

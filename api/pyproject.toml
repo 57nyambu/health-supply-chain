@@ -26,6 +26,7 @@ dependencies = [
     "phonenumbers>=8.13",
     "django-storages[s3]>=1.14,<2",
     "reportlab>=4.2,<5",
+    "httpx>=0.28,<0.29",
 ]
 
 [dependency-groups]
@@ -128,6 +129,20 @@ exclude = ["migrations/"]
 # annotation rules.
 [[tool.mypy.overrides]]
 module = ["apps.access.*", "apps.audit.*", "apps.facilities.*", "apps.patients.*", "apps.documents.*"]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_any_generics = true
+check_untyped_defs = true
+warn_return_any = true
+no_implicit_reexport = true
+strict_equality = true
+
+# Phase 3 lane apps (ADR-024): strict like the other new apps; a separate block so the
+# lanes never edit the same list.
+[[tool.mypy.overrides]]
+module = ["apps.insurance.*", "apps.interop.*", "apps.banking.*", "apps.etims.*", "apps.privacy.*"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_calls = true

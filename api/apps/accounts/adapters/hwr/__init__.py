@@ -1,9 +1,8 @@
 """Health Worker Registry (HWR) port (DESIGN §7.10, §15; KE-PRF-01, KE-DHA-04).
 
-The HIE exposes a practitioner search (`/v1/practitioner-search`, see
-docs/integrations/INSURANCE.md) whose request/response fields are not yet
-documented to us (spec gap GAP-HWR-001). Until the real adapter lands in
-P3-SHA-01 only the fake exists; any other HWR_MODE refuses to verify.
+``HWR_MODE=fake`` (default) uses the deterministic fake; ``sandbox``/``live`` use the HIE
+``GET /professionals`` adapter (``hie.py``, P3-SHA-01) with the HIE credentials, and refuse
+to start without them.
 """
 
 from dataclasses import dataclass
@@ -37,6 +36,15 @@ def get_registry() -> HealthWorkerRegistry:
         from .fake import FakeHealthWorkerRegistry
 
         return FakeHealthWorkerRegistry()
-    raise ImproperlyConfigured(
-        f"HWR_MODE={mode!r} is not available yet: the HIE practitioner-search adapter is P3-SHA-01."
-    )
+    if mode in ("sandbox", "live"):
+        from apps.interop.hie.client import HieClient, config_from_settings
+        from apps.interop.hie.errors import HieConfigurationError
+
+        from .hie import HieHealthWorkerRegistry
+
+        try:
+            config = config_from_settings(mode, setting="HWR_MODE", gap="P3-SHA-01, GAP-HWR-001")
+        except HieConfigurationError as exc:
+            raise ImproperlyConfigured(str(exc)) from exc
+        return HieHealthWorkerRegistry(HieClient(config))
+    raise ImproperlyConfigured(f"HWR_MODE={mode!r} is not one of fake, sandbox, live.")
